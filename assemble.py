@@ -25,7 +25,8 @@ Image.MAX_IMAGE_PIXELS = None      # la carte finale depasse la limite anti-bomb
 def build_mosaic(index: dict, src: Path, suffix: str, missing: str) -> Image.Image:
     rows, cols = index["grid"]["rows"], index["grid"]["cols"]
     px = index["tile"]["pixels"]
-    canvas = Image.new("L", (cols * px, rows * px), 255)
+    canvas = Image.new("RGB", (cols * px, rows * px), "white")   # RGB : la mosaique
+    # semantique garde ses couleurs ; les tuiles stylisees sont de toute facon en noir et blanc
 
     absent = []
     for tile in index["tiles"]:
@@ -34,7 +35,7 @@ def build_mosaic(index: dict, src: Path, suffix: str, missing: str) -> Image.Ima
             absent.append(tile["name"])
             continue
         with Image.open(path) as img:
-            img = img.convert("L")
+            img = img.convert("RGB")
             if img.size != (px, px):
                 img = img.resize((px, px), Image.LANCZOS)
             canvas.paste(img, (tile["col"] * px, tile["row"] * px))

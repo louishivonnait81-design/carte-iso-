@@ -124,7 +124,7 @@ def white_world(scene: bpy.types.Scene) -> None:
 
 def flat_ribbon_profile(width: float) -> bpy.types.Object:
     """Courbe-profil a deux points : donne aux courbes de rue un ruban plat."""
-    name = "ISO_ROAD_PROFILE"
+    name = f"ISO_ROAD_PROFILE_{width:g}"
     existing = bpy.data.objects.get(name)
     if existing is not None:
         return existing
@@ -141,17 +141,21 @@ def flat_ribbon_profile(width: float) -> bpy.types.Object:
 
 
 def widen_street_curves(streets: list[bpy.types.Object], width: float) -> int:
-    """Les rues importees par Blosm sont des courbes sans epaisseur : on les
-    transforme en rubans plats pour qu'elles couvrent une surface au rendu."""
-    profile = flat_ribbon_profile(width)
+    """Les rues importees sont des courbes sans epaisseur : on les transforme en
+    rubans plats pour qu'elles couvrent une surface au rendu. La largeur vient de
+    obj["road_width"] quand l'importateur l'a renseignee, sinon de --road-width."""
+    profiles: dict[float, bpy.types.Object] = {}
     widened = 0
     for obj in streets:
         curve = obj.data
         if obj.type != "CURVE" or curve.bevel_object is not None or curve.bevel_depth:
             continue
+        w = float(obj.get("road_width", width))
+        if w not in profiles:
+            profiles[w] = flat_ribbon_profile(w)
         curve.dimensions = "3D"
         curve.bevel_mode = "OBJECT"
-        curve.bevel_object = profile
+        curve.bevel_object = profiles[w]
         curve.use_fill_caps = False
         widened += 1
     return widened
@@ -222,11 +226,22 @@ def eevee_engine() -> str:
     return "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in items else "BLENDER_EEVEE"
 
 
-def setup_line_pass(scene: bpy.types.Scene, thickness: float, samples: int) -> None:
-    scene.render.engine = eevee_engine()
-    eevee = getattr(scene, "eevee", None)
-    if eevee is not None and hasattr(eevee, "taa_render_samples"):
-        eevee.taa_render_samples = samples
+def setup_line_pass(scene: bpy.types.Scene, thickness: float, samples: int,
+                    engine: str = "cycles") -> None:
+    # Cycles sur CPU par defaut : Freestyle y est supporte et, la scene etant un
+    # aplat blanc emissif, quelques echantillons suffisent. EEVEE a besoin d'un
+    # GPU ; en rendu logiciel il est dix fois plus lent.
+    if engine == "cycles":
+        scene.render.engine = "CYCLES"
+        scene.cycles.device = "CPU"
+        scene.cycles.samples = samples
+        scene.cycles.use_denoising = False
+        scene.cycles.max_bounces = 0
+    else:
+        scene.render.engine = eevee_engine()
+        eevee = getattr(scene, "eevee", None)
+        if eevee is not None and hasattr(eevee, "taa_render_samples"):
+            eevee.taa_render_samples = samples
 
     white_world(scene)
     view_layer = scene.view_layers[0]
@@ -239,7 +254,10 @@ def setup_line_pass(scene: bpy.types.Scene, thickness: float, samples: int) -> N
 
     fs = view_layer.freestyle_settings
     fs.mode = "EDITOR"
-    fs.crease_angle = math.radians(140.0)
+    # Un toit de tuiles canal a ~28 deg de pente : ses aretes (faite, aretiers)
+    # forment des angles diedres de 124 a 141 deg. Le seuil par defaut (134 deg)
+    # les ignore ; 160 deg les trace sans attraper les faces coplanaires.
+    fs.crease_angle = math.radians(160.0)
     while fs.linesets:
         fs.linesets.remove(fs.linesets[0])
     lineset = fs.linesets.new("ISO_LINES")
@@ -308,7 +326,9 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument("--elevation", type=float, default=30.0, help="elevation camera, degres")
     p.add_argument("--azimuth", type=float, default=45.0, help="azimut camera, degres")
     p.add_argument("--line-thickness", type=float, default=2.0, help="epaisseur Freestyle, px")
-    p.add_argument("--samples", type=int, default=16, help="echantillons EEVEE")
+    p.add_argument("--samples", type=int, default=8, help="echantillons de la passe lignes")
+    p.add_argument("--line-engine", choices=["cycles", "eevee"], default="cycles",
+                   help="moteur de la passe lignes")
     p.add_argument("--road-width", type=float, default=7.0,
                    help="largeur donnee aux courbes de rue, en metres")
     p.add_argument("--ground-z", type=float, default=-0.05,
@@ -392,7 +412,7 @@ def main() -> None:
 
     for label, suffix, setup in passes:
         if label == "line":
-            setup(scene, args.line_thickness, args.samples)
+            setup(scene, args.line_thickness, args.samples, args.line_engine)
         else:
             setup(scene)
         for i, tile in enumerate(tiles, 1):

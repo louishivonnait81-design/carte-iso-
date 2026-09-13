@@ -6,5 +6,9 @@ opencv-python-headless>=4.9  # Canny, dilatation (QA)
 vtracer>=0.6               # vectorisation ; repli possible sur le binaire potrace
 pytest>=8.0                # tests
 
-# Blender n'est PAS installe par pip ici : voir README.
-# Le module `bpy` (pip install bpy) est un repli si le binaire est indisponible.
+# Blender en module Python (~370 Mo). Sans GPU il faut Mesa en logiciel :
+#   apt-get install libegl1 libgl1-mesa-dri libgles2 libxi6 libxxf86vm1 libxfixes3 \
+#                   libxrender1 libsm6 libxkbcommon0 libgomp1
+#   export LIBGL_ALWAYS_SOFTWARE=1
+# et pip fige numpy<2 : opencv 5 s'en plaint mais fonctionne.
+bpy>=4.2

@@ -39,11 +39,8 @@ def find_blender() -> str | None:
 
 
 def have_bpy_module() -> bool:
-    try:
-        import bpy  # noqa: F401
-    except Exception:
-        return False
-    return True
+    import importlib.util
+    return importlib.util.find_spec("bpy") is not None
 
 
 def main() -> int:
@@ -62,10 +59,17 @@ def main() -> int:
     if blender:
         cmd = [blender, "-b", str(args.blend), "-P", str(ISO_TILES), "--", *passthrough]
     elif have_bpy_module():
-        cmd = [sys.executable, "-c",
-               f"import bpy; bpy.ops.wm.open_mainfile(filepath={str(args.blend)!r}); "
-               f"exec(open({str(ISO_TILES)!r}).read())",
-               "--", *passthrough]
+        # Le module pip n'a pas de ligne de commande : on ouvre la scene puis on
+        # execute iso_tiles.py comme si Blender l'avait lance avec -P.
+        bootstrap = (
+            "import bpy, runpy, sys; "
+            f"bpy.ops.wm.open_mainfile(filepath={str(args.blend)!r}); "
+            f"sys.argv = [{str(ISO_TILES)!r}, '--'] + sys.argv[1:]; "
+            f"runpy.run_path({str(ISO_TILES)!r}, run_name='__main__')"
+        )
+        cmd = [sys.executable, "-c", bootstrap, *passthrough]
+        # Sans GPU, Mesa doit rendre en logiciel.
+        os.environ.setdefault("LIBGL_ALWAYS_SOFTWARE", "1")
     else:
         sys.exit(
             "Blender introuvable.\n"

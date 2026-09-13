@@ -13,11 +13,12 @@ QA      ?= qa_out
 OUT     ?= out
 BUDGET  ?= 5
 
-.PHONY: help install test check density render render-test next status ref02 stylize stylize-dry qa seam assemble all clean
+.PHONY: help install test check density blend render render-test next status ref02 stylize stylize-dry qa seam assemble all clean
 
 help:
 	@echo "make install       installe les dependances Python"
 	@echo "make test          lance les tests (sans Blender ni reseau)"
+	@echo "make blend         construit assets/castres.blend depuis assets/castres.osm"
 	@echo "make render        rend la grille $(ROWS)x$(COLS) depuis assets/castres.blend"
 	@echo "make render-test   rend seulement 1x2 tuiles (verification rapide)"
 	@echo "make next          MODE MANUEL : prepare la prochaine tuile a coller dans Gemini"
@@ -42,6 +43,12 @@ check:
 
 density:
 	$(PY) scripts/ink_density.py assets/REF_01_style.png assets/REF_02_castres.png
+
+OSM     ?= assets/castres.osm
+export LIBGL_ALWAYS_SOFTWARE ?= 1
+
+blend:
+	$(PY) scripts/osm_to_blend.py $(OSM) --out assets/castres.blend
 
 render:
 	$(PY) render.py --rows $(ROWS) --cols $(COLS) --tile $(TILE) --px $(PX) \

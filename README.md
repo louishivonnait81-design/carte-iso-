@@ -10,17 +10,28 @@ commencé).
 
 ## État du dépôt
 
-Le squelette du pipeline est en place et testé. **Trois choses manquent pour
-pouvoir produire une seule tuile :**
+Le pipeline tourne **de bout en bout** dans l'environnement de développement,
+validé sur une ville synthétique (`tests/fixtures/mini_ville.osm`) : extrait OSM →
+scène Blender → tuiles lignes et sémantiques → mosaïque aux raccords exacts.
 
-| Manquant | Où | Conséquence |
+**Il manque les vraies données.** Trois fichiers à déposer dans `assets/` :
+
+| Manquant | Où le prendre | Conséquence |
 |---|---|---|
-| `assets/REF_01_style.png` | à déposer | aucun habillage possible (bible de style) |
-| `assets/castres.blend` | à déposer | aucun rendu possible (géométrie Blosm) |
-| `GEMINI_API_KEY` | variable d'environnement | seulement pour le mode API ; **inutile en mode manuel** |
+| `castres.osm` | téléchargé dans un navigateur, voir ci-dessous | aucune géométrie |
+| `REF_01_style.png` | votre image | aucun habillage possible |
+| `REF_02_castres.png` | la planche v3 validée | architecture non contrainte |
 
-`assets/tests/` (tuiles de test + résultat Nano Banana v2) est également absent.
-Voir `assets/README.md`.
+> `castres.blend` n'existait pas : il est désormais **construit ici** par
+> `scripts/osm_to_blend.py` à partir d'un extrait OSM, à la place de l'import
+> Blosm. Toutes les sources OSM (openstreetmap.org, Overpass et ses miroirs,
+> Geofabrik) sont bloquées par le proxy de l'environnement de rendu, d'où le
+> passage par le navigateur :
+>
+> https://api.openstreetmap.org/api/0.6/map?bbox=2.2335,43.6010,2.2485,43.6095
+>
+> (repli si « too many nodes » :
+> https://overpass-api.de/api/map?bbox=2.2335,43.6010,2.2485,43.6095)
 
 ## Zone
 
@@ -35,7 +46,7 @@ Voir `assets/README.md`.
 
 ```bash
 make install                    # dépendances Python (3.11)
-make test                       # 38 tests, ni Blender ni réseau requis
+make test                       # 45 tests, ni Blender ni réseau requis
 export GEMINI_API_KEY=...       # mode API seulement — jamais dans le dépôt
 ```
 
@@ -44,11 +55,32 @@ export GEMINI_API_KEY=...       # mode API seulement — jamais dans le dépôt
 `render.py` cherche Blender dans cet ordre : `$BLENDER_BIN`, `blender` dans le
 PATH, `third_party/blender*/blender`, puis le module pip `bpy`.
 
-> Dans l'environnement d'exécution distant utilisé pour développer ce dépôt,
-> `download.blender.org` est **bloqué par le proxy réseau** : le tarball officiel
-> n'est pas téléchargeable ici. PyPI reste accessible, donc `pip install bpy`
-> fonctionne (bpy ≥ 4.1 pour Python 3.11). Sur une machine locale, préférer
-> Blender 3.6 LTS, la version d'origine de la scène.
+Dans l'environnement de développement, `download.blender.org` est bloqué mais le
+module pip `bpy` (5.0) s'installe depuis PyPI et **rend correctement sans GPU** à
+condition d'avoir Mesa en logiciel (paquets listés dans `requirements.txt`,
+`LIBGL_ALWAYS_SOFTWARE=1`). Mesuré : Workbench et Cycles CPU rendent une tuile en
+moins d'une seconde ; EEVEE en logiciel met vingt fois plus. La passe lignes
+tourne donc sur **Cycles** (Freestyle y est supporté, la scène étant un aplat
+émissif quelques échantillons suffisent), la passe sémantique sur Workbench.
+
+### De l'extrait OSM à la scène — `scripts/osm_to_blend.py`
+
+```bash
+make blend          # assets/castres.osm -> assets/castres.blend
+```
+
+* Bâtiments : empreintes extrudées à `height`, sinon `building:levels × 3,2 m`,
+  sinon 2,5 niveaux (le vieux Castres est R+1 / R+2). Multipolygones gérés — un
+  hôtel particulier garde sa cour. Une **toiture à croupes** est ajoutée par
+  rentrée du dessus jusqu'au faîte (pente 28°, celle des tuiles canal) : en trait,
+  un bâtiment sans faîte se lit comme une boîte et le modèle dessine des toits
+  plats.
+* Rues : courbes au sol, largeur par classe OSM dans `obj["road_width"]`
+  (résidentielle 6 m, tertiaire 7 m, passage 2,5 m…), ponts surélevés d'un mètre.
+* Végétation : surfaces plates + arbres isolés en icosphères.
+* Eau : surfaces plates juste au-dessus du sol blanc.
+* Origine de scène (`scene["lat"]`, `scene["lon"]`) = centre de l'emprise, comme
+  chez Blosm ; les tags OSM sont recopiés en propriétés personnalisées.
 
 ## Deux façons d'habiller les tuiles
 
@@ -119,10 +151,10 @@ blender -b assets/castres.blend -P scripts/iso_tiles.py -- \
 * Reprend là où il s'est arrêté ; `--force` pour re-rendre.
 
 **Classement sémantique.** Les objets sont classés par mots-clés cherchés dans
-leur nom, celui de leurs collections et leurs propriétés personnalisées (Blosm y
-recopie les tags OSM). Le nommage exact de `castres.blend` n'ayant pas pu être
-inspecté, **commencer par `--dump-categories`** pour vérifier le classement, et
-ajuster `DEFAULT_RULES` en tête de `scripts/iso_tiles.py` si besoin.
+leur nom, celui de leurs collections et leurs propriétés personnalisées.
+`osm_to_blend.py` nomme tout de façon à tomber juste ; pour une scène venue
+d'ailleurs, `--dump-categories` affiche le classement et `DEFAULT_RULES` en tête
+de `scripts/iso_tiles.py` s'ajuste.
 
 | catégorie | couleur | note |
 |---|---|---|
@@ -228,7 +260,7 @@ test 1×2 et ~3,4 € pour la grille complète 6×4.
 ## Tests
 
 ```bash
-make test     # 38 tests
+make test     # 45 tests
 make check    # pyflakes
 ```
 
