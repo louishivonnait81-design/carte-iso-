@@ -35,7 +35,7 @@ Voir `assets/README.md`.
 
 ```bash
 make install                    # dépendances Python (3.11)
-make test                       # 35 tests, ni Blender ni réseau requis
+make test                       # 37 tests, ni Blender ni réseau requis
 export GEMINI_API_KEY=...       # mode API seulement — jamais dans le dépôt
 ```
 
@@ -149,6 +149,10 @@ voisines **déjà stylisées** — gauche, puis haut.
   paramètres `image_config.aspect_ratio` / `image_size` sont eux confirmés par
   introspection du SDK officiel `google-genai` 2.23.
 * Sortie carrée, `2K` par défaut (`--image-size 1K|2K|4K`).
+* `--temperature 0.35` et `--seed 1789` par défaut : c'est le seul vrai levier de
+  constance d'une tuile à l'autre, et **il n'existe pas dans l'interface web**.
+  C'est l'argument le plus solide pour passer à l'API le jour où la variabilité
+  entre tuiles devient gênante.
 * Cache disque + reprise : une tuile déjà produite n'est **jamais** écrasée sans
   `--force` ; si ses entrées ont changé depuis, le message le signale.
 * Retries avec backoff exponentiel et jitter sur les erreurs transitoires.
@@ -159,7 +163,7 @@ voisines **déjà stylisées** — gauche, puis haut.
 * `--dry-run` écrit les prompts dans `styled/prompts/` sans appeler l'API.
 
 **Le prompt** est dans `prompts/stylize_v2.md`, découpé en sections
-(`base`, `water`, `ref02`, `left`, `top`). Les renvois aux images y sont des
+(`base`, `architecture`, `water`, `ref02`, `left`, `top`). Les renvois aux images y sont des
 variables (`{lines}`, `{sem}`, `{left}`…) et non des numéros écrits en dur : quand
 REF_02 s'ajoute, tout se renumérote automatiquement. C'est le seul écart au texte
 fourni, et il est couvert par les tests (`tests/test_prompt.py`).
@@ -219,7 +223,7 @@ test 1×2 et ~3,4 € pour la grille complète 6×4.
 ## Tests
 
 ```bash
-make test     # 35 tests
+make test     # 37 tests
 make check    # pyflakes
 ```
 

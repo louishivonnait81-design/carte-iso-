@@ -146,8 +146,14 @@ def _mime(path: Path) -> str:
 
 def generate_image(client, prompt: str, images: list[Path], *, model: str = DEFAULT_MODEL,
                    aspect_ratio: str = "1:1", image_size: str = "2K",
+                   temperature: float | None = None, seed: int | None = None,
                    retries: int = 4, base_delay: float = 4.0) -> ImageResult:
-    """Un appel image, avec reprise exponentielle sur erreur transitoire."""
+    """Un appel image, avec reprise exponentielle sur erreur transitoire.
+
+    `temperature` basse et `seed` fixe reduisent la variabilite d'une tuile a
+    l'autre : c'est le seul vrai levier de constance, et il n'existe pas dans
+    l'interface web.
+    """
     from google.genai import types
 
     contents: list = []
@@ -158,6 +164,8 @@ def generate_image(client, prompt: str, images: list[Path], *, model: str = DEFA
     config = types.GenerateContentConfig(
         response_modalities=["IMAGE"],
         image_config=types.ImageConfig(aspect_ratio=aspect_ratio, image_size=image_size),
+        temperature=temperature,
+        seed=seed,
     )
 
     last_error: Exception | None = None

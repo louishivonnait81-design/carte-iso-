@@ -1,6 +1,7 @@
 <!--
-Gabarit du prompt d'habillage. Les sections sont delimitees par
-`<!-- @section nom -->`. stylize.py assemble : base [+ water] [+ left] [+ top].
+Gabarit du prompt d'habillage. Chaque section commence par un marqueur HTML
+"@section" suivi de son nom, sur sa propre ligne (voir plus bas). stylize.py
+assemble : base + architecture [+ water] [+ ref02] [+ left] [+ top].
 
 Les references aux images sont des variables ({Ref01}, {lines}, {sem}, {left},
 {top}) et non des numeros ecrits en dur : l'ordre reel des images envoyees
@@ -36,6 +37,35 @@ Add only surface detail: façade windows with shutters and doors, small shopfron
 with awnings on ground floors, tiled roofs with chimneys, curbs, crosswalks and lane
 markings on streets, a few parked cars, plane trees and benches on green and white
 areas, lampposts, a café terrace with tables.
+
+<!-- @section architecture -->
+The town was built between 1400 and 1800 and nothing has been added since. There
+is no building later than 1800 anywhere in this drawing.
+
+CLOSED LIST OF BUILDING TYPES. Every single building belongs to one of these three
+types and to no other. There is no fourth type:
+  TYPE A — half-timbered house on the river: exposed timber frame, corner posts,
+    one sill beam and one or two diagonal braces per façade, upper floor clearly
+    overhanging on visible corbels, ground floor rising straight out of the water
+    on stone footings.
+  TYPE B — plastered town house: plain rendered façade, no visible frame or
+    coursing, a simple moulded string course between floors at most.
+  TYPE C — stone mansion (hôtel particulier): ashlar façade with quoins at the
+    corners, one round-arched carriage porch, slightly taller than its neighbours.
+
+RULES THAT APPLY TO EVERY BUILDING WITHOUT EXCEPTION:
+  - two or three storeys, never more, never a single-storey shed;
+  - the roof is pitched with a visible ridge, low slope, curved terracotta canal
+    tiles, and a génoise cornice of two stacked tile courses under the eaves;
+    no roof is flat, no roof is a terrace with a parapet;
+  - every window is rectangular, taller than wide, with two hinged wooden
+    shutters, and nothing else — no glazing bars, no reveals, no bay windows;
+  - chimneys are plain rendered or brick stacks on the ridge.
+
+NOTHING IN THIS DRAWING IS MODERN. No glass, no metal, no concrete, no steel
+railing, no flat roof, no garage door, no shopfront window, no solar panel, no
+air conditioner, no car park marking, no modern street furniture. If you are
+unsure how to draw something, copy the nearest building rather than inventing.
 
 <!-- @section water -->
 In {sem}, blue marks water: the river Agout and its mill races. Draw water as calm

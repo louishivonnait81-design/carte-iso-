@@ -54,7 +54,7 @@ def load_sections(path: Path) -> dict[str, str]:
             buf.append(line)
     if name:
         sections[name] = "\n".join(buf).strip()
-    missing = {"base", "left", "top"} - sections.keys()
+    missing = {"base", "architecture", "left", "top"} - sections.keys()
     if missing:
         raise SystemExit(f"Sections manquantes dans {path} : {sorted(missing)}")
     return sections
@@ -136,7 +136,7 @@ def build_job(tile: dict, tiles_dir: Path, out_dir: Path, sections: dict[str, st
             images.append(styled)
 
     water = water_mode == "on" or (water_mode == "auto" and has_water(sem))
-    parts = ["base"]
+    parts = ["base", "architecture"]
     if water and "water" in sections:
         parts.append("water")
     if use_ref02 and "ref02" in sections:
@@ -159,6 +159,10 @@ def main() -> int:
     p.add_argument("--model", default=DEFAULT_MODEL, help="modele image Gemini")
     p.add_argument("--image-size", default="2K", choices=["1K", "2K", "4K"])
     p.add_argument("--aspect-ratio", default="1:1")
+    p.add_argument("--temperature", type=float, default=0.35,
+                   help="plus bas = tuiles plus semblables entre elles")
+    p.add_argument("--seed", type=int, default=1789,
+                   help="graine fixe : meme entree, meme sortie")
     p.add_argument("--budget-eur", type=float, default=5.0,
                    help="plafond de depense cumulee, en euros")
     p.add_argument("--water", choices=["auto", "on", "off"], default="auto",
@@ -230,6 +234,7 @@ def main() -> int:
         budget.check(pricing.estimate_eur())
         result = generate_image(client, job.prompt, job.images, model=args.model,
                                 aspect_ratio=args.aspect_ratio, image_size=args.image_size,
+                                temperature=args.temperature, seed=args.seed,
                                 retries=args.retries)
         cost = pricing.cost_eur(result.usage)
         budget.record(name, cost, result.usage)
@@ -239,6 +244,7 @@ def main() -> int:
             "tile": name, "model": args.model, "cache_key": key,
             "roles": job.roles, "inputs": [str(p.relative_to(ROOT)) for p in job.images],
             "image_size": args.image_size, "aspect_ratio": args.aspect_ratio,
+            "temperature": args.temperature, "seed": args.seed,
             "input_tokens": result.usage.input_tokens,
             "output_tokens": result.usage.output_tokens,
             "cost_eur": round(cost, 4), "cumulative_eur": round(budget.spent_eur, 4),

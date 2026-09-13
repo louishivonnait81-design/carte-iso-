@@ -143,3 +143,19 @@ def test_cache_key_changes_with_inputs(tmp_path, monkeypatch):
     assert before != job.cache_key("m", "1:1", "4K")
     (tiles_dir / "tile_0_0.png").write_bytes(b"line modifiee")
     assert before != job.cache_key("m", "1:1", "2K")
+
+
+def test_section_set_is_exactly_the_expected_one():
+    """Le commentaire d'en-tete du gabarit ne doit pas etre pris pour une section."""
+    assert sorted(SECTIONS) == ["architecture", "base", "left", "ref02", "top", "water"]
+
+
+def test_architecture_section_is_always_included(tmp_path, monkeypatch):
+    tiles_dir, index = _fake_tiles(tmp_path, 1, 2)
+    monkeypatch.setattr(stylize, "REF01", tmp_path / "ref01.png")
+    stylize.REF01.write_bytes(b"ref")
+    job = stylize.build_job(index["tiles"][0], tiles_dir, tmp_path / "out",
+                            SECTIONS, use_ref02=False, water_mode="off")
+    assert "There is no fourth type" in job.prompt
+    assert "nothing has been added since" in job.prompt
+    assert "NOTHING IN THIS DRAWING IS MODERN" in job.prompt

@@ -26,19 +26,44 @@ poster scale:
 Reduced to 15% of its size, the whole plate must still read as WHITE with black
 outlines. No area may turn gray.
 
-The buildings must be recognisably Castres, NOT Paris:
-- two or three old half-timbered houses with a clearly overhanging upper floor
-  (encorbellement) built directly on the river, their ground floor rising out of
-  the water on stone footings, with no quay in front of them;
-- plastered façades with tall hinged wooden shutters, two or three storeys only;
-- low-pitched roofs of curved terracotta canal tiles with simple brick chimneys;
-- one 17th–18th century stone mansion (hôtel particulier) with a carriage porch,
-  a slightly taller ashlar façade and a low-pitched tiled roof;
-- a cut-stone quay with a low parapet, and one springing of a stone arch bridge.
+This is CASTRES, a small historic town in south-west France — NOT Paris.
 
-Do NOT draw: Haussmann apartment blocks, mansard or zinc roofs, Parisian
-wrought-iron balconies, slate roofs, glass towers, or any modern building.
-Use image 1 for the ink style only, never for the architecture.
+The town was built between 1400 and 1800 and nothing has been added since. There
+is no building later than 1800 anywhere in this drawing.
+
+CLOSED LIST OF BUILDING TYPES. Every single building belongs to one of these three
+types and to no other. There is no fourth type:
+  TYPE A — half-timbered house on the river: exposed timber frame, corner posts,
+    one sill beam and one or two diagonal braces per façade, upper floor clearly
+    overhanging on visible corbels, ground floor rising straight out of the water
+    on stone footings.
+  TYPE B — plastered town house: plain rendered façade, no visible frame or
+    coursing, a simple moulded string course between floors at most.
+  TYPE C — stone mansion (hôtel particulier): ashlar façade with quoins at the
+    corners, one round-arched carriage porch, slightly taller than its neighbours.
+
+RULES THAT APPLY TO EVERY BUILDING WITHOUT EXCEPTION:
+  - two or three storeys, never more, never a single-storey shed;
+  - the roof is pitched with a visible ridge, low slope, curved terracotta canal
+    tiles, and a génoise cornice of two stacked tile courses under the eaves;
+    no roof is flat, no roof is a terrace with a parapet;
+  - every window is rectangular, taller than wide, with two hinged wooden
+    shutters, and nothing else — no glazing bars, no reveals, no bay windows;
+  - chimneys are plain rendered or brick stacks on the ridge.
+
+NOTHING IN THIS DRAWING IS MODERN. No glass, no metal, no concrete, no steel
+railing, no flat roof, no garage door, no shopfront window, no solar panel, no
+air conditioner, no car park marking, no modern street furniture. If you are
+unsure how to draw something, copy the nearest building rather than inventing.
+
+Draw two of TYPE A on the river, one of TYPE B beside them, and one of TYPE C set
+back behind. Add a cut-stone quay with a low parapet and one springing of a stone
+arch bridge. Trees, if any, are isometric canopies seen from above at the same
+angle as the buildings, standing on no base plate.
+
+Never draw Haussmann apartment blocks, mansard or zinc roofs, Parisian
+wrought-iron balconies or slate roofs. Use image 1 for the ink style only, never
+for the architecture.
 
 Fill the image edge to edge, no border, margin, frame or vignette. Output square,
 2K resolution.
