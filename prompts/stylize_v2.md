@@ -46,6 +46,11 @@ ripple lines between stone quays, never as a building or a street.
 style: half-timbered houses on the river, plastered façades with shutters, curved
 terracotta roofs. Take the buildings from {ref02} and the ink style from {ref01}.
 
+Two things {ref02} gets wrong, do not copy them: draw trees as isometric canopies
+seen from above at the SAME angle as the buildings, standing on no base plate,
+never as flat front-view lollipops; and give every roof a visible pitch with a
+ridge — low-pitched, but never flat and never a terrace with a parapet.
+
 <!-- @section left -->
 {Left} is the finished tile directly to the LEFT of this one. Your drawing must
 continue it seamlessly: every street, building and line touching the left edge of

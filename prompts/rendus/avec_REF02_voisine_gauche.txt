@@ -34,3 +34,8 @@ Two things image 2 gets wrong, do not copy them: draw trees as isometric canopie
 seen from above at the SAME angle as the buildings, standing on no base plate,
 never as flat front-view lollipops; and give every roof a visible pitch with a
 ridge — low-pitched, but never flat and never a terrace with a parapet.
+
+Image 5 is the finished tile directly to the LEFT of this one. Your drawing must
+continue it seamlessly: every street, building and line touching the left edge of
+this tile must match image 5's right edge exactly, same line weight, same level
+of detail.
