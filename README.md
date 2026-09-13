@@ -35,7 +35,7 @@ Voir `assets/README.md`.
 
 ```bash
 make install                    # dépendances Python (3.11)
-make test                       # 28 tests, ni Blender ni réseau requis
+make test                       # 35 tests, ni Blender ni réseau requis
 export GEMINI_API_KEY=...       # mode API seulement — jamais dans le dépôt
 ```
 
@@ -164,6 +164,24 @@ variables (`{lines}`, `{sem}`, `{left}`…) et non des numéros écrits en dur :
 REF_02 s'ajoute, tout se renumérote automatiquement. C'est le seul écart au texte
 fourni, et il est couvert par les tests (`tests/test_prompt.py`).
 
+### Densité de trait — `scripts/ink_density.py`
+
+```bash
+make density        # ou : python scripts/ink_density.py assets/REF_02_castres.png
+```
+
+Le piège du style « ligne claire » n'est pas la quantité d'encre à taille réelle,
+c'est ce qu'elle devient à la réduction : une texture fine — chaque tuile d'un
+toit, chaque pierre d'un quai — ne disparaît pas en rétrécissant, elle s'agglomère
+en **gris**, ce que le cahier des charges interdit. L'outil réduit l'image à 15 %
+(l'ordre de grandeur d'une maison sur la carte finale : à 180 m pour 2048 px, une
+façade de 7 m ne fait que ~80 px) et mesure la part de pixels ni noirs ni blancs.
+Au-delà de 25 %, la référence est trop dense pour l'échelle visée.
+
+À passer sur REF_01 et REF_02 **avant** de s'en servir : une référence trop dense
+tire tout le rendu vers le gris, et fait exploser le nombre de chemins à la
+vectorisation.
+
 ### 3. `qa.py`
 
 * **Dérive géométrique** : Canny sur la tuile stylisée et sur le squelette, après
@@ -201,7 +219,7 @@ test 1×2 et ~3,4 € pour la grille complète 6×4.
 ## Tests
 
 ```bash
-make test     # 28 tests
+make test     # 35 tests
 make check    # pyflakes
 ```
 
@@ -209,7 +227,7 @@ Couvrent la projection lat/lon, l'orthonormalité et l'élévation du repère ca
 la jointivité des tuiles et le partage exact des coins entre voisines, l'ordre de
 rendu, l'assemblage et la renumérotation du prompt, et les métriques de QA
 (dérive détectée sur une géométrie décalée, raccord parfait sur une image coupée
-en deux), ainsi que le cycle export / import du mode manuel. Aucun test n'exige
+en deux), le cycle export / import du mode manuel et la mesure de densite. Aucun test n'exige
 Blender ni le réseau.
 
 ## Sécurité

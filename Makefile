@@ -13,7 +13,7 @@ QA      ?= qa_out
 OUT     ?= out
 BUDGET  ?= 5
 
-.PHONY: help install test check render render-test next status ref02 stylize stylize-dry qa seam assemble all clean
+.PHONY: help install test check density render render-test next status ref02 stylize stylize-dry qa seam assemble all clean
 
 help:
 	@echo "make install       installe les dependances Python"
@@ -26,6 +26,7 @@ help:
 	@echo "make stylize-dry   ecrit les prompts sans appeler l'API"
 	@echo "make stylize       habille les tuiles (plafond $(BUDGET) EUR)"
 	@echo "make qa            rapport de qualite dans $(QA)/report.html"
+	@echo "make density       verifie que les references restent blanches a la reduction"
 	@echo "make seam          apercu du raccord entre tile_0_0 et tile_0_1"
 	@echo "make assemble      mosaique PNG + SVG dans $(OUT)/"
 	@echo "make clean         efface les sorties (garde assets/)"
@@ -38,6 +39,9 @@ test:
 
 check:
 	$(PY) -m pyflakes render.py stylize.py qa.py assemble.py scripts/*.py
+
+density:
+	$(PY) scripts/ink_density.py assets/REF_01_style.png assets/REF_02_castres.png
 
 render:
 	$(PY) render.py --rows $(ROWS) --cols $(COLS) --tile $(TILE) --px $(PX) \
