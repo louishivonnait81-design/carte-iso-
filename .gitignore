@@ -1,0 +1,25 @@
+# Sorties de rendu et d'habillage
+tiles/*.png
+tiles/index.json
+styled/
+qa_out/
+out/
+assets/ref02_candidates/
+
+# Etat local
+**/.budget.json
+.cache/
+*.blend1
+*.blend2
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Ne jamais commiter de cle
+.env
+*.key
+manual/

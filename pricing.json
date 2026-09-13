@@ -1,0 +1,20 @@
+{
+  "_comment": "Tarifs Gemini image, en USD par million de tokens. NON VERIFIES aupres de la doc officielle : ai.google.dev et docs.cloud.google.com sont bloques par le proxy reseau de cet environnement. A confirmer avant tout gros volume. Le cout reel est calcule a partir des tokens rendus par l'API, pas d'une estimation forfaitaire.",
+  "source": "a confirmer sur https://ai.google.dev/gemini-api/docs/pricing",
+  "verified": false,
+  "eur_per_usd": 0.92,
+  "models": {
+    "gemini-3-pro-image-preview": {
+      "input_per_mtok_usd": 2.0,
+      "output_text_per_mtok_usd": 12.0,
+      "output_image_per_mtok_usd": 120.0,
+      "tokens_per_image_2k": 1120
+    },
+    "default": {
+      "input_per_mtok_usd": 2.0,
+      "output_text_per_mtok_usd": 12.0,
+      "output_image_per_mtok_usd": 120.0,
+      "tokens_per_image_2k": 1120
+    }
+  }
+}

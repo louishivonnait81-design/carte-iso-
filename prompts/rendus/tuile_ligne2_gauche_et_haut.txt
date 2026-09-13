@@ -1,0 +1,37 @@
+Image 1 is the style reference. Image 2 is a line drawing of a real city block in
+strict isometric projection. Image 3 is the same view with flat colors telling you
+what each surface is: light gray = building, dark gray = street or sidewalk,
+green = planted strip or vegetation, white = open ground, square or courtyard.
+
+Redraw image 2 in exactly the LINE STYLE of image 1: hand-inked cartoon, black ink on
+pure white, uniform line weight, no shading, hatching, gray or color, no text.
+
+ARCHITECTURE: this is Castres, a small historic town in south-west France — NOT
+Paris. Even simplified, buildings must look like Castres: old half-timbered houses
+with overhanging upper floors along the river, plastered façades with hinged
+shutters, low-pitched roofs with curved terracotta tiles, 17th–18th century stone
+mansions, a Gothic cathedral, stone quays and bridges. Do NOT draw Haussmann
+apartment blocks, mansard zinc roofs or Parisian wrought-iron balconies; use
+image 1 only for the ink style, never for the architecture.
+
+NON-NEGOTIABLE RULES: (1) Every structure stays exactly where it is — same
+footprint, same height, same angle. (2) EVERY light gray shape in image 3 must
+become a fully detailed building with windows, doors and a roof — no box may remain
+blank. (3) Never place a building on dark gray or white areas; streets stay streets,
+white areas stay open ground. (4) Fill the image edge to edge, no border, margin or
+vignette. (5) Output square, 2K resolution or higher.
+
+Add only surface detail: façade windows with shutters and doors, small shopfronts
+with awnings on ground floors, tiled roofs with chimneys, curbs, crosswalks and lane
+markings on streets, a few parked cars, plane trees and benches on green and white
+areas, lampposts, a café terrace with tables.
+
+Image 4 is the finished tile directly to the LEFT of this one. Your drawing must
+continue it seamlessly: every street, building and line touching the left edge of
+this tile must match image 4's right edge exactly, same line weight, same level
+of detail.
+
+Image 5 is the finished tile directly ABOVE this one. Your drawing must
+continue it seamlessly: every street, building and line touching the top edge of
+this tile must match image 5's bottom edge exactly, same line weight, same level
+of detail.

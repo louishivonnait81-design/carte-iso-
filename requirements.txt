@@ -1,0 +1,10 @@
+# Python 3.11
+google-genai>=1.0          # API Gemini image (types.ImageConfig : aspect_ratio, image_size)
+pillow>=10.0               # assemblage, vignettes, seuillage
+numpy>=1.26
+opencv-python-headless>=4.9  # Canny, dilatation (QA)
+vtracer>=0.6               # vectorisation ; repli possible sur le binaire potrace
+pytest>=8.0                # tests
+
+# Blender n'est PAS installe par pip ici : voir README.
+# Le module `bpy` (pip install bpy) est un repli si le binaire est indisponible.
