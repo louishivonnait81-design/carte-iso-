@@ -35,7 +35,7 @@ Voir `assets/README.md`.
 
 ```bash
 make install                    # dépendances Python (3.11)
-make test                       # 37 tests, ni Blender ni réseau requis
+make test                       # 38 tests, ni Blender ni réseau requis
 export GEMINI_API_KEY=...       # mode API seulement — jamais dans le dépôt
 ```
 
@@ -72,8 +72,13 @@ make qa && make seam && make assemble
 `manual.py export` crée un dossier par tuile contenant `prompt.txt`, un
 `LISEZMOI.txt` et les images à téléverser renommées `1_ref01.png`,
 `2_lines.png`, `3_sem.png`, `4_left.png`, `5_top.png`. **L'ordre est ce qui fait
-tenir le prompt** : le texte y renvoie par numéro. `import` vérifie au passage que
-l'image rendue est bien carrée — si Gemini a recadré, le raccord sera décalé.
+tenir le prompt** : le texte y renvoie par numéro. `import` **refuse** une image non carrée
+(`--allow-nonsquare` pour passer outre) : l'interface web ignore souvent la
+consigne « output square » et renvoie du 16:9, or une tuile non carrée ne
+correspond plus au squelette Blender — la géométrie dérive et tous les raccords
+sautent. En mode API, `--aspect-ratio 1:1` est un vrai paramètre du SDK, pas une
+consigne en langue naturelle : c'est le deuxième argument sérieux pour l'API,
+après `seed`.
 
 Faire les tuiles **une par une, dans l'ordre de lecture** : chacune a besoin de ses
 voisines déjà finies pour la continuité. `manual.py export --all` existe mais
@@ -223,7 +228,7 @@ test 1×2 et ~3,4 € pour la grille complète 6×4.
 ## Tests
 
 ```bash
-make test     # 37 tests
+make test     # 38 tests
 make check    # pyflakes
 ```
 

@@ -68,3 +68,22 @@ def test_export_then_import_then_next(tmp_path, monkeypatch):
     finally:
         if created:
             ref01.unlink()
+
+
+def test_nonsquare_import_is_refused(tmp_path):
+    """Une tuile non carree casse la correspondance avec le squelette Blender."""
+    paths = _setup(tmp_path)
+    wide = tmp_path / "paysage.png"
+    Image.new("RGB", (1024, 559), "white").save(wide)
+
+    cmd = [sys.executable, str(ROOT / "manual.py"), "--styled", str(paths["styled"]),
+           "import", "tile_0_0", str(wide)]
+    env = {"PATH": "/usr/bin:/bin", "PYTHONPATH": str(ROOT)}
+    refused = subprocess.run(cmd, capture_output=True, text=True, env=env)
+    assert refused.returncode != 0
+    assert "NON CARREE" in refused.stderr
+    assert not (paths["styled"] / "tile_0_0.png").exists()
+
+    forced = subprocess.run(cmd + ["--allow-nonsquare"], capture_output=True, text=True, env=env)
+    assert forced.returncode == 0
+    assert (paths["styled"] / "tile_0_0.png").exists()

@@ -46,7 +46,12 @@ NOTICE = """Tuile {name}
 
 2. Coller le contenu de prompt.txt.
 
-3. Telecharger l'image produite, puis :
+3. VERIFIER QUE L'IMAGE RENDUE EST CARREE. L'interface web ignore souvent la
+   consigne "output square" et renvoie du 16:9 : une tuile non carree ne
+   correspond plus au squelette Blender, la geometrie derive et les raccords
+   sautent. Si elle ne l'est pas, regenerer en imposant le format 1:1.
+
+4. Telecharger l'image produite, puis :
      python manual.py import {name} <fichier telecharge>
 
 L'ordre des images est ce qui fait tenir le prompt : il y est fait reference par
@@ -126,14 +131,23 @@ def cmd_import(args) -> int:
     if dest.exists() and not args.force:
         sys.exit(f"{dest} existe deja : --force pour remplacer.")
 
-    args.styled.mkdir(parents=True, exist_ok=True)
     with Image.open(src) as img:
         img = img.convert("RGB")
-        if img.width != img.height:
-            print(f"[import] ATTENTION : image non carree ({img.width}x{img.height}). "
-                  "Gemini a du recadrer — le raccord risque d'etre decale.")
+        size = (img.width, img.height)
+        if img.width != img.height and not args.allow_nonsquare:
+            sys.exit(
+                f"Image NON CARREE : {img.width}x{img.height}.\n"
+                "L'interface web ignore souvent la consigne 'output square'. Une tuile\n"
+                "non carree ne correspond plus au squelette Blender : la geometrie derive\n"
+                "et tous les raccords sautent. Regenerer en demandant explicitement un\n"
+                "format 1:1 dans l'interface, ou passer par l'API (--aspect-ratio 1:1).\n"
+                "Pour passer outre en connaissance de cause : --allow-nonsquare."
+            )
+        args.styled.mkdir(parents=True, exist_ok=True)
         img.save(dest, "PNG")
-    print(f"[import] {src.name} -> {dest}  {img.width}x{img.height}")
+    if size[0] != size[1]:
+        print(f"[import] ATTENTION : tuile non carree {size[0]}x{size[1]} acceptee de force.")
+    print(f"[import] {src.name} -> {dest}  {size[0]}x{size[1]}")
     return 0
 
 
@@ -166,6 +180,8 @@ def main() -> int:
     imp = sub.add_parser("import", help="reimporter une image produite par Gemini")
     imp.add_argument("tile")
     imp.add_argument("file")
+    imp.add_argument("--allow-nonsquare", action="store_true",
+                     help="accepter une tuile non carree (casse la geometrie)")
     sub.add_parser("status", help="avancement")
 
     args = p.parse_args()
