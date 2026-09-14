@@ -37,6 +37,17 @@ ROAD_WIDTH = {          # largeur de chaussee par classe, en metres
     "track": 3.0, "primary_link": 7.0, "secondary_link": 6.0, "tertiary_link": 6.0,
 }
 LEVEL_HEIGHT = 3.2      # hauteur d'un niveau, en metres
+# Hauteurs par type quand OSM ne donne ni height ni building:levels (le cas de
+# 3 738 batiments sur 3 763 ici). Une cathedrale a 8 m, c'est une grange.
+HEIGHT_BY_KIND = {
+    "cathedral": 24.0, "church": 16.0, "chapel": 9.0, "temple": 12.0,
+    "townhall": 13.0, "public": 12.0, "civic": 12.0, "government": 12.0,
+    "school": 10.0, "university": 12.0, "hospital": 14.0, "hotel": 12.0,
+    "apartments": 12.0, "commercial": 10.0, "retail": 8.0, "office": 12.0,
+    "industrial": 7.0, "warehouse": 7.0, "house": 7.0, "detached": 7.0,
+    "terrace": 8.0, "shed": 3.0, "garage": 3.0, "garages": 3.0, "hut": 3.0,
+    "roof": 3.0, "kiosk": 3.0, "greenhouse": 3.0,
+}
 DEFAULT_LEVELS = 2.5    # vieux Castres : R+2 dominant, quelques R+1
 ROOF_RISE = 8.0         # hauteur maximale de toiture au-dessus du dernier niveau
 WATER_Z = 0.01          # a plat, juste au-dessus du sol blanc pour rester visible
@@ -78,13 +89,16 @@ def building_height(tags: dict) -> float:
                 return float(str(tags[key]).replace("m", "").strip())
             except ValueError:
                 pass
+    kind = tags.get("building", "yes")
+    if kind in HEIGHT_BY_KIND and "building:levels" not in tags:
+        return HEIGHT_BY_KIND[kind]
     levels = DEFAULT_LEVELS
     if "building:levels" in tags:
         try:
             levels = float(tags["building:levels"])
         except ValueError:
             pass
-    if tags.get("building") in {"shed", "garage", "garages", "hut", "roof"}:
+    if kind in {"shed", "garage", "garages", "hut", "roof"}:
         levels = min(levels, 1.0)
     return levels * LEVEL_HEIGHT
 
