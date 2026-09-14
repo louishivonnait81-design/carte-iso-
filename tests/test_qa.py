@@ -102,3 +102,33 @@ def test_seam_penalises_density_jump():
     busy[100:104, :] = 0
     assert qa.seam_score(plain, busy, "vertical", band=64).score < \
            qa.seam_score(plain, plain, "vertical", band=64).score
+
+
+def test_zoom_diagnosis_recognises_a_cropped_enlargement(tmp_path):
+    """Un dessin fidele mais zoome obtient 0 a l'echelle 1 : sans ce diagnostic,
+    un cadrage rate se lit comme une invention."""
+    from PIL import Image
+    skeleton = blocks()
+    path = tmp_path / "skeleton.png"
+    Image.fromarray(skeleton).save(path)
+
+    # on simule un modele qui a dessine fidelement le quart haut-gauche, agrandi
+    quarter = Image.fromarray(skeleton).crop((0, 0, SIZE // 2, SIZE // 2))
+    zoomed = np.asarray(quarter.resize((SIZE, SIZE), Image.LANCZOS))
+
+    assert qa.drift_score(skeleton, zoomed, 4).score < 0.3
+    best_zoom, best_score = qa.zoom_diagnosis(path, zoomed, 4, zooms=(1.4, 2.0, 2.8))
+    assert best_zoom == 2.0
+    assert best_score > 0.8
+
+
+def test_zoom_diagnosis_leaves_a_correctly_framed_tile_alone():
+    """Une tuile bien cadree ne doit pas etre diagnostiquee comme zoomee."""
+    import tempfile
+    from PIL import Image
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "skeleton.png"
+        Image.fromarray(blocks()).save(path)
+        best_zoom, best_score = qa.zoom_diagnosis(path, blocks(detail=True), 4,
+                                                  zooms=(1.4, 2.0, 2.8))
+        assert best_score < qa.drift_score(blocks(), blocks(detail=True), 4).score

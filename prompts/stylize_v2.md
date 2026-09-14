@@ -34,6 +34,15 @@ blank. (3) Never place a building on dark gray or white areas; streets stay stre
 white areas stay open ground. (4) Fill the image edge to edge, no border, margin or
 vignette. (5) Output square, 2K resolution or higher.
 
+FRAMING — as important as the rest. Your drawing covers EXACTLY the same ground as
+{lines}, corner to corner. The four corners of your image are the four corners of
+{lines}, and every building visible in {lines} is visible in yours, at the same
+fraction of the frame. DO NOT ZOOM IN. Do not crop, do not re-centre, do not enlarge
+one block to fill the page. {lines} is a small piece of a large map, seen from far
+away: buildings are meant to look small, and a wide empty area — a river, a square —
+stays wide and empty. The style references are close-up plates drawn at a much
+larger scale; copy their ink, never their zoom.
+
 Add only surface detail: façade windows with shutters and doors, small shopfronts
 with awnings on ground floors, tiled roofs with chimneys, curbs, crosswalks and lane
 markings on streets, a few parked cars, plane trees and benches on green and white

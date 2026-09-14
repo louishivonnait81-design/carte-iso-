@@ -67,7 +67,7 @@ les fenêtres. REF_01 elle-même est vue plus près de 45° que de 30°.
 
 ```bash
 make install                    # dépendances Python (3.11)
-make test                       # 61 tests, ni Blender ni réseau requis
+make test                       # 67 tests, ni Blender ni réseau requis
 export GEMINI_API_KEY=...       # mode API seulement — jamais dans le dépôt
 ```
 
@@ -333,7 +333,7 @@ test 1×2 et ~3,4 € pour la grille complète 6×4.
 ## Tests
 
 ```bash
-make test     # 61 tests
+make test     # 67 tests
 make check    # pyflakes
 ```
 

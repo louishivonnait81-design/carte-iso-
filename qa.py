@@ -104,6 +104,33 @@ def drift_score(skeleton: np.ndarray, styled: np.ndarray, tolerance_px: int) -> 
                  round(max(0.0, score), 4), round(precision, 4))
 
 
+def zoom_diagnosis(skeleton_path: Path, styled: np.ndarray, tolerance_px: int,
+                   zooms=(1.4, 2.0, 2.8, 4.0, 5.0)) -> tuple[float, float]:
+    """Le dessin serait-il un zoom sur une partie de la tuile ?
+
+    Un modele a qui l'on donne un squelette clairsemé et des references en gros
+    plan a tendance a zoomer pour "remplir le cadre" : il dessine fidelement un
+    quart de la tuile, agrandi. Le score a l'echelle 1 s'effondre alors a zero,
+    ce qui se lit comme une invention alors que c'est un cadrage. Mesure sur
+    tile_1_5 : 0,021 a l'echelle 1, 0,703 a 4x.
+    """
+    size = styled.shape[0]
+    with Image.open(skeleton_path) as img:
+        full = img.convert("L")
+        best = (1.0, 0.0)
+        for zoom in zooms:
+            side = int(full.width / zoom)
+            step = max(1, (full.width - side) // 4)
+            for ox in range(0, full.width - side + 1, step):
+                for oy in range(0, full.height - side + 1, step):
+                    crop = np.asarray(full.crop((ox, oy, ox + side, oy + side))
+                                      .resize((size, size), Image.LANCZOS))
+                    score = drift_score(crop, styled, tolerance_px).score
+                    if score > best[1]:
+                        best = (zoom, score)
+    return best
+
+
 # --------------------------------------------------------------------------
 # Raccords
 # --------------------------------------------------------------------------
@@ -208,6 +235,8 @@ def main() -> int:
     p.add_argument("--min-drift", type=float, default=0.50,
                    help="score de derive minimal (rappel ramene au hasard)")
     p.add_argument("--min-seam", type=float, default=0.60, help="seuil de raccord acceptable")
+    p.add_argument("--no-zoom-check", action="store_true",
+                   help="ne pas chercher si une tuile ratee est en fait un zoom")
     args = p.parse_args()
 
     index = json.loads((args.tiles / "index.json").read_text(encoding="utf-8"))
@@ -219,7 +248,7 @@ def main() -> int:
         raise SystemExit(f"Aucune tuile stylisee dans {args.styled}.")
     print(f"[qa] {len(present)}/{len(styled_paths)} tuiles stylisees trouvees")
 
-    drifts, cards = [], []
+    drifts, cards, zoom_notes = [], [], {}
     for name, path in present.items():
         skeleton = load_gray(args.tiles / f"{name}.png", args.work_size)
         styled = load_gray(path, args.work_size)
@@ -227,8 +256,16 @@ def main() -> int:
         d = Drift(name, d.recall, d.chance, d.score, d.precision)
         drifts.append(d)
         cards.append((f"{name}  score {d.score:.2f}", thumb_b64(path)))
-        print(f"[qa] {name}: rappel {d.recall:.3f} (hasard {d.chance:.3f}) "
-              f"-> score {d.score:.3f}")
+        line = (f"[qa] {name}: rappel {d.recall:.3f} (hasard {d.chance:.3f}) "
+                f"-> score {d.score:.3f}")
+        if d.score < args.min_drift and not args.no_zoom_check:
+            zoom, zoomed = zoom_diagnosis(args.tiles / f"{name}.png", styled, args.tolerance)
+            if zoomed > d.score + 0.25:
+                line += (f"\n       CADRAGE : le dessin correspond a un zoom {zoom:.1f}x "
+                         f"sur une partie de la tuile (score {zoomed:.3f} a cette echelle). "
+                         f"La geometrie est suivie, le cadre ne l'est pas.")
+                zoom_notes[name] = (zoom, zoomed)
+        print(line)
 
     seams = []
     by_name = {t["name"]: t for t in index["tiles"]}
@@ -258,6 +295,7 @@ def main() -> int:
         "drift": [asdict(d) for d in drifts],
         "seams": [asdict(s) for s in seams],
         "regenerate": redo,
+        "zoomed": {k: {"zoom": v[0], "score_at_zoom": v[1]} for k, v in zoom_notes.items()},
     }, indent=2), encoding="utf-8")
 
     print(f"[qa] rapport : {report}")
