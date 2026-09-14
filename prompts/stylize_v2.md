@@ -16,6 +16,10 @@ strict isometric projection. {Sem} is the same view with flat colors telling you
 what each surface is: light gray = building, dark gray = street or sidewalk,
 green = planted strip or vegetation, white = open ground, square or courtyard.
 
+In {lines} the line weight carries meaning: THICK lines are the outlines of
+buildings and other solid masses, THIN lines are secondary detail such as roof
+ridges and hips. Read the thick lines as the shapes that must be respected.
+
 Redraw {lines} in exactly the LINE STYLE of {ref01}: hand-inked cartoon, black ink on
 pure white, uniform line weight, no shading, hatching, gray or color, no text.
 
@@ -103,7 +107,8 @@ Give every listed shop the shopfront described for it, and make each one clearly
 DIFFERENT from its neighbours at a glance — a passer-by should be able to tell the
 baker from the butcher without reading anything. Signs, awnings and hanging brackets
 may carry a drawn emblem (a pretzel, a boot, a pair of scissors) but NEVER a letter,
-a word or a number, here or anywhere else in the image.
+a word or a number, here or anywhere else in the image. The names above are given
+to you so you know WHAT each shop sells — do not write any of them on the drawing.
 
 This list tells you WHAT stands here. It never tells you WHERE, HOW BIG or HOW MANY:
 those come from {lines} and from {lines} alone. Do not compose a square, a street or

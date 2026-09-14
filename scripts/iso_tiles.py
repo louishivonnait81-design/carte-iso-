@@ -36,6 +36,10 @@ from geo import SEMANTIC_LINEAR, TileGrid  # noqa: E402
 # equivalent sRGB : c'est ce dernier que relisent stylize.py et qa.py.
 SEMANTIC_COLORS = SEMANTIC_LINEAR
 
+# Rapport d'epaisseur entre le trait de detail (faitages, aretiers) et celui des
+# silhouettes de batiment.
+DETAIL_RATIO = 0.45
+
 # Regles de classement par defaut, appliquees dans cet ordre. Chaque mot-cle est
 # cherche dans le nom de l'objet, le nom de ses collections et ses proprietes
 # personnalisees (Blosm y recopie les tags OSM).
@@ -264,23 +268,31 @@ def setup_line_pass(scene: bpy.types.Scene, thickness: float, samples: int,
     fs.crease_angle = math.radians(160.0)
     while fs.linesets:
         fs.linesets.remove(fs.linesets[0])
-    lineset = fs.linesets.new("ISO_LINES")
-    lineset.select_silhouette = True
-    lineset.select_border = True
-    lineset.select_crease = True
-    lineset.select_edge_mark = True
-    lineset.select_contour = True
-    lineset.select_external_contour = True
-    lineset.select_material_boundary = False
-    lineset.select_ridge_valley = False
-    lineset.select_suggestive_contour = False
 
-    style = lineset.linestyle
-    style.color = (0.0, 0.0, 0.0)
-    style.thickness = thickness
-    style.thickness_position = "CENTER"
-    style.caps = "ROUND"
-    style.use_chaining = True
+    # Deux jeux de lignes plutot qu'un seul, pour donner une hierarchie au
+    # squelette : un trait uniforme met une arete de faitage au meme rang qu'une
+    # silhouette de batiment, et le styliseur n'a aucun moyen de distinguer une
+    # masse d'un detail. Les silhouettes sortent donc plus epaisses.
+    def make_lineset(name: str, width: float, **flags):
+        lineset = fs.linesets.new(name)
+        for key in ("select_silhouette", "select_border", "select_crease",
+                    "select_edge_mark", "select_contour", "select_external_contour",
+                    "select_material_boundary", "select_ridge_valley",
+                    "select_suggestive_contour"):
+            setattr(lineset, key, flags.get(key, False))
+        style = lineset.linestyle
+        style.color = (0.0, 0.0, 0.0)
+        style.thickness = width
+        style.thickness_position = "CENTER"
+        style.caps = "ROUND"
+        style.use_chaining = True
+        return lineset
+
+    make_lineset("ISO_DETAIL", thickness * DETAIL_RATIO,
+                 select_crease=True, select_edge_mark=True)
+    make_lineset("ISO_MASSES", thickness,
+                 select_silhouette=True, select_border=True,
+                 select_contour=True, select_external_contour=True)
 
 
 def setup_semantic_pass(scene: bpy.types.Scene) -> None:
@@ -329,7 +341,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument("--out", type=Path, default=Path("tiles"), help="dossier de sortie")
     p.add_argument("--elevation", type=float, default=45.0, help="elevation camera, degres")
     p.add_argument("--azimuth", type=float, default=45.0, help="azimut camera, degres")
-    p.add_argument("--line-thickness", type=float, default=2.0, help="epaisseur Freestyle, px")
+    p.add_argument("--line-thickness", type=float, default=2.6,
+                   help="epaisseur des silhouettes, px ; le detail vaut 45 % de cela")
     p.add_argument("--samples", type=int, default=8, help="echantillons de la passe lignes")
     p.add_argument("--line-engine", choices=["cycles", "eevee"], default="cycles",
                    help="moteur de la passe lignes")
