@@ -171,6 +171,14 @@ blender -b assets/castres.blend -P scripts/iso_tiles.py -- \
   tuile en lat/lon).
 * Reprend là où il s'est arrêté ; `--force` pour re-rendre.
 
+**Le sol a une épaisseur.** Freestyle ne trace aucun bord sur une nappe posée à
+plat : les esplanades et les trottoirs ressortaient blancs, et l'on ne voyait pas
+où s'arrêtait un bâtiment. Mesuré sur la place Jean Jaurès, **47,6 % de la tuile en
+sol ouvert pour 0,79 % du trait**, contre 5,58 % sur les bâtiments. Plutôt que de
+forcer Freestyle, les surfaces piétonnes sont extrudées de 16 cm — une bordure de
+trottoir *est* une marche, et la silhouette apparaît d'elle-même. Le trait au sol
+passe à 2,29 %.
+
 **Les arbres ne sont pas dans le dessin au trait** (`--trees sem`, défaut). Leurs
 icosphères sortaient en cercles nus, et un cercle nu est une mauvaise consigne : le
 styliseur les recopiait tels quels, ronds vides sans feuillage. Masqués de la passe

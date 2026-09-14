@@ -52,6 +52,12 @@ HEIGHT_BY_KIND = {
 DEFAULT_LEVELS = 2.5    # vieux Castres : R+2 dominant, quelques R+1
 ROOF_RISE = 8.0         # hauteur maximale de toiture au-dessus du dernier niveau
 WATER_Z = 0.01          # a plat, juste au-dessus du sol blanc pour rester visible
+# Hauteur de bordure. Les surfaces pietonnes sont des dalles, pas des nappes :
+# Freestyle ne sort aucun trait sur une nappe posee a plat, et le sol restait
+# blanc — 47,6 % de la place Jean Jaures pour 0,79 % de trait. Une bordure de
+# trottoir est une marche : en lui donnant son epaisseur reelle, la silhouette
+# apparait d'elle-meme et l'on voit enfin ou s'arrete un batiment.
+KERB_HEIGHT = 0.16
 BRIDGE_Z = 1.0
 TREE_RADIUS, TREE_HEIGHT = 3.0, 5.5
 
@@ -367,7 +373,8 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int,
             # sur une empreinte OSM irreguliere, la rentree du dessus produit des
             # pointes et des quadrilateres gauches que Freestyle couvre de
             # diagonales. Une boite propre vaut mieux qu'un toit faux.
-            if roof == "hip" and top_faces and not holes and is_boxy(outer, box_fit_2d):
+            if (roof == "hip" and top_faces and not holes and surface is None
+                    and is_boxy(outer, box_fit_2d)):
                 bmesh.ops.dissolve_edges(bm, edges=[e for e in bm.edges
                                                     if all(f in top_faces for f in e.link_faces)
                                                     and len(e.link_faces) == 2],
@@ -405,6 +412,8 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int,
         spline = curve.splines.new("POLY")
         spline.points.add(len(pts) - 1)
         z = BRIDGE_Z if tags.get("bridge") in {"yes", "viaduct"} else 0.0
+        if name.startswith("ground."):
+            z += KERB_HEIGHT          # une ruelle pietonne est au niveau du trottoir
         for p, (x, y) in zip(spline.points, pts):
             p.co = (x, y, z, 1.0)
         obj = bpy.data.objects.new(name, curve)
@@ -448,8 +457,8 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int,
                             tags, surface="street")
                 counts["streets"] += 1
             elif cat == "open_ground":
-                add_polygon(f"ground.{wid}", collections["open_ground"], [ring], 0.03, 0.0,
-                            tags, surface="open_ground")
+                add_polygon(f"ground.{wid}", collections["open_ground"], [ring], 0.0,
+                            KERB_HEIGHT, tags, surface="open_ground")
                 counts["open_ground"] += 1
 
     # --- multipolygones (batiments a cour, rives de l'Agout, parcs) ---
@@ -482,8 +491,8 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int,
                             tags, surface="street")
                 counts["streets"] += 1
             elif cat == "open_ground":
-                add_polygon(f"ground.{rid}", collections["open_ground"], rings, 0.03, 0.0,
-                            tags, surface="open_ground")
+                add_polygon(f"ground.{rid}", collections["open_ground"], rings, 0.0,
+                            KERB_HEIGHT, tags, surface="open_ground")
                 counts["open_ground"] += 1
 
     # --- arbres isoles ---
