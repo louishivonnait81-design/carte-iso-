@@ -1,7 +1,7 @@
 <!--
 Gabarit du prompt d'habillage. Chaque section commence par un marqueur HTML
 "@section" suivi de son nom, sur sa propre ligne (voir plus bas). stylize.py
-assemble : base + architecture [+ water] [+ ref02] [+ left] [+ top].
+assemble : base + architecture [+ notes] [+ water] [+ ref02] [+ left] [+ top].
 
 Les references aux images sont des variables ({Ref01}, {lines}, {sem}, {left},
 {top}) et non des numeros ecrits en dur : l'ordre reel des images envoyees
@@ -75,6 +75,14 @@ NOTHING IN THIS DRAWING IS MODERN. No glass, no metal, no concrete, no steel
 railing, no flat roof, no garage door, no shopfront window, no solar panel, no
 air conditioner, no car park marking, no modern street furniture. If you are
 unsure how to draw something, copy the nearest building rather than inventing.
+
+<!-- @section notes -->
+WHAT IS REALLY HERE. This tile shows a real part of the old town of Castres
+(Tarn, France). Use what you know of these real places and draw them as they
+actually look, each at its position in {lines}:
+{notes_list}
+These names only tell you what to draw — a bakery gets a bakery shopfront, a café
+gets a terrace, a square gets its trees. Do not letter any name or text anywhere.
 
 <!-- @section water -->
 In {sem}, blue marks water: the river Agout and its mill races. Draw water as calm

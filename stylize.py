@@ -111,8 +111,16 @@ class Job:
         return h.hexdigest()
 
 
+def load_notes(tiles_dir: Path) -> dict[str, list[dict]]:
+    """tiles/notes.json, produit par scripts/tile_notes.py (facultatif)."""
+    path = tiles_dir / "notes.json"
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def build_job(tile: dict, tiles_dir: Path, out_dir: Path, sections: dict[str, str],
-              use_ref02: bool, water_mode: str) -> Job:
+              use_ref02: bool, water_mode: str, notes: dict[str, list[dict]] | None = None) -> Job:
     line = tiles_dir / tile["line"]
     sem = tiles_dir / tile["semantic"]
     for path in (line, sem):
@@ -137,14 +145,21 @@ def build_job(tile: dict, tiles_dir: Path, out_dir: Path, sections: dict[str, st
 
     water = water_mode == "on" or (water_mode == "auto" and has_water(sem))
     parts = ["base", "architecture"]
+    entries = (notes or {}).get(tile["name"], [])
+    if entries and "notes" in sections:
+        parts.append("notes")
     if water and "water" in sections:
         parts.append("water")
     if use_ref02 and "ref02" in sections:
         parts.append("ref02")
     parts += [r for r in ("left", "top") if r in roles]
 
+    filled = dict(sections)
+    if entries and "notes" in sections:
+        from tile_notes import format_notes
+        filled["notes"] = sections["notes"].replace("{notes_list}", format_notes(entries))
     return Job(name=tile["name"], roles=roles, images=images,
-               prompt=render_prompt(sections, roles, parts))
+               prompt=render_prompt(filled, roles, parts))
 
 
 # --------------------------------------------------------------------------
@@ -190,6 +205,10 @@ def main() -> int:
         sys.exit(f"--ref02 on mais {REF02} est absent.")
 
     sections = load_sections(PROMPT)
+    notes = load_notes(args.tiles)
+    if not notes:
+        print("[notes] tiles/notes.json absent : lancer scripts/tile_notes.py pour "
+              "nommer les lieux de chaque tuile dans le prompt.")
     args.out.mkdir(parents=True, exist_ok=True)
 
     wanted = set(args.only.split(",")) if args.only else None
@@ -211,7 +230,7 @@ def main() -> int:
     for name in order:
         out_png = args.out / f"{name}.png"
         meta_path = args.out / f"{name}.json"
-        job = build_job(tiles[name], args.tiles, args.out, sections, use_ref02, args.water)
+        job = build_job(tiles[name], args.tiles, args.out, sections, use_ref02, args.water, notes)
         key = job.cache_key(args.model, args.aspect_ratio, args.image_size)
 
         if out_png.exists() and not args.force:

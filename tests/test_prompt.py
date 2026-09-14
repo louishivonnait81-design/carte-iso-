@@ -147,7 +147,7 @@ def test_cache_key_changes_with_inputs(tmp_path, monkeypatch):
 
 def test_section_set_is_exactly_the_expected_one():
     """Le commentaire d'en-tete du gabarit ne doit pas etre pris pour une section."""
-    assert sorted(SECTIONS) == ["architecture", "base", "left", "ref02", "top", "water"]
+    assert sorted(SECTIONS) == ["architecture", "base", "left", "notes", "ref02", "top", "water"]
 
 
 def test_architecture_section_is_always_included(tmp_path, monkeypatch):
@@ -163,3 +163,23 @@ def test_architecture_section_is_always_included(tmp_path, monkeypatch):
     # les renvois de la section architecture doivent etre resolus eux aussi
     assert "the river and its bridges only where image 3 shows blue" in job.prompt
     assert "Gothic cathedral" not in job.prompt
+
+
+def test_notes_section_names_real_places(tmp_path, monkeypatch):
+    tiles_dir, index = _fake_tiles(tmp_path, 1, 2)
+    monkeypatch.setattr(stylize, "REF01", tmp_path / "ref01.png")
+    stylize.REF01.write_bytes(b"ref")
+    notes = {"tile_0_0": [
+        {"name": "Cathédrale Saint-Benoît", "kind": "church", "position": "centre",
+         "description": "BAROQUE, built 1678-1718"},
+        {"name": "Rue Vieille Halle", "kind": "street", "position": "bottom-left"}]}
+    with_notes = stylize.build_job(index["tiles"][0], tiles_dir, tmp_path / "out",
+                                   SECTIONS, use_ref02=False, water_mode="off", notes=notes)
+    without = stylize.build_job(index["tiles"][1], tiles_dir, tmp_path / "out",
+                                SECTIONS, use_ref02=False, water_mode="off", notes=notes)
+    assert "WHAT IS REALLY HERE" in with_notes.prompt
+    assert "- Cathédrale Saint-Benoît (church, centre of this tile): BAROQUE" in with_notes.prompt
+    assert "- Rue Vieille Halle (street, bottom-left of this tile)" in with_notes.prompt
+    assert "at its position in image 2" in with_notes.prompt
+    assert "{" not in with_notes.prompt
+    assert "WHAT IS REALLY HERE" not in without.prompt   # tuile sans lieu nomme

@@ -68,7 +68,8 @@ def load_index(tiles: Path) -> dict:
 
 def export_tile(tile: dict, tiles: Path, styled: Path, out: Path,
                 sections: dict, use_ref02: bool, water: str, force: bool) -> Path:
-    job = stylize.build_job(tile, tiles, styled, sections, use_ref02, water)
+    job = stylize.build_job(tile, tiles, styled, sections, use_ref02, water,
+                            stylize.load_notes(tiles))
     folder = out / tile["name"]
     if folder.exists():
         if not force:

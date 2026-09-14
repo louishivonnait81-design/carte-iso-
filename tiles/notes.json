@@ -1,0 +1,1922 @@
+{
+  "tile_2_4": [
+    {
+      "name": "Pont Neuf",
+      "kind": "bridge",
+      "position": "bottom",
+      "priority": 0,
+      "description": "stone arch bridge over the Agout with round arches and stone parapets."
+    },
+    {
+      "name": "Place Jean Jaurès",
+      "kind": "square",
+      "position": "top",
+      "priority": 0,
+      "description": "the large rectangular 18th-century main square: uniform classical façades with shops and café terraces on the ground floor, rows of plane trees, the statue of Jean Jaurès on a pedestal near the centre, a few market stalls."
+    },
+    {
+      "name": "L'Agoût",
+      "kind": "river",
+      "position": "centre",
+      "priority": 1
+    },
+    {
+      "name": "Rue Alquier Bouffard",
+      "kind": "pedestrian street",
+      "position": "left",
+      "priority": 3
+    },
+    {
+      "name": "Quai Tourcaudière",
+      "kind": "street",
+      "position": "top-right",
+      "priority": 3
+    },
+    {
+      "name": "Quai des Jacobins",
+      "kind": "street",
+      "position": "top",
+      "priority": 3
+    },
+    {
+      "name": "Rue Milhau Ducommun",
+      "kind": "street",
+      "position": "bottom-right",
+      "priority": 3
+    },
+    {
+      "name": "Rue Villegoudou",
+      "kind": "street",
+      "position": "left",
+      "priority": 3
+    },
+    {
+      "name": "Rue d'Empare",
+      "kind": "street",
+      "position": "bottom-right",
+      "priority": 3
+    },
+    {
+      "name": "Rue de la Libération",
+      "kind": "street",
+      "position": "left",
+      "priority": 3
+    },
+    {
+      "name": "Groseilles et Petits-Pois",
+      "kind": "florist",
+      "position": "bottom",
+      "priority": 4
+    },
+    {
+      "name": "L'Europe",
+      "kind": "restaurant",
+      "position": "top",
+      "priority": 4
+    },
+    {
+      "name": "Le Médiéval",
+      "kind": "restaurant",
+      "position": "bottom-right",
+      "priority": 4
+    },
+    {
+      "name": "Armand Thiery",
+      "kind": "clothes shop",
+      "position": "top-left",
+      "priority": 5
+    },
+    {
+      "name": "Germain",
+      "kind": "jeweller",
+      "position": "top-left",
+      "priority": 5
+    },
+    {
+      "name": "Julien d'Orcel",
+      "kind": "jeweller",
+      "position": "top-right",
+      "priority": 5
+    },
+    {
+      "name": "Jeff de Bruges",
+      "kind": "shop",
+      "position": "bottom-right",
+      "priority": 6
+    },
+    {
+      "name": "La Droguerie - Arnaud Nègre",
+      "kind": "shop",
+      "position": "left",
+      "priority": 6
+    }
+  ],
+  "tile_0_3": [
+    {
+      "name": "Place Jean Jaurès",
+      "kind": "square",
+      "position": "bottom-right",
+      "priority": 0,
+      "description": "the large rectangular 18th-century main square: uniform classical façades with shops and café terraces on the ground floor, rows of plane trees, the statue of Jean Jaurès on a pedestal near the centre, a few market stalls."
+    },
+    {
+      "name": "La Fontaine des Angelots",
+      "kind": "fountain",
+      "position": "bottom-right",
+      "priority": 1
+    },
+    {
+      "name": "Square Gustave Flaubert",
+      "kind": "square",
+      "position": "top-left",
+      "priority": 1
+    },
+    {
+      "name": "Passage Henri IV",
+      "kind": "pedestrian street",
+      "position": "top-right",
+      "priority": 3
+    },
+    {
+      "name": "Rue Victor Hugo",
+      "kind": "pedestrian street",
+      "position": "bottom-left",
+      "priority": 3
+    },
+    {
+      "name": "Rue Frédéric Thomas",
+      "kind": "street",
+      "position": "top-left",
+      "priority": 3
+    },
+    {
+      "name": "Rue Henri IV",
+      "kind": "street",
+      "position": "bottom",
+      "priority": 3
+    },
+    {
+      "name": "Rue Montledier",
+      "kind": "street",
+      "position": "top-left",
+      "priority": 3
+    },
+    {
+      "name": "Rue Émile Zola",
+      "kind": "street",
+      "position": "left",
+      "priority": 3
+    },
+    {
+      "name": "Côté Quignon",
+      "kind": "bakery",
+      "position": "top-left",
+      "priority": 4
+    },
+    {
+      "name": "Signovert",
+      "kind": "confectioner",
+      "position": "left",
+      "priority": 4
+    },
+    {
+      "name": "Pharmacie Pierre Fabre",
+      "kind": "pharmacy",
+      "position": "bottom-left",
+      "priority": 4
+    },
+    {
+      "name": "LCL",
+      "kind": "bank",
+      "position": "bottom",
+      "priority": 5
+    },
+    {
+      "name": "Blue Box",
+      "kind": "clothes shop",
+      "position": "top-left",
+      "priority": 5
+    },
+    {
+      "name": "Caroll",
+      "kind": "clothes shop",
+      "position": "left",
+      "priority": 5
+    },
+    {
+      "name": "DPM",
+      "kind": "clothes shop",
+      "position": "right",
+      "priority": 5
+    },
+    {
+      "name": "Devred",
+      "kind": "clothes shop",
+      "position": "bottom-right",
+      "priority": 5
+    },
+    {
+      "name": "Kristina Popovitch",
+      "kind": "clothes shop",
+      "position": "left",
+      "priority": 5
+    }
+  ],
+  "tile_1_5": [
+    {
+      "name": "Place Jean Jaurès",
+      "kind": "square",
+      "position": "bottom-left",
+      "priority": 0,
+      "description": "the large rectangular 18th-century main square: uniform classical façades with shops and café terraces on the ground floor, rows of plane trees, the statue of Jean Jaurès on a pedestal near the centre, a few market stalls."
+    },
+    {
+      "name": "L'Agoût",
+      "kind": "river",
+      "position": "bottom-right",
+      "priority": 1
+    },
+    {
+      "name": "Hôtel Rivière",
+      "kind": "hotel",
+      "position": "top",
+      "priority": 3
+    },
+    {
+      "name": "Rue Malpas",
+      "kind": "pedestrian street",
+      "position": "top-left",
+      "priority": 3
+    },
+    {
+      "name": "Quai Tourcaudière",
+      "kind": "street",
+      "position": "centre",
+      "priority": 3
+    },
+    {
+      "name": "Rue des Trois Rois",
+      "kind": "street",
+      "position": "left",
+      "priority": 3
+    },
+    {
+      "name": "Divino",
+      "kind": "bar",
+      "position": "top-right",
+      "priority": 4
+    },
+    {
+      "name": "S&L Bar tapas ,restaurant",
+      "kind": "bar",
+      "position": "top-right",
+      "priority": 4
+    },
+    {
+      "name": "Boucherie Sablayrolles",
+      "kind": "butcher",
+      "position": "top-left",
+      "priority": 4
+    },
+    {
+      "name": "Etienne Coffee & Shop",
+      "kind": "café",
+      "position": "bottom-left",
+      "priority": 4
+    },
+    {
+      "name": "Pharmacie des Arcades",
+      "kind": "pharmacy",
+      "position": "bottom-left",
+      "priority": 4
+    },
+    {
+      "name": "Parking sur Berges",
+      "kind": "car park",
+      "position": "centre",
+      "priority": 5
+    },
+    {
+      "name": "Starlet's",
+      "kind": "clothes shop",
+      "position": "top-left",
+      "priority": 5
+    },
+    {
+      "name": "Intraderm'ink",
+      "kind": "shop",
+      "position": "top-left",
+      "priority": 6
+    },
+    {
+      "name": "Quick Net",
+      "kind": "shop",
+      "position": "centre",
+      "priority": 6
+    }
+  ],
+  "tile_0_1": [
+    {
+      "name": "Église Notre-Dame-de-la-Platé",
+      "kind": "church",
+      "position": "left",
+      "priority": 2
+    },
+    {
+      "name": "Hôtel Renaissance",
+      "kind": "hotel",
+      "position": "bottom",
+      "priority": 3
+    },
+    {
+      "name": "Rue Montledier",
+      "kind": "street",
+      "position": "right",
+      "priority": 3
+    },
+    {
+      "name": "Rue Victor Hugo",
+      "kind": "street",
+      "position": "bottom-left",
+      "priority": 3
+    },
+    {
+      "name": "Rue de l'Hôtel de Ville",
+      "kind": "street",
+      "position": "bottom",
+      "priority": 3
+    },
+    {
+      "name": "Rue de la Platé",
+      "kind": "street",
+      "position": "top",
+      "priority": 3
+    },
+    {
+      "name": "Au Comptoir du Chocolat",
+      "kind": "confectioner",
+      "position": "centre",
+      "priority": 4
+    },
+    {
+      "name": "Pauline",
+      "kind": "clothes shop",
+      "position": "centre",
+      "priority": 5
+    },
+    {
+      "name": "Vêtements Lala",
+      "kind": "clothes shop",
+      "position": "bottom-right",
+      "priority": 5
+    },
+    {
+      "name": "Coiffeur Conseils",
+      "kind": "hairdresser",
+      "position": "right",
+      "priority": 5
+    },
+    {
+      "name": "Crystal",
+      "kind": "shop",
+      "position": "bottom-left",
+      "priority": 6
+    },
+    {
+      "name": "Dog'Art",
+      "kind": "shop",
+      "position": "bottom-left",
+      "priority": 6
+    }
+  ],
+  "tile_1_3": [
+    {
+      "name": "Place Jean Jaurès",
+      "kind": "square",
+      "position": "top",
+      "priority": 0,
+      "description": "the large rectangular 18th-century main square: uniform classical façades with shops and café terraces on the ground floor, rows of plane trees, the statue of Jean Jaurès on a pedestal near the centre, a few market stalls."
+    },
+    {
+      "name": "Rue Alquier Bouffard",
+      "kind": "pedestrian street",
+      "position": "centre",
+      "priority": 3
+    },
+    {
+      "name": "Rue Victor Hugo",
+      "kind": "pedestrian street",
+      "position": "top-left",
+      "priority": 3
+    },
+    {
+      "name": "Rue Vielle Halle",
+      "kind": "pedestrian street",
+      "position": "centre",
+      "priority": 3
+    },
+    {
+      "name": "Rue Henri IV",
+      "kind": "street",
+      "position": "top-left",
+      "priority": 3
+    },
+    {
+      "name": "Rue Sabatier",
+      "kind": "street",
+      "position": "top-left",
+      "priority": 3
+    },
+    {
+      "name": "Rue Émile Zola",
+      "kind": "street",
+      "position": "top-left",
+      "priority": 3
+    },
+    {
+      "name": "La Mie Câline",
+      "kind": "bakery",
+      "position": "top",
+      "priority": 4
+    },
+    {
+      "name": "Le Brazil",
+      "kind": "bar",
+      "position": "bottom-right",
+      "priority": 4
+    },
+    {
+      "name": "Chocolats Yves Thuriès",
+      "kind": "confectioner",
+      "position": "bottom",
+      "priority": 4
+    },
+    {
+      "name": "Crédit Agricole",
+      "kind": "bank",
+      "position": "top",
+      "priority": 5
+    },
+    {
+      "name": "Bed And Philosophy",
+      "kind": "clothes shop",
+      "position": "bottom-left",
+      "priority": 5
+    },
+    {
+      "name": "Kookaï",
+      "kind": "clothes shop",
+      "position": "top",
+      "priority": 5
+    },
+    {
+      "name": "L'Edelweiss",
+      "kind": "clothes shop",
+      "position": "centre",
+      "priority": 5
+    },
+    {
+      "name": "ypsé",
+      "kind": "clothes shop",
+      "position": "centre",
+      "priority": 5
+    },
+    {
+      "name": "À La Dame Blanche",
+      "kind": "clothes shop",
+      "position": "centre",
+      "priority": 5
+    },
+    {
+      "name": "Louis Bouissière Joaillier",
+      "kind": "jeweller",
+      "position": "bottom-right",
+      "priority": 5
+    },
+    {
+      "name": "Jacques Duparchy",
+      "kind": "optician",
+      "position": "bottom-right",
+      "priority": 5
+    }
+  ],
+  "tile_1_4": [
+    {
+      "name": "Place Jean Jaurès",
+      "kind": "square",
+      "position": "centre",
+      "priority": 0,
+      "description": "the large rectangular 18th-century main square: uniform classical façades with shops and café terraces on the ground floor, rows of plane trees, the statue of Jean Jaurès on a pedestal near the centre, a few market stalls."
+    },
+    {
+      "name": "Pierre de Fermat",
+      "kind": "historic building",
+      "position": "left",
+      "priority": 2
+    },
+    {
+      "name": "Statue de Jean Jaurès",
+      "kind": "historic building",
+      "position": "bottom-right",
+      "priority": 2
+    },
+    {
+      "name": "Rue Dacier",
+      "kind": "pedestrian street",
+      "position": "bottom-left",
+      "priority": 3
+    },
+    {
+      "name": "Rue Malpas",
+      "kind": "pedestrian street",
+      "position": "right",
+      "priority": 3
+    },
+    {
+      "name": "Quai Tourcaudière",
+      "kind": "street",
+      "position": "bottom-right",
+      "priority": 3
+    },
+    {
+      "name": "Rue des Trois Rois",
+      "kind": "street",
+      "position": "top-right",
+      "priority": 3
+    },
+    {
+      "name": "Les Arcades",
+      "kind": "bar",
+      "position": "bottom-right",
+      "priority": 4
+    },
+    {
+      "name": "L'Eden",
+      "kind": "restaurant",
+      "position": "left",
+      "priority": 4
+    },
+    {
+      "name": "BNP Paribas",
+      "kind": "bank",
+      "position": "right",
+      "priority": 5
+    },
+    {
+      "name": "Banque Populaire",
+      "kind": "bank",
+      "position": "bottom-left",
+      "priority": 5
+    },
+    {
+      "name": "CIC",
+      "kind": "bank",
+      "position": "bottom",
+      "priority": 5
+    },
+    {
+      "name": "Coiffure Homme",
+      "kind": "hairdresser",
+      "position": "top-right",
+      "priority": 5
+    },
+    {
+      "name": "Divine Beauté",
+      "kind": "hairdresser",
+      "position": "bottom",
+      "priority": 5
+    },
+    {
+      "name": "Agatha",
+      "kind": "jeweller",
+      "position": "top",
+      "priority": 5
+    },
+    {
+      "name": "Latapie",
+      "kind": "jeweller",
+      "position": "right",
+      "priority": 5
+    },
+    {
+      "name": "Marty",
+      "kind": "jeweller",
+      "position": "bottom-left",
+      "priority": 5
+    },
+    {
+      "name": "So Or",
+      "kind": "jeweller",
+      "position": "top",
+      "priority": 5
+    }
+  ],
+  "tile_2_3": [
+    {
+      "name": "Cathédrale Saint-Benoît de Castres",
+      "kind": "church",
+      "position": "left",
+      "priority": 0,
+      "description": "the cathedral of Castres, BAROQUE, built 1678–1718: a massive plain classical stone façade, a single wide nave under a low tiled roof, and beside it an older square stone bell tower. NOT Gothic — no spires, no pinnacles, no flying buttresses."
+    },
+    {
+      "name": "Grand Hôtel",
+      "kind": "hotel",
+      "position": "bottom",
+      "priority": 3
+    },
+    {
+      "name": "Rue Alquier Bouffard",
+      "kind": "pedestrian street",
+      "position": "top-right",
+      "priority": 3
+    },
+    {
+      "name": "Rue Dacier",
+      "kind": "pedestrian street",
+      "position": "top-right",
+      "priority": 3
+    },
+    {
+      "name": "Place du 8 Mai 1945",
+      "kind": "street",
+      "position": "right",
+      "priority": 3
+    },
+    {
+      "name": "Rue de la Libération",
+      "kind": "street",
+      "position": "bottom",
+      "priority": 3
+    },
+    {
+      "name": "Librairie Papeterie SAS Coulier",
+      "kind": "bookshop",
+      "position": "bottom-left",
+      "priority": 4
+    },
+    {
+      "name": "B. Sushi",
+      "kind": "restaurant",
+      "position": "bottom",
+      "priority": 4
+    },
+    {
+      "name": "Le Victoria",
+      "kind": "restaurant",
+      "position": "top-left",
+      "priority": 4
+    },
+    {
+      "name": "Christine Laure",
+      "kind": "clothes shop",
+      "position": "top-right",
+      "priority": 5
+    },
+    {
+      "name": "Etam",
+      "kind": "clothes shop",
+      "position": "top-right",
+      "priority": 5
+    },
+    {
+      "name": "Ikks",
+      "kind": "clothes shop",
+      "position": "top-right",
+      "priority": 5
+    },
+    {
+      "name": "MP3",
+      "kind": "clothes shop",
+      "position": "top-right",
+      "priority": 5
+    },
+    {
+      "name": "Salon Pascale",
+      "kind": "hairdresser",
+      "position": "top-left",
+      "priority": 5
+    },
+    {
+      "name": "Coulier",
+      "kind": "newsagent",
+      "position": "right",
+      "priority": 5
+    },
+    {
+      "name": "Optique 81",
+      "kind": "optician",
+      "position": "top-right",
+      "priority": 5
+    },
+    {
+      "name": "Coustel Burguière",
+      "kind": "shop",
+      "position": "top",
+      "priority": 6
+    },
+    {
+      "name": "JLB",
+      "kind": "shop",
+      "position": "bottom-left",
+      "priority": 6
+    }
+  ],
+  "tile_0_4": [
+    {
+      "name": "Place Jean Jaurès",
+      "kind": "square",
+      "position": "bottom-left",
+      "priority": 0,
+      "description": "the large rectangular 18th-century main square: uniform classical façades with shops and café terraces on the ground floor, rows of plane trees, the statue of Jean Jaurès on a pedestal near the centre, a few market stalls."
+    },
+    {
+      "name": "Passage Henri IV",
+      "kind": "pedestrian street",
+      "position": "left",
+      "priority": 3
+    },
+    {
+      "name": "Rue Henri IV",
+      "kind": "street",
+      "position": "centre",
+      "priority": 3
+    },
+    {
+      "name": "Rue Pierre Borel",
+      "kind": "street",
+      "position": "top-right",
+      "priority": 3
+    },
+    {
+      "name": "Rue des Trois Rois",
+      "kind": "street",
+      "position": "bottom",
+      "priority": 3
+    },
+    {
+      "name": "Le Glacier",
+      "kind": "café",
+      "position": "bottom-left",
+      "priority": 4
+    },
+    {
+      "name": "La Casa' Line",
+      "kind": "restaurant",
+      "position": "left",
+      "priority": 4
+    },
+    {
+      "name": "Le Pescadou",
+      "kind": "restaurant",
+      "position": "bottom",
+      "priority": 4
+    },
+    {
+      "name": "Alexis",
+      "kind": "clothes shop",
+      "position": "top-left",
+      "priority": 5
+    },
+    {
+      "name": "Amarilis",
+      "kind": "clothes shop",
+      "position": "top",
+      "priority": 5
+    },
+    {
+      "name": "Luna et Compagnie",
+      "kind": "clothes shop",
+      "position": "top",
+      "priority": 5
+    },
+    {
+      "name": "Vice Versa",
+      "kind": "clothes shop",
+      "position": "left",
+      "priority": 5
+    },
+    {
+      "name": "Hair Création",
+      "kind": "hairdresser",
+      "position": "top-right",
+      "priority": 5
+    },
+    {
+      "name": "Le Calumet",
+      "kind": "newsagent",
+      "position": "top-right",
+      "priority": 5
+    },
+    {
+      "name": "Alain Afflelou",
+      "kind": "optician",
+      "position": "left",
+      "priority": 5
+    },
+    {
+      "name": "Caves Henri IV",
+      "kind": "shop",
+      "position": "top-right",
+      "priority": 6
+    },
+    {
+      "name": "La Marée de Neptune",
+      "kind": "shop",
+      "position": "top-right",
+      "priority": 6
+    }
+  ],
+  "tile_3_1": [
+    {
+      "name": "Musée Goya",
+      "kind": "museum",
+      "position": "top-right",
+      "priority": 0,
+      "description": "same building as the town hall, the former bishop's palace by Hardouin-Mansart."
+    },
+    {
+      "name": "Jardin de l'Évêché",
+      "kind": "public garden",
+      "position": "centre",
+      "priority": 0,
+      "description": "formal French garden attributed to Le Nôtre, beside the bishop's palace: clipped box parterres in scrolling patterns, gravel paths, a round central pool, a row of trimmed trees on the river side."
+    },
+    {
+      "name": "Hôtel de Ville de Castres",
+      "kind": "town hall",
+      "position": "top-right",
+      "priority": 0,
+      "description": "the former bishop's palace (1666–1675, designed by Jules Hardouin-Mansart), now town hall and Goya museum: a long symmetrical classical stone façade of two storeys with tall regular windows and a central entrance, opening onto a formal garden."
+    },
+    {
+      "name": "Place de la République",
+      "kind": "square",
+      "position": "top-left",
+      "priority": 1
+    },
+    {
+      "name": "Rue de l'Évêché",
+      "kind": "street",
+      "position": "top-left",
+      "priority": 3
+    }
+  ],
+  "tile_3_5": [
+    {
+      "name": "Rue Eugène Leris",
+      "kind": "street",
+      "position": "centre",
+      "priority": 3
+    },
+    {
+      "name": "Rue Villegoudou",
+      "kind": "street",
+      "position": "left",
+      "priority": 3
+    },
+    {
+      "name": "Briocherie Cheldine",
+      "kind": "bakery",
+      "position": "left",
+      "priority": 4
+    },
+    {
+      "name": "Espace Culturel E. Leclerc",
+      "kind": "bookshop",
+      "position": "bottom",
+      "priority": 4
+    },
+    {
+      "name": "France Loisirs",
+      "kind": "bookshop",
+      "position": "centre",
+      "priority": 4
+    },
+    {
+      "name": "Charles V",
+      "kind": "confectioner",
+      "position": "bottom",
+      "priority": 4
+    },
+    {
+      "name": "Lafayette",
+      "kind": "pharmacy",
+      "position": "centre",
+      "priority": 4
+    },
+    {
+      "name": "DDP",
+      "kind": "clothes shop",
+      "position": "left",
+      "priority": 5
+    },
+    {
+      "name": "Mango",
+      "kind": "clothes shop",
+      "position": "bottom",
+      "priority": 5
+    },
+    {
+      "name": "Mod'Ronde",
+      "kind": "clothes shop",
+      "position": "bottom",
+      "priority": 5
+    },
+    {
+      "name": "Phildar",
+      "kind": "clothes shop",
+      "position": "top-left",
+      "priority": 5
+    },
+    {
+      "name": "André",
+      "kind": "shoe shop",
+      "position": "left",
+      "priority": 5
+    },
+    {
+      "name": "Jamy",
+      "kind": "shop",
+      "position": "top",
+      "priority": 6
+    },
+    {
+      "name": "L'Herbier",
+      "kind": "shop",
+      "position": "bottom",
+      "priority": 6
+    },
+    {
+      "name": "Nocibé",
+      "kind": "shop",
+      "position": "left",
+      "priority": 6
+    },
+    {
+      "name": "Nouvelles Frontières",
+      "kind": "shop",
+      "position": "bottom",
+      "priority": 6
+    },
+    {
+      "name": "Yves Rocher",
+      "kind": "shop",
+      "position": "bottom",
+      "priority": 6
+    }
+  ],
+  "tile_3_6": [
+    {
+      "name": "Église Saint-Jacques-de-Villegoudou",
+      "kind": "church",
+      "position": "top-right",
+      "priority": 2
+    },
+    {
+      "name": "École maternelle Villegoudou",
+      "kind": "school",
+      "position": "right",
+      "priority": 3
+    },
+    {
+      "name": "École élémenaire Villegoudou",
+      "kind": "school",
+      "position": "bottom",
+      "priority": 3
+    },
+    {
+      "name": "Boulevard Docteurs Aribat",
+      "kind": "street",
+      "position": "bottom-right",
+      "priority": 3
+    }
+  ],
+  "tile_2_2": [
+    {
+      "name": "Cathédrale Saint-Benoît de Castres",
+      "kind": "church",
+      "position": "centre",
+      "priority": 0,
+      "description": "the cathedral of Castres, BAROQUE, built 1678–1718: a massive plain classical stone façade, a single wide nave under a low tiled roof, and beside it an older square stone bell tower. NOT Gothic — no spires, no pinnacles, no flying buttresses."
+    },
+    {
+      "name": "Hôtel de Ville de Castres",
+      "kind": "town hall",
+      "position": "bottom-left",
+      "priority": 0,
+      "description": "the former bishop's palace (1666–1675, designed by Jules Hardouin-Mansart), now town hall and Goya museum: a long symmetrical classical stone façade of two storeys with tall regular windows and a central entrance, opening onto a formal garden."
+    },
+    {
+      "name": "Place du 8 Mai 1945",
+      "kind": "street",
+      "position": "bottom-right",
+      "priority": 3
+    },
+    {
+      "name": "Rue de l'Hôtel de Ville",
+      "kind": "street",
+      "position": "bottom-right",
+      "priority": 3
+    },
+    {
+      "name": "Rue de l'Évêché",
+      "kind": "street",
+      "position": "left",
+      "priority": 3
+    },
+    {
+      "name": "Bel Décoration",
+      "kind": "shop",
+      "position": "left",
+      "priority": 6
+    }
+  ],
+  "tile_2_1": [
+    {
+      "name": "Jardin de l'Évêché",
+      "kind": "public garden",
+      "position": "bottom",
+      "priority": 0,
+      "description": "formal French garden attributed to Le Nôtre, beside the bishop's palace: clipped box parterres in scrolling patterns, gravel paths, a round central pool, a row of trimmed trees on the river side."
+    },
+    {
+      "name": "Théâtre Municipal",
+      "kind": "theatre",
+      "position": "bottom-left",
+      "priority": 0,
+      "description": "the municipal theatre of 1904, an ornate Belle Époque façade on the place de la République."
+    },
+    {
+      "name": "Hôtel de Ville de Castres",
+      "kind": "town hall",
+      "position": "bottom-right",
+      "priority": 0,
+      "description": "the former bishop's palace (1666–1675, designed by Jules Hardouin-Mansart), now town hall and Goya museum: a long symmetrical classical stone façade of two storeys with tall regular windows and a central entrance, opening onto a formal garden."
+    },
+    {
+      "name": "Place de la République",
+      "kind": "square",
+      "position": "bottom-left",
+      "priority": 1
+    },
+    {
+      "name": "Impasse Barral",
+      "kind": "pedestrian street",
+      "position": "top-left",
+      "priority": 3
+    },
+    {
+      "name": "Rue Barral",
+      "kind": "street",
+      "position": "top",
+      "priority": 3
+    },
+    {
+      "name": "Rue de l'Hôtel de Ville",
+      "kind": "street",
+      "position": "top-right",
+      "priority": 3
+    },
+    {
+      "name": "Rue de l'Évêché",
+      "kind": "street",
+      "position": "bottom-right",
+      "priority": 3
+    },
+    {
+      "name": "La Riviera",
+      "kind": "florist",
+      "position": "top-right",
+      "priority": 4
+    },
+    {
+      "name": "À la Ville du Puy",
+      "kind": "clothes shop",
+      "position": "top-right",
+      "priority": 5
+    },
+    {
+      "name": "Salon Denis",
+      "kind": "hairdresser",
+      "position": "right",
+      "priority": 5
+    }
+  ],
+  "tile_1_6": [
+    {
+      "name": "Pont Vieux",
+      "kind": "bridge",
+      "position": "top-right",
+      "priority": 0,
+      "description": "the old stone arch bridge over the Agout: several round arches, low stone parapets."
+    },
+    {
+      "name": "L'Agoût",
+      "kind": "river",
+      "position": "centre",
+      "priority": 1
+    },
+    {
+      "name": "Place Roger Salengro",
+      "kind": "square",
+      "position": "right",
+      "priority": 1
+    },
+    {
+      "name": "Quai Tourcaudière",
+      "kind": "street",
+      "position": "top-left",
+      "priority": 3
+    },
+    {
+      "name": "Quai du Carras",
+      "kind": "street",
+      "position": "top",
+      "priority": 3
+    },
+    {
+      "name": "Rue Corne Basse",
+      "kind": "street",
+      "position": "right",
+      "priority": 3
+    },
+    {
+      "name": "Rue Fuziès",
+      "kind": "street",
+      "position": "right",
+      "priority": 3
+    },
+    {
+      "name": "Rue Milhau Ducommun",
+      "kind": "street",
+      "position": "bottom",
+      "priority": 3
+    },
+    {
+      "name": "Rue des Capucins",
+      "kind": "street",
+      "position": "top",
+      "priority": 3
+    },
+    {
+      "name": "Délices d'Asie",
+      "kind": "restaurant",
+      "position": "bottom-left",
+      "priority": 4
+    },
+    {
+      "name": "Parking sur Berges",
+      "kind": "car park",
+      "position": "top-left",
+      "priority": 5
+    },
+    {
+      "name": "Arobase Coiffure",
+      "kind": "hairdresser",
+      "position": "top-left",
+      "priority": 5
+    },
+    {
+      "name": "Saveurs du Temps",
+      "kind": "shop",
+      "position": "right",
+      "priority": 6
+    }
+  ],
+  "tile_0_2": [
+    {
+      "name": "Square Gustave Flaubert",
+      "kind": "square",
+      "position": "top-right",
+      "priority": 1
+    },
+    {
+      "name": "Hôtel de l'Europe",
+      "kind": "hotel",
+      "position": "bottom",
+      "priority": 3
+    },
+    {
+      "name": "Rue Victor Hugo",
+      "kind": "pedestrian street",
+      "position": "bottom-right",
+      "priority": 3
+    },
+    {
+      "name": "Rue Montledier",
+      "kind": "street",
+      "position": "top",
+      "priority": 3
+    },
+    {
+      "name": "Arquier",
+      "kind": "pharmacy",
+      "position": "bottom-right",
+      "priority": 4
+    },
+    {
+      "name": "Le Bistrot",
+      "kind": "restaurant",
+      "position": "bottom-left",
+      "priority": 4
+    },
+    {
+      "name": "Vaqueros",
+      "kind": "clothes shop",
+      "position": "bottom-left",
+      "priority": 5
+    },
+    {
+      "name": "Maryca",
+      "kind": "shop",
+      "position": "bottom",
+      "priority": 6
+    }
+  ],
+  "tile_0_6": [
+    {
+      "name": "Grand temple",
+      "kind": "church",
+      "position": "top",
+      "priority": 0,
+      "description": "the Protestant temple, a plain classical façade with a pediment."
+    },
+    {
+      "name": "L'Agoût",
+      "kind": "river",
+      "position": "bottom-right",
+      "priority": 1
+    },
+    {
+      "name": "Quai du Carras",
+      "kind": "street",
+      "position": "right",
+      "priority": 3
+    },
+    {
+      "name": "Rue des Capucins",
+      "kind": "street",
+      "position": "top-left",
+      "priority": 3
+    },
+    {
+      "name": "Rue du Carras",
+      "kind": "street",
+      "position": "centre",
+      "priority": 3
+    },
+    {
+      "name": "Rue du Consulat",
+      "kind": "street",
+      "position": "top-left",
+      "priority": 3
+    },
+    {
+      "name": "Vents et Marées",
+      "kind": "restaurant",
+      "position": "right",
+      "priority": 4
+    },
+    {
+      "name": "Parking sur Berges",
+      "kind": "car park",
+      "position": "right",
+      "priority": 5
+    },
+    {
+      "name": "Toril",
+      "kind": "clothes shop",
+      "position": "top-left",
+      "priority": 5
+    },
+    {
+      "name": "Le Salon de Sophie",
+      "kind": "hairdresser",
+      "position": "right",
+      "priority": 5
+    },
+    {
+      "name": "Pauline Créations Coiffure",
+      "kind": "hairdresser",
+      "position": "centre",
+      "priority": 5
+    },
+    {
+      "name": "Jack's Express",
+      "kind": "takeaway",
+      "position": "centre",
+      "priority": 5
+    },
+    {
+      "name": "Curiosité Brocante",
+      "kind": "shop",
+      "position": "bottom-left",
+      "priority": 6
+    },
+    {
+      "name": "Godot & Fils",
+      "kind": "shop",
+      "position": "bottom",
+      "priority": 6
+    },
+    {
+      "name": "Havas Voyages",
+      "kind": "shop",
+      "position": "bottom-left",
+      "priority": 6
+    }
+  ],
+  "tile_1_1": [
+    {
+      "name": "Impasse Barral",
+      "kind": "pedestrian street",
+      "position": "bottom-left",
+      "priority": 3
+    },
+    {
+      "name": "Rue Barral",
+      "kind": "street",
+      "position": "bottom-right",
+      "priority": 3
+    },
+    {
+      "name": "Rue Gabriel Guy",
+      "kind": "street",
+      "position": "centre",
+      "priority": 3
+    },
+    {
+      "name": "Rue Jacques Limouzy",
+      "kind": "street",
+      "position": "bottom",
+      "priority": 3
+    },
+    {
+      "name": "Rue Sabatier",
+      "kind": "street",
+      "position": "bottom-right",
+      "priority": 3
+    },
+    {
+      "name": "Rue de l'Hôtel de Ville",
+      "kind": "street",
+      "position": "centre",
+      "priority": 3
+    },
+    {
+      "name": "Pharmacie Gambetta",
+      "kind": "pharmacy",
+      "position": "bottom-left",
+      "priority": 4
+    },
+    {
+      "name": "Barbour",
+      "kind": "clothes shop",
+      "position": "top",
+      "priority": 5
+    },
+    {
+      "name": "Ludivina bis",
+      "kind": "clothes shop",
+      "position": "bottom-right",
+      "priority": 5
+    },
+    {
+      "name": "Françoise et Sophie",
+      "kind": "hairdresser",
+      "position": "bottom",
+      "priority": 5
+    },
+    {
+      "name": "PastaSand",
+      "kind": "takeaway",
+      "position": "bottom",
+      "priority": 5
+    },
+    {
+      "name": "Green Life",
+      "kind": "shop",
+      "position": "bottom",
+      "priority": 6
+    },
+    {
+      "name": "Leonidas",
+      "kind": "shop",
+      "position": "bottom-right",
+      "priority": 6
+    },
+    {
+      "name": "Ongles et Beauté",
+      "kind": "shop",
+      "position": "bottom-right",
+      "priority": 6
+    },
+    {
+      "name": "Press'Eco 81",
+      "kind": "shop",
+      "position": "right",
+      "priority": 6
+    }
+  ],
+  "tile_1_2": [
+    {
+      "name": "Hôtel de l'Europe",
+      "kind": "hotel",
+      "position": "top",
+      "priority": 3
+    },
+    {
+      "name": "Rue Sabatier",
+      "kind": "street",
+      "position": "centre",
+      "priority": 3
+    },
+    {
+      "name": "Champs du Sud",
+      "kind": "café",
+      "position": "bottom-right",
+      "priority": 4
+    },
+    {
+      "name": "Festi Bonbons",
+      "kind": "confectioner",
+      "position": "bottom-left",
+      "priority": 4
+    },
+    {
+      "name": "Beautiful Girl",
+      "kind": "clothes shop",
+      "position": "top-right",
+      "priority": 5
+    },
+    {
+      "name": "La Chapellerie",
+      "kind": "clothes shop",
+      "position": "left",
+      "priority": 5
+    },
+    {
+      "name": "Next",
+      "kind": "clothes shop",
+      "position": "centre",
+      "priority": 5
+    },
+    {
+      "name": "Stephan",
+      "kind": "hairdresser",
+      "position": "left",
+      "priority": 5
+    },
+    {
+      "name": "Croc Chaud",
+      "kind": "takeaway",
+      "position": "centre",
+      "priority": 5
+    },
+    {
+      "name": "Essix",
+      "kind": "shop",
+      "position": "right",
+      "priority": 6
+    },
+    {
+      "name": "Mar'Lyne",
+      "kind": "shop",
+      "position": "centre",
+      "priority": 6
+    }
+  ],
+  "tile_0_5": [
+    {
+      "name": "Rue Henri IV",
+      "kind": "street",
+      "position": "top-left",
+      "priority": 3
+    },
+    {
+      "name": "Rue Malpas",
+      "kind": "street",
+      "position": "bottom-left",
+      "priority": 3
+    },
+    {
+      "name": "Rue Pierre Borel",
+      "kind": "street",
+      "position": "centre",
+      "priority": 3
+    },
+    {
+      "name": "Rue des Capucins",
+      "kind": "street",
+      "position": "right",
+      "priority": 3
+    },
+    {
+      "name": "L'Eau À La Bouche",
+      "kind": "restaurant",
+      "position": "bottom",
+      "priority": 4
+    },
+    {
+      "name": "La Grillade",
+      "kind": "restaurant",
+      "position": "bottom",
+      "priority": 4
+    },
+    {
+      "name": "La Mandragore",
+      "kind": "restaurant",
+      "position": "bottom",
+      "priority": 4
+    },
+    {
+      "name": "Chupa' Shoes",
+      "kind": "shoe shop",
+      "position": "top",
+      "priority": 5
+    },
+    {
+      "name": "Éram",
+      "kind": "shoe shop",
+      "position": "top-left",
+      "priority": 5
+    },
+    {
+      "name": "Galerie d'Art",
+      "kind": "shop",
+      "position": "right",
+      "priority": 6
+    }
+  ],
+  "tile_2_0": [
+    {
+      "name": "Théâtre Municipal",
+      "kind": "theatre",
+      "position": "bottom-right",
+      "priority": 0,
+      "description": "the municipal theatre of 1904, an ornate Belle Époque façade on the place de la République."
+    },
+    {
+      "name": "Place de la République",
+      "kind": "square",
+      "position": "bottom-right",
+      "priority": 1
+    },
+    {
+      "name": "Rue Barral",
+      "kind": "street",
+      "position": "right",
+      "priority": 3
+    },
+    {
+      "name": "Rue Chambre de l'Édit",
+      "kind": "street",
+      "position": "top-right",
+      "priority": 3
+    },
+    {
+      "name": "Rue Jacques Limouzy",
+      "kind": "street",
+      "position": "top",
+      "priority": 3
+    },
+    {
+      "name": "Rue de Bonne-Montmaur",
+      "kind": "street",
+      "position": "top-left",
+      "priority": 3
+    },
+    {
+      "name": "Natur House",
+      "kind": "shop",
+      "position": "top",
+      "priority": 6
+    }
+  ],
+  "tile_3_4": [
+    {
+      "name": "Jardin d'Empare",
+      "kind": "public garden",
+      "position": "bottom",
+      "priority": 1
+    },
+    {
+      "name": "Impasse d'Empare",
+      "kind": "street",
+      "position": "centre",
+      "priority": 3
+    },
+    {
+      "name": "Rue Villegoudou",
+      "kind": "street",
+      "position": "top-right",
+      "priority": 3
+    },
+    {
+      "name": "Rue d'Empare",
+      "kind": "street",
+      "position": "top",
+      "priority": 3
+    },
+    {
+      "name": "La Part des Anges",
+      "kind": "bar",
+      "position": "top",
+      "priority": 4
+    },
+    {
+      "name": "Le Jéroboam",
+      "kind": "bar",
+      "position": "top",
+      "priority": 4
+    },
+    {
+      "name": "City Mode",
+      "kind": "clothes shop",
+      "position": "top",
+      "priority": 5
+    },
+    {
+      "name": "D-Shop",
+      "kind": "clothes shop",
+      "position": "top-right",
+      "priority": 5
+    },
+    {
+      "name": "Sud Express",
+      "kind": "clothes shop",
+      "position": "top-right",
+      "priority": 5
+    },
+    {
+      "name": "Diloy's",
+      "kind": "hairdresser",
+      "position": "top-right",
+      "priority": 5
+    },
+    {
+      "name": "Luc Atgé",
+      "kind": "jeweller",
+      "position": "top-right",
+      "priority": 5
+    },
+    {
+      "name": "Le Royal",
+      "kind": "newsagent",
+      "position": "top-right",
+      "priority": 5
+    },
+    {
+      "name": "Collector",
+      "kind": "shop",
+      "position": "top-left",
+      "priority": 6
+    },
+    {
+      "name": "Les Sacs de Juliette",
+      "kind": "shop",
+      "position": "top",
+      "priority": 6
+    },
+    {
+      "name": "À Fleur d'Eau",
+      "kind": "shop",
+      "position": "left",
+      "priority": 6
+    }
+  ],
+  "tile_2_5": [
+    {
+      "name": "L'Agoût",
+      "kind": "river",
+      "position": "top-left",
+      "priority": 1
+    },
+    {
+      "name": "Place Fagerie",
+      "kind": "square",
+      "position": "centre",
+      "priority": 1
+    },
+    {
+      "name": "Rue Eugène Leris",
+      "kind": "street",
+      "position": "bottom",
+      "priority": 3
+    },
+    {
+      "name": "Rue Francisco Ferrer",
+      "kind": "street",
+      "position": "bottom-right",
+      "priority": 3
+    },
+    {
+      "name": "Rue Milhau Ducommun",
+      "kind": "street",
+      "position": "left",
+      "priority": 3
+    },
+    {
+      "name": "La Fontaine",
+      "kind": "restaurant",
+      "position": "bottom",
+      "priority": 4
+    },
+    {
+      "name": "Le Phénicien",
+      "kind": "restaurant",
+      "position": "right",
+      "priority": 4
+    }
+  ],
+  "tile_2_6": [
+    {
+      "name": "Église Saint-Jacques-de-Villegoudou",
+      "kind": "church",
+      "position": "right",
+      "priority": 2
+    },
+    {
+      "name": "École secondaire privée le Sénévé",
+      "kind": "school",
+      "position": "bottom",
+      "priority": 3
+    },
+    {
+      "name": "École élémentaire Le Sénevé",
+      "kind": "school",
+      "position": "centre",
+      "priority": 3
+    },
+    {
+      "name": "Rue Francisco Ferrer",
+      "kind": "street",
+      "position": "right",
+      "priority": 3
+    },
+    {
+      "name": "Rue Milhau Ducommun",
+      "kind": "street",
+      "position": "top-left",
+      "priority": 3
+    },
+    {
+      "name": "Rue de l'Église",
+      "kind": "street",
+      "position": "top",
+      "priority": 3
+    },
+    {
+      "name": "Place Saint-Jacques",
+      "kind": "car park",
+      "position": "centre",
+      "priority": 5
+    }
+  ],
+  "tile_1_0": [
+    {
+      "name": "Rue Chambre de l'Édit",
+      "kind": "street",
+      "position": "centre",
+      "priority": 3
+    },
+    {
+      "name": "Rue Gabriel Guy",
+      "kind": "street",
+      "position": "right",
+      "priority": 3
+    },
+    {
+      "name": "Rue Jacques Limouzy",
+      "kind": "street",
+      "position": "bottom-right",
+      "priority": 3
+    }
+  ],
+  "tile_3_3": [
+    {
+      "name": "Jardin d'Empare",
+      "kind": "public garden",
+      "position": "bottom-right",
+      "priority": 1
+    },
+    {
+      "name": "L'Agoût",
+      "kind": "river",
+      "position": "top",
+      "priority": 1
+    },
+    {
+      "name": "Grand Hôtel",
+      "kind": "hotel",
+      "position": "top-left",
+      "priority": 3
+    },
+    {
+      "name": "Rue d'Empare",
+      "kind": "street",
+      "position": "bottom",
+      "priority": 3
+    },
+    {
+      "name": "Rue de la Libération",
+      "kind": "street",
+      "position": "top-left",
+      "priority": 3
+    },
+    {
+      "name": "Venelle d'Empare",
+      "kind": "street",
+      "position": "bottom-left",
+      "priority": 3
+    }
+  ],
+  "tile_3_2": [
+    {
+      "name": "Jardin de l'Évêché",
+      "kind": "public garden",
+      "position": "left",
+      "priority": 0,
+      "description": "formal French garden attributed to Le Nôtre, beside the bishop's palace: clipped box parterres in scrolling patterns, gravel paths, a round central pool, a row of trimmed trees on the river side."
+    },
+    {
+      "name": "Hôtel de Ville de Castres",
+      "kind": "town hall",
+      "position": "top",
+      "priority": 0,
+      "description": "the former bishop's palace (1666–1675, designed by Jules Hardouin-Mansart), now town hall and Goya museum: a long symmetrical classical stone façade of two storeys with tall regular windows and a central entrance, opening onto a formal garden."
+    },
+    {
+      "name": "L'Agoût",
+      "kind": "river",
+      "position": "bottom-right",
+      "priority": 1
+    },
+    {
+      "name": "Rue de l'Hôtel de Ville",
+      "kind": "street",
+      "position": "top-right",
+      "priority": 3
+    },
+    {
+      "name": "Rue de la Libération",
+      "kind": "street",
+      "position": "top-right",
+      "priority": 3
+    }
+  ],
+  "tile_3_0": [
+    {
+      "name": "Jardin de l'Évêché",
+      "kind": "public garden",
+      "position": "centre",
+      "priority": 0,
+      "description": "formal French garden attributed to Le Nôtre, beside the bishop's palace: clipped box parterres in scrolling patterns, gravel paths, a round central pool, a row of trimmed trees on the river side."
+    },
+    {
+      "name": "Place de la République",
+      "kind": "square",
+      "position": "top-left",
+      "priority": 1
+    },
+    {
+      "name": "Allée Alphonse Juin",
+      "kind": "street",
+      "position": "left",
+      "priority": 3
+    },
+    {
+      "name": "Rue de l'Évêché",
+      "kind": "street",
+      "position": "left",
+      "priority": 3
+    }
+  ],
+  "tile_0_0": [
+    {
+      "name": "Église Notre-Dame-de-la-Platé",
+      "kind": "church",
+      "position": "right",
+      "priority": 2
+    },
+    {
+      "name": "Rue Chambre de l'Édit",
+      "kind": "street",
+      "position": "bottom-left",
+      "priority": 3
+    },
+    {
+      "name": "Rue Victor Hugo",
+      "kind": "street",
+      "position": "bottom-left",
+      "priority": 3
+    },
+    {
+      "name": "Rue de la Platé",
+      "kind": "street",
+      "position": "top",
+      "priority": 3
+    }
+  ]
+}
