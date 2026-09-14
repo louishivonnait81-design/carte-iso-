@@ -99,3 +99,35 @@ def test_prompt_never_speaks_of_position_or_of_the_rest_of_the_map():
         assert "terracotta" in around or "roof" in around or "courses" in around, around
     assert "THE SILHOUETTE IS FIXED" in body
     assert "KEEP THE FRAME" in body
+
+
+def test_silhouette_iou_is_the_metric_that_matters_now():
+    """Ce que l'on mesure a change avec l'architecture. En mode tuile on mesurait
+    une DERIVE DE POSITION, parce que le modele placait la matiere. Il ne la
+    place plus : le compositeur pose le dessin a la boite. Ce qui reste a
+    mesurer est donc la SILHOUETTE — un dessin qui deborde du masque est rogne,
+    un dessin qui le remplit mal laisse des trous.
+
+    Premiere mesure reelle sur u83180702, 9 batiments, place Jean Jaures :
+        ChatGPT  IoU 0,888   couverture du masque 0,957
+        Gemini   IoU 0,808   couverture du masque 0,970
+    a comparer aux 0,461 de derive du meilleur rendu par tuile.
+    """
+    import numpy as np
+    ref = np.zeros((40, 40), bool)
+    ref[10:30, 10:30] = True
+
+    exact = ref.copy()
+    assert _iou(exact, ref) == 1.0
+
+    shifted = np.zeros_like(ref)
+    shifted[12:32, 12:32] = True
+    assert 0.6 < _iou(shifted, ref) < 0.8
+
+    half = np.zeros_like(ref)
+    half[10:30, 10:20] = True
+    assert _iou(half, ref) == pytest.approx(0.5)
+
+
+def _iou(a, b):
+    return float((a & b).sum() / max(1, (a | b).sum()))
