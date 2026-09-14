@@ -132,3 +132,20 @@ def test_zoom_diagnosis_leaves_a_correctly_framed_tile_alone():
         best_zoom, best_score = qa.zoom_diagnosis(path, blocks(detail=True), 4,
                                                   zooms=(1.4, 2.0, 2.8))
         assert best_score < qa.drift_score(blocks(), blocks(detail=True), 4).score
+
+
+def test_zoom_diagnosis_rejects_an_almost_empty_crop():
+    """Le piege de la premiere version : un morceau de squelette presque vide
+    obtenait un score eleve parce qu'un dessin dense couvre deux ou trois traits
+    par accident. Mesure reelle : 0,821 pour un cadre ne contenant qu'une
+    diagonale."""
+    import tempfile
+    from PIL import Image
+    dense = np.where(np.random.RandomState(3).rand(SIZE, SIZE) < 0.25, 0, 255).astype(np.uint8)
+    sparse = np.full((SIZE, SIZE), 255, np.uint8)
+    sparse[:, :SIZE // 2] = blocks()[:, :SIZE // 2]      # structure a gauche seulement
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "skeleton.png"
+        Image.fromarray(sparse).save(path)
+        _, score = qa.zoom_diagnosis(path, dense, 4, zooms=(2.0, 2.8))
+        assert score < 0.4          # aucun cadre vide ne doit etre retenu

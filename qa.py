@@ -117,6 +117,7 @@ def zoom_diagnosis(skeleton_path: Path, styled: np.ndarray, tolerance_px: int,
     size = styled.shape[0]
     with Image.open(skeleton_path) as img:
         full = img.convert("L")
+        reference = edges(np.asarray(full.resize((size, size), Image.LANCZOS))).mean()
         best = (1.0, 0.0)
         for zoom in zooms:
             side = int(full.width / zoom)
@@ -125,6 +126,14 @@ def zoom_diagnosis(skeleton_path: Path, styled: np.ndarray, tolerance_px: int,
                 for oy in range(0, full.height - side + 1, step):
                     crop = np.asarray(full.crop((ox, oy, ox + side, oy + side))
                                       .resize((size, size), Image.LANCZOS))
+                    # Un morceau presque vide obtient un rappel eleve pour rien :
+                    # une poignee de traits est couverte par accident dans un
+                    # dessin dense. Premiere version de ce diagnostic : le
+                    # meilleur "cadre" trouve ne contenait qu'une diagonale et
+                    # marquait 0,821. On exige donc une structure comparable a
+                    # celle de la tuile entiere.
+                    if edges(crop).mean() < 0.5 * reference:
+                        continue
                     score = drift_score(crop, styled, tolerance_px).score
                     if score > best[1]:
                         best = (zoom, score)
@@ -260,7 +269,10 @@ def main() -> int:
                 f"-> score {d.score:.3f}")
         if d.score < args.min_drift and not args.no_zoom_check:
             zoom, zoomed = zoom_diagnosis(args.tiles / f"{name}.png", styled, args.tolerance)
-            if zoomed > d.score + 0.25:
+            # 0,5 : en deca, le "meilleur cadre" n'est qu'un morceau pauvre en
+            # structure qui colle par accident. Ne rien annoncer vaut mieux
+            # qu'une explication fausse.
+            if zoomed > max(0.5, d.score + 0.25):
                 line += (f"\n       CADRAGE : le dessin correspond a un zoom {zoom:.1f}x "
                          f"sur une partie de la tuile (score {zoomed:.3f} a cette echelle). "
                          f"La geometrie est suivie, le cadre ne l'est pas.")
