@@ -26,21 +26,15 @@ from pathlib import Path
 import bpy
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from geo import TileGrid  # noqa: E402
+from geo import SEMANTIC_LINEAR, TileGrid  # noqa: E402
 
 # --------------------------------------------------------------------------
 # Categories semantiques
 # --------------------------------------------------------------------------
 
-# Couleurs lineaires (Blender travaille en lineaire ; la vue "Standard" les
-# restitue telles quelles a l'ecran).
-SEMANTIC_COLORS = {
-    "building":   (0.75, 0.75, 0.75, 1.0),
-    "street":     (0.28, 0.28, 0.28, 1.0),
-    "vegetation": (0.30, 0.65, 0.30, 1.0),
-    "water":      (0.40, 0.62, 0.90, 1.0),
-    "ground":     (1.00, 1.00, 1.00, 1.0),
-}
+# Couleurs posees sur les objets, definies une seule fois dans geo.py avec leur
+# equivalent sRGB : c'est ce dernier que relisent stylize.py et qa.py.
+SEMANTIC_COLORS = SEMANTIC_LINEAR
 
 # Regles de classement par defaut, appliquees dans cet ordre. Chaque mot-cle est
 # cherche dans le nom de l'objet, le nom de ses collections et ses proprietes

@@ -90,3 +90,15 @@ def test_mosaic_size_matches_spec():
     assert len(idx["tiles"]) == 24
     assert idx["camera"]["ortho_scale"] == 180
     assert abs(idx["camera"]["elevation_deg"] - 30.0) < 1e-6
+
+
+def test_semantic_colours_match_what_blender_writes():
+    """Blender travaille en lineaire et ecrit du sRGB. Ces valeurs ont ete
+    relevees sur des tuiles rendues : elles verrouillent la conversion."""
+    from geo import SEMANTIC_SRGB, linear_to_srgb8
+    assert SEMANTIC_SRGB["water"] == (170, 206, 243)
+    assert SEMANTIC_SRGB["building"] == (225, 225, 225)
+    assert SEMANTIC_SRGB["street"] == (144, 144, 144)
+    assert SEMANTIC_SRGB["vegetation"] == (149, 211, 149)
+    assert SEMANTIC_SRGB["ground"] == (255, 255, 255)
+    assert linear_to_srgb8(0.0) == 0 and linear_to_srgb8(1.0) == 255

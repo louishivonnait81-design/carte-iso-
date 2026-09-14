@@ -244,3 +244,23 @@ def test_validated_tile_becomes_the_style_reference(tmp_path, monkeypatch):
 def test_anchor_missing_is_a_clear_error(tmp_path):
     with pytest.raises(SystemExit, match="ancrage introuvable"):
         stylize.resolve_anchor("tile_9_9", tmp_path)
+
+
+def test_anchor_that_is_also_the_left_neighbour_is_sent_once(tmp_path, monkeypatch):
+    """L'ancre est souvent la voisine de gauche : une seule image, deux roles."""
+    tiles_dir, index = _fake_tiles(tmp_path, 1, 2)
+    out = tmp_path / "out"
+    out.mkdir()
+    (out / "tile_0_0.png").write_bytes(b"tuile validee")
+    monkeypatch.setattr(stylize, "REF01", tmp_path / "ref01.png")
+    stylize.REF01.write_bytes(b"ref")
+
+    job = stylize.build_job(index["tiles"][1], tiles_dir, out, SECTIONS,
+                            use_ref02=False, water_mode="off",
+                            anchor=out / "tile_0_0.png")
+    assert job.roles == ["anchor", "lines", "sem", "left"]
+    assert len(job.images) == 3                      # l'ancre n'est pas envoyee deux fois
+    assert job.numbers == [1, 2, 3, 1]               # ancre et voisine gauche = image 1
+    assert "Image 1 is a FINISHED TILE OF THIS SAME MAP" in job.prompt
+    assert "Image 1 is the finished tile directly to the LEFT" in job.prompt
+    assert "image 4" not in job.prompt

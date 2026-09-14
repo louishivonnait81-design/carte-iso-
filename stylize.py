@@ -19,13 +19,14 @@ import hashlib
 import json
 import re
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "scripts"))
 
 from gemini import (DEFAULT_MODEL, Budget, GeminiError, Pricing,  # noqa: E402
                     generate_image, load_client)
+from geo import SEMANTIC_SRGB  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent
 REF01 = ROOT / "assets" / "REF_01_style.png"
@@ -33,7 +34,7 @@ REF02 = ROOT / "assets" / "REF_02_castres.png"
 PROMPT = ROOT / "prompts" / "stylize_v2.md"
 
 SECTION_RE = re.compile(r"<!--\s*@section\s+(\w+)\s*-->")
-WATER_RGB = (102, 158, 229)      # bleu semantique tel qu'il ressort du rendu sRGB
+WATER_RGB = SEMANTIC_SRGB["water"]   # (170, 206, 243), tel qu'ecrit dans le PNG
 
 
 # --------------------------------------------------------------------------
@@ -60,10 +61,18 @@ def load_sections(path: Path) -> dict[str, str]:
     return sections
 
 
-def render_prompt(sections: dict[str, str], roles: list[str], parts: list[str]) -> str:
-    """Assemble le prompt et remplace les variables par les vrais numeros d'image."""
+def render_prompt(sections: dict[str, str], roles: list[str], parts: list[str],
+                  numbers: list[int] | None = None) -> str:
+    """Assemble le prompt et remplace les variables par les vrais numeros d'image.
+
+    `numbers` permet a deux roles de designer la meme image : la tuile d'ancrage
+    est souvent aussi la voisine de gauche, et l'envoyer deux fois serait un
+    doublon de plus d'un mega-octet a lire pour le modele.
+    """
+    if numbers is None:
+        numbers = list(range(1, len(roles) + 1))
     mapping: dict[str, str] = {}
-    for index, role in enumerate(roles, start=1):
+    for role, index in zip(roles, numbers):
         mapping[role] = f"image {index}"
         mapping[role.capitalize()] = f"Image {index}"
     text = "\n\n".join(sections[p] for p in parts)
@@ -131,8 +140,9 @@ def has_water(sem_path: Path, tolerance: int = 40) -> bool:
 class Job:
     name: str
     roles: list[str]
-    images: list[Path]
+    images: list[Path]      # dedoublonnees : une image envoyee une seule fois
     prompt: str
+    numbers: list[int] = field(default_factory=list)   # numero d'image de chaque role
 
     def cache_key(self, model: str, aspect: str, size: str) -> str:
         h = hashlib.sha256()
@@ -224,8 +234,16 @@ def build_job(tile: dict, tiles_dir: Path, out_dir: Path, sections: dict[str, st
     if entries and "notes" in sections:
         from tile_notes import format_notes
         filled["notes"] = sections["notes"].replace("{notes_list}", format_notes(entries))
-    return Job(name=tile["name"], roles=roles, images=images,
-               prompt=render_prompt(filled, roles, parts))
+    # une meme image peut servir deux roles (ancre et voisine de gauche)
+    unique: list[Path] = []
+    numbers: list[int] = []
+    for path in images:
+        if path not in unique:
+            unique.append(path)
+        numbers.append(unique.index(path) + 1)
+
+    return Job(name=tile["name"], roles=roles, images=unique, numbers=numbers,
+               prompt=render_prompt(filled, roles, parts, numbers))
 
 
 # --------------------------------------------------------------------------

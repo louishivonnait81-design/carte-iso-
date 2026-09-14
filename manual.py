@@ -79,11 +79,18 @@ def export_tile(tile: dict, tiles: Path, styled: Path, out: Path,
         shutil.rmtree(folder)
     folder.mkdir(parents=True)
 
-    lines = []
-    for i, (role, src) in enumerate(zip(job.roles, job.images), start=1):
-        dest = folder / f"{i}_{role}.png"
+    # plusieurs roles peuvent pointer la meme image : un seul fichier, plusieurs
+    # mentions dans le mode d'emploi
+    names: dict[int, str] = {}
+    for role, num in zip(job.roles, job.numbers):
+        names.setdefault(num, role)
+    lines, written = [], {}
+    for num, src in enumerate(job.images, start=1):
+        dest = folder / f"{num}_{names[num]}.png"
         shutil.copyfile(src, dest)
-        lines.append(f"     image {i} : {dest.name:<14} {ROLE_LABELS[role]}")
+        written[num] = dest.name
+    for role, num in zip(job.roles, job.numbers):
+        lines.append(f"     image {num} : {written[num]:<16} {ROLE_LABELS[role]}")
 
     (folder / "prompt.txt").write_text(job.prompt + "\n", encoding="utf-8")
     # empreinte des entrees : permet de reperer plus tard une tuile devenue

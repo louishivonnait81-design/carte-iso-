@@ -21,6 +21,33 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
+# --------------------------------------------------------------------------
+# Couleurs semantiques
+# --------------------------------------------------------------------------
+# Blender travaille en lineaire et ecrit du sRGB : la couleur posee sur un objet
+# n'est pas celle qu'on relit dans le PNG. Les deux tables vivent donc ici, cote
+# a cote, plutot que d'etre recopiees de memoire dans chaque script — une
+# constante d'eau restee en lineaire a fait que la legende "bleu = eau" n'a
+# jamais ete ajoutee au prompt, y compris sur les tuiles de l'Agout.
+
+SEMANTIC_LINEAR = {
+    "building":   (0.75, 0.75, 0.75, 1.0),
+    "street":     (0.28, 0.28, 0.28, 1.0),
+    "vegetation": (0.30, 0.65, 0.30, 1.0),
+    "water":      (0.40, 0.62, 0.90, 1.0),
+    "ground":     (1.00, 1.00, 1.00, 1.0),
+}
+
+
+def linear_to_srgb8(value: float) -> int:
+    """Conversion lineaire -> sRGB 8 bits, telle que l'applique Blender."""
+    s = value * 12.92 if value <= 0.0031308 else 1.055 * value ** (1 / 2.4) - 0.055
+    return max(0, min(255, round(s * 255)))
+
+
+SEMANTIC_SRGB = {name: tuple(linear_to_srgb8(c) for c in rgba[:3])
+                 for name, rgba in SEMANTIC_LINEAR.items()}
+
 # Metres par degre, projection equirectangulaire locale (cf. cahier des charges).
 M_PER_DEG_LAT = 110540.0
 M_PER_DEG_LON = 111320.0
