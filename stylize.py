@@ -76,6 +76,34 @@ def render_prompt(sections: dict[str, str], roles: list[str], parts: list[str]) 
 
 
 # --------------------------------------------------------------------------
+# References au carre
+# --------------------------------------------------------------------------
+
+def squared(path: Path) -> Path:
+    """Copie de l'image completee en carre par des marges blanches.
+
+    Gemini calque le format de sortie sur celui des images recues : deux
+    references en paysage donnent une tuile en paysage (mesure : 1,84 pour des
+    references a 1,83). Une reference carree ne laisse aucune ambiguite.
+    """
+    from PIL import Image
+
+    with Image.open(path) as img:
+        if img.width == img.height:
+            return path
+        side = max(img.size)
+        out_dir = path.parent / "square"
+        out_dir.mkdir(exist_ok=True)
+        out = out_dir / f"{path.stem}_sq.png"
+        if out.exists() and out.stat().st_mtime >= path.stat().st_mtime:
+            return out
+        canvas = Image.new("RGB", (side, side), "white")
+        canvas.paste(img.convert("RGB"), ((side - img.width) // 2, (side - img.height) // 2))
+        canvas.save(out)
+        return out
+
+
+# --------------------------------------------------------------------------
 # Detection d'eau dans la tuile semantique
 # --------------------------------------------------------------------------
 
@@ -127,10 +155,10 @@ def build_job(tile: dict, tiles_dir: Path, out_dir: Path, sections: dict[str, st
         if not path.exists():
             raise SystemExit(f"Tuile de squelette manquante : {path}")
 
-    roles, images = ["ref01"], [REF01]
+    roles, images = ["ref01"], [squared(REF01)]
     if use_ref02:
         roles.append("ref02")
-        images.append(REF02)
+        images.append(squared(REF02))
     roles += ["lines", "sem"]
     images += [line, sem]
 

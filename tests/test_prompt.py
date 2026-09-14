@@ -183,3 +183,16 @@ def test_notes_section_names_real_places(tmp_path, monkeypatch):
     assert "at its position in image 2" in with_notes.prompt
     assert "{" not in with_notes.prompt
     assert "WHAT IS REALLY HERE" not in without.prompt   # tuile sans lieu nomme
+
+
+def test_landscape_reference_is_padded_to_square(tmp_path):
+    from PIL import Image
+    ref = tmp_path / "ref.png"
+    Image.new("RGB", (1408, 768), "black").save(ref)
+    sq = stylize.squared(ref)
+    with Image.open(sq) as img:
+        assert img.size == (1408, 1408)
+        px = img.load()
+        assert px[0, 0] == (255, 255, 255)        # marge blanche en haut
+        assert px[704, 704] == (0, 0, 0)          # contenu centre
+    assert stylize.squared(sq) == sq              # deja carre : inchange
