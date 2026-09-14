@@ -12,7 +12,7 @@
       "kind": "square",
       "position": "top",
       "priority": 0,
-      "description": "the large rectangular 18th-century main square: uniform classical façades with shops and café terraces on the ground floor, rows of plane trees, the statue of Jean Jaurès on a pedestal near the centre, a few market stalls."
+      "description": "the main square of Castres, 18th century: the buildings around it have uniform classical façades with shops and café terraces on the ground floor, and it is planted with plane trees."
     },
     {
       "name": "L'Agoût",
@@ -117,7 +117,7 @@
       "kind": "square",
       "position": "bottom-right",
       "priority": 0,
-      "description": "the large rectangular 18th-century main square: uniform classical façades with shops and café terraces on the ground floor, rows of plane trees, the statue of Jean Jaurès on a pedestal near the centre, a few market stalls."
+      "description": "the main square of Castres, 18th century: the buildings around it have uniform classical façades with shops and café terraces on the ground floor, and it is planted with plane trees."
     },
     {
       "name": "La Fontaine des Angelots",
@@ -228,7 +228,7 @@
       "kind": "square",
       "position": "bottom-left",
       "priority": 0,
-      "description": "the large rectangular 18th-century main square: uniform classical façades with shops and café terraces on the ground floor, rows of plane trees, the statue of Jean Jaurès on a pedestal near the centre, a few market stalls."
+      "description": "the main square of Castres, 18th century: the buildings around it have uniform classical façades with shops and café terraces on the ground floor, and it is planted with plane trees."
     },
     {
       "name": "L'Agoût",
@@ -395,7 +395,7 @@
       "kind": "square",
       "position": "top",
       "priority": 0,
-      "description": "the large rectangular 18th-century main square: uniform classical façades with shops and café terraces on the ground floor, rows of plane trees, the statue of Jean Jaurès on a pedestal near the centre, a few market stalls."
+      "description": "the main square of Castres, 18th century: the buildings around it have uniform classical façades with shops and café terraces on the ground floor, and it is planted with plane trees."
     },
     {
       "name": "Rue Alquier Bouffard",
@@ -506,7 +506,7 @@
       "kind": "square",
       "position": "centre",
       "priority": 0,
-      "description": "the large rectangular 18th-century main square: uniform classical façades with shops and café terraces on the ground floor, rows of plane trees, the statue of Jean Jaurès on a pedestal near the centre, a few market stalls."
+      "description": "the main square of Castres, 18th century: the buildings around it have uniform classical façades with shops and café terraces on the ground floor, and it is planted with plane trees."
     },
     {
       "name": "Pierre de Fermat",
@@ -728,7 +728,7 @@
       "kind": "square",
       "position": "bottom-left",
       "priority": 0,
-      "description": "the large rectangular 18th-century main square: uniform classical façades with shops and café terraces on the ground floor, rows of plane trees, the statue of Jean Jaurès on a pedestal near the centre, a few market stalls."
+      "description": "the main square of Castres, 18th century: the buildings around it have uniform classical façades with shops and café terraces on the ground floor, and it is planted with plane trees."
     },
     {
       "name": "Passage Henri IV",
@@ -840,7 +840,7 @@
       "kind": "public garden",
       "position": "centre",
       "priority": 0,
-      "description": "formal French garden attributed to Le Nôtre, beside the bishop's palace: clipped box parterres in scrolling patterns, gravel paths, a round central pool, a row of trimmed trees on the river side."
+      "description": "formal French garden attributed to Le Nôtre, beside the bishop's palace: clipped box parterres in scrolling patterns, gravel paths, trimmed trees."
     },
     {
       "name": "Hôtel de Ville de Castres",
@@ -1038,7 +1038,7 @@
       "kind": "public garden",
       "position": "bottom",
       "priority": 0,
-      "description": "formal French garden attributed to Le Nôtre, beside the bishop's palace: clipped box parterres in scrolling patterns, gravel paths, a round central pool, a row of trimmed trees on the river side."
+      "description": "formal French garden attributed to Le Nôtre, beside the bishop's palace: clipped box parterres in scrolling patterns, gravel paths, trimmed trees."
     },
     {
       "name": "Théâtre Municipal",
@@ -1838,7 +1838,7 @@
       "kind": "public garden",
       "position": "left",
       "priority": 0,
-      "description": "formal French garden attributed to Le Nôtre, beside the bishop's palace: clipped box parterres in scrolling patterns, gravel paths, a round central pool, a row of trimmed trees on the river side."
+      "description": "formal French garden attributed to Le Nôtre, beside the bishop's palace: clipped box parterres in scrolling patterns, gravel paths, trimmed trees."
     },
     {
       "name": "Hôtel de Ville de Castres",
@@ -1872,7 +1872,7 @@
       "kind": "public garden",
       "position": "centre",
       "priority": 0,
-      "description": "formal French garden attributed to Le Nôtre, beside the bishop's palace: clipped box parterres in scrolling patterns, gravel paths, a round central pool, a row of trimmed trees on the river side."
+      "description": "formal French garden attributed to Le Nôtre, beside the bishop's palace: clipped box parterres in scrolling patterns, gravel paths, trimmed trees."
     },
     {
       "name": "Place de la République",

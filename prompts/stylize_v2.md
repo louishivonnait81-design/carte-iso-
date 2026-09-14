@@ -87,6 +87,12 @@ baker from the butcher without reading anything. Signs, awnings and hanging brac
 may carry a drawn emblem (a pretzel, a boot, a pair of scissors) but NEVER a letter,
 a word or a number, here or anywhere else in the image.
 
+This list tells you WHAT stands here. It never tells you WHERE, HOW BIG or HOW MANY:
+those come from {lines} and from {lines} alone. Do not compose a square, a street or
+a row of buildings of your own — trace the shapes that are in {lines}, at their size
+and their angle, and put the listed things on them. If the list mentions trees, a
+statue or stalls, draw them only where {lines} shows something to draw them on.
+
 <!-- @section water -->
 In {sem}, blue marks water: the river Agout and its mill races. Draw water as calm
 ripple lines between stone quays, never as a building or a street.

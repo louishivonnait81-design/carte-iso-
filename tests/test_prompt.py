@@ -181,6 +181,7 @@ def test_notes_section_names_real_places(tmp_path, monkeypatch):
     assert "- Cathédrale Saint-Benoît (church, centre of this tile): BAROQUE" in with_notes.prompt
     assert "- Rue Vieille Halle (street, bottom-left of this tile)" in with_notes.prompt
     assert "at its position in image 2" in with_notes.prompt
+    assert "It never tells you WHERE, HOW BIG or HOW MANY" in with_notes.prompt
     assert "{" not in with_notes.prompt
     assert "WHAT IS REALLY HERE" not in without.prompt   # tuile sans lieu nomme
 
