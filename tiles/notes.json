@@ -12,7 +12,7 @@
       "kind": "square",
       "position": "top",
       "priority": 0,
-      "description": "the main square of Castres, a long paved esplanade. The buildings around it are classical, three storeys, pale rendered stone; their GROUND FLOORS RUN UNDER A CONTINUOUS ARCADE OF ROUND STONE ARCHES, and the shops and café terraces are set back under those arches. (Verified on Street View; two businesses are actually named after them.)"
+      "description": "the main square of Castres, a long paved esplanade. The buildings around it are classical, three storeys, pale rendered stone; their GROUND FLOORS RUN UNDER A CONTINUOUS ARCADE OF ROUND STONE ARCHES, and the shops and café terraces are set back under those arches. This arcade is the defining feature of the square: draw it along the WHOLE length of every building that faces the square, arch after arch without interruption — not one arch at a corner and plain walls elsewhere. (Verified on Street View; two businesses are actually named after them.)"
     },
     {
       "name": "L'Agoût",
@@ -81,6 +81,12 @@
       "priority": 4
     },
     {
+      "name": "bicycle stands",
+      "kind": "bicycle stands",
+      "position": "top-right",
+      "priority": 5
+    },
+    {
       "name": "Armand Thiery",
       "kind": "clothes shop",
       "position": "top-left",
@@ -99,15 +105,9 @@
       "priority": 5
     },
     {
-      "name": "Jeff de Bruges",
-      "kind": "shop",
-      "position": "bottom-right",
-      "priority": 6
-    },
-    {
-      "name": "La Droguerie - Arnaud Nègre",
-      "kind": "shop",
-      "position": "left",
+      "name": "litter bin",
+      "kind": "litter bin",
+      "position": "top",
       "priority": 6
     }
   ],
@@ -117,12 +117,18 @@
       "kind": "square",
       "position": "bottom-right",
       "priority": 0,
-      "description": "the main square of Castres, a long paved esplanade. The buildings around it are classical, three storeys, pale rendered stone; their GROUND FLOORS RUN UNDER A CONTINUOUS ARCADE OF ROUND STONE ARCHES, and the shops and café terraces are set back under those arches. (Verified on Street View; two businesses are actually named after them.)"
+      "description": "the main square of Castres, a long paved esplanade. The buildings around it are classical, three storeys, pale rendered stone; their GROUND FLOORS RUN UNDER A CONTINUOUS ARCADE OF ROUND STONE ARCHES, and the shops and café terraces are set back under those arches. This arcade is the defining feature of the square: draw it along the WHOLE length of every building that faces the square, arch after arch without interruption — not one arch at a corner and plain walls elsewhere. (Verified on Street View; two businesses are actually named after them.)"
     },
     {
       "name": "La Fontaine des Angelots",
       "kind": "fountain",
       "position": "bottom-right",
+      "priority": 1
+    },
+    {
+      "name": "public fountain",
+      "kind": "public fountain",
+      "position": "bottom-left",
       "priority": 1
     },
     {
@@ -192,6 +198,12 @@
       "priority": 5
     },
     {
+      "name": "bicycle stands",
+      "kind": "bicycle stands",
+      "position": "bottom-right",
+      "priority": 5
+    },
+    {
       "name": "Blue Box",
       "kind": "clothes shop",
       "position": "top-left",
@@ -208,18 +220,6 @@
       "kind": "clothes shop",
       "position": "right",
       "priority": 5
-    },
-    {
-      "name": "Devred",
-      "kind": "clothes shop",
-      "position": "bottom-right",
-      "priority": 5
-    },
-    {
-      "name": "Kristina Popovitch",
-      "kind": "clothes shop",
-      "position": "left",
-      "priority": 5
     }
   ],
   "tile_1_5": [
@@ -228,7 +228,7 @@
       "kind": "square",
       "position": "bottom-left",
       "priority": 0,
-      "description": "the main square of Castres, a long paved esplanade. The buildings around it are classical, three storeys, pale rendered stone; their GROUND FLOORS RUN UNDER A CONTINUOUS ARCADE OF ROUND STONE ARCHES, and the shops and café terraces are set back under those arches. (Verified on Street View; two businesses are actually named after them.)"
+      "description": "the main square of Castres, a long paved esplanade. The buildings around it are classical, three storeys, pale rendered stone; their GROUND FLOORS RUN UNDER A CONTINUOUS ARCADE OF ROUND STONE ARCHES, and the shops and café terraces are set back under those arches. This arcade is the defining feature of the square: draw it along the WHOLE length of every building that faces the square, arch after arch without interruption — not one arch at a corner and plain walls elsewhere. (Verified on Street View; two businesses are actually named after them.)"
     },
     {
       "name": "L'Agoût",
@@ -395,7 +395,13 @@
       "kind": "square",
       "position": "top",
       "priority": 0,
-      "description": "the main square of Castres, a long paved esplanade. The buildings around it are classical, three storeys, pale rendered stone; their GROUND FLOORS RUN UNDER A CONTINUOUS ARCADE OF ROUND STONE ARCHES, and the shops and café terraces are set back under those arches. (Verified on Street View; two businesses are actually named after them.)"
+      "description": "the main square of Castres, a long paved esplanade. The buildings around it are classical, three storeys, pale rendered stone; their GROUND FLOORS RUN UNDER A CONTINUOUS ARCADE OF ROUND STONE ARCHES, and the shops and café terraces are set back under those arches. This arcade is the defining feature of the square: draw it along the WHOLE length of every building that faces the square, arch after arch without interruption — not one arch at a corner and plain walls elsewhere. (Verified on Street View; two businesses are actually named after them.)"
+    },
+    {
+      "name": "public fountain",
+      "kind": "public fountain",
+      "position": "top-left",
+      "priority": 1
     },
     {
       "name": "Rue Alquier Bouffard",
@@ -458,6 +464,12 @@
       "priority": 5
     },
     {
+      "name": "bicycle stands",
+      "kind": "bicycle stands",
+      "position": "right",
+      "priority": 5
+    },
+    {
       "name": "Bed And Philosophy",
       "kind": "clothes shop",
       "position": "bottom-left",
@@ -486,18 +498,6 @@
       "kind": "clothes shop",
       "position": "centre",
       "priority": 5
-    },
-    {
-      "name": "Louis Bouissière Joaillier",
-      "kind": "jeweller",
-      "position": "bottom-right",
-      "priority": 5
-    },
-    {
-      "name": "Jacques Duparchy",
-      "kind": "optician",
-      "position": "bottom-right",
-      "priority": 5
     }
   ],
   "tile_1_4": [
@@ -513,7 +513,13 @@
       "kind": "square",
       "position": "centre",
       "priority": 0,
-      "description": "the main square of Castres, a long paved esplanade. The buildings around it are classical, three storeys, pale rendered stone; their GROUND FLOORS RUN UNDER A CONTINUOUS ARCADE OF ROUND STONE ARCHES, and the shops and café terraces are set back under those arches. (Verified on Street View; two businesses are actually named after them.)"
+      "description": "the main square of Castres, a long paved esplanade. The buildings around it are classical, three storeys, pale rendered stone; their GROUND FLOORS RUN UNDER A CONTINUOUS ARCADE OF ROUND STONE ARCHES, and the shops and café terraces are set back under those arches. This arcade is the defining feature of the square: draw it along the WHOLE length of every building that faces the square, arch after arch without interruption — not one arch at a corner and plain walls elsewhere. (Verified on Street View; two businesses are actually named after them.)"
+    },
+    {
+      "name": "public fountain",
+      "kind": "public fountain",
+      "position": "bottom-right",
+      "priority": 1
     },
     {
       "name": "Pierre de Fermat",
@@ -576,6 +582,12 @@
       "priority": 5
     },
     {
+      "name": "bicycle stands",
+      "kind": "bicycle stands",
+      "position": "top-left",
+      "priority": 5
+    },
+    {
       "name": "Coiffure Homme",
       "kind": "hairdresser",
       "position": "top-right",
@@ -597,18 +609,6 @@
       "name": "Latapie",
       "kind": "jeweller",
       "position": "right",
-      "priority": 5
-    },
-    {
-      "name": "Marty",
-      "kind": "jeweller",
-      "position": "bottom-left",
-      "priority": 5
-    },
-    {
-      "name": "So Or",
-      "kind": "jeweller",
-      "position": "top",
       "priority": 5
     }
   ],
@@ -669,6 +669,12 @@
       "priority": 4
     },
     {
+      "name": "bicycle stands",
+      "kind": "bicycle stands",
+      "position": "centre",
+      "priority": 5
+    },
+    {
       "name": "Christine Laure",
       "kind": "clothes shop",
       "position": "top-right",
@@ -715,12 +721,6 @@
       "kind": "shop",
       "position": "top",
       "priority": 6
-    },
-    {
-      "name": "JLB",
-      "kind": "shop",
-      "position": "bottom-left",
-      "priority": 6
     }
   ],
   "tile_0_4": [
@@ -729,7 +729,7 @@
       "kind": "square",
       "position": "bottom-left",
       "priority": 0,
-      "description": "the main square of Castres, a long paved esplanade. The buildings around it are classical, three storeys, pale rendered stone; their GROUND FLOORS RUN UNDER A CONTINUOUS ARCADE OF ROUND STONE ARCHES, and the shops and café terraces are set back under those arches. (Verified on Street View; two businesses are actually named after them.)"
+      "description": "the main square of Castres, a long paved esplanade. The buildings around it are classical, three storeys, pale rendered stone; their GROUND FLOORS RUN UNDER A CONTINUOUS ARCADE OF ROUND STONE ARCHES, and the shops and café terraces are set back under those arches. This arcade is the defining feature of the square: draw it along the WHOLE length of every building that faces the square, arch after arch without interruption — not one arch at a corner and plain walls elsewhere. (Verified on Street View; two businesses are actually named after them.)"
     },
     {
       "name": "Passage Henri IV",
@@ -772,6 +772,12 @@
       "kind": "restaurant",
       "position": "bottom",
       "priority": 4
+    },
+    {
+      "name": "bicycle stands",
+      "kind": "bicycle stands",
+      "position": "bottom-left",
+      "priority": 5
     },
     {
       "name": "Alexis",
@@ -861,6 +867,18 @@
       "kind": "street",
       "position": "top-left",
       "priority": 3
+    },
+    {
+      "name": "bench",
+      "kind": "bench",
+      "position": "bottom",
+      "priority": 6
+    },
+    {
+      "name": "litter bin",
+      "kind": "litter bin",
+      "position": "right",
+      "priority": 6
     }
   ],
   "tile_3_5": [
@@ -1102,6 +1120,12 @@
       "kind": "hairdresser",
       "position": "right",
       "priority": 5
+    },
+    {
+      "name": "litter bin",
+      "kind": "litter bin",
+      "position": "bottom-right",
+      "priority": 6
     }
   ],
   "tile_1_6": [
@@ -1193,6 +1217,12 @@
       "priority": 1
     },
     {
+      "name": "drinking fountain",
+      "kind": "drinking fountain",
+      "position": "top-right",
+      "priority": 3
+    },
+    {
       "name": "Hôtel de l'Europe",
       "kind": "hotel",
       "position": "bottom",
@@ -1227,6 +1257,12 @@
       "kind": "clothes shop",
       "position": "bottom-left",
       "priority": 5
+    },
+    {
+      "name": "litter bin",
+      "kind": "litter bin",
+      "position": "top-right",
+      "priority": 6
     },
     {
       "name": "Maryca",
@@ -1280,6 +1316,12 @@
       "priority": 4
     },
     {
+      "name": "bicycle stands",
+      "kind": "bicycle stands",
+      "position": "bottom",
+      "priority": 5
+    },
+    {
       "name": "Parking sur Berges",
       "kind": "car park",
       "position": "right",
@@ -1308,6 +1350,12 @@
       "kind": "takeaway",
       "position": "centre",
       "priority": 5
+    },
+    {
+      "name": "litter bin",
+      "kind": "litter bin",
+      "position": "bottom",
+      "priority": 6
     },
     {
       "name": "Curiosité Brocante",
@@ -1476,6 +1524,12 @@
       "priority": 5
     },
     {
+      "name": "litter bin",
+      "kind": "litter bin",
+      "position": "centre",
+      "priority": 6
+    },
+    {
       "name": "Essix",
       "kind": "shop",
       "position": "right",
@@ -1589,6 +1643,12 @@
       "priority": 3
     },
     {
+      "name": "bicycle stands",
+      "kind": "bicycle stands",
+      "position": "right",
+      "priority": 5
+    },
+    {
       "name": "Natur House",
       "kind": "shop",
       "position": "top",
@@ -1669,6 +1729,12 @@
       "priority": 5
     },
     {
+      "name": "bench",
+      "kind": "bench",
+      "position": "bottom",
+      "priority": 6
+    },
+    {
       "name": "Collector",
       "kind": "shop",
       "position": "top-left",
@@ -1688,6 +1754,12 @@
     }
   ],
   "tile_2_5": [
+    {
+      "name": "public fountain",
+      "kind": "public fountain",
+      "position": "centre",
+      "priority": 1
+    },
     {
       "name": "L'Agoût",
       "kind": "river",
@@ -1729,6 +1801,12 @@
       "kind": "restaurant",
       "position": "right",
       "priority": 4
+    },
+    {
+      "name": "litter bin",
+      "kind": "litter bin",
+      "position": "centre",
+      "priority": 6
     }
   ],
   "tile_2_6": [
@@ -1775,26 +1853,6 @@
       "priority": 5
     }
   ],
-  "tile_1_0": [
-    {
-      "name": "Rue Chambre de l'Édit",
-      "kind": "street",
-      "position": "centre",
-      "priority": 3
-    },
-    {
-      "name": "Rue Gabriel Guy",
-      "kind": "street",
-      "position": "right",
-      "priority": 3
-    },
-    {
-      "name": "Rue Jacques Limouzy",
-      "kind": "street",
-      "position": "bottom-right",
-      "priority": 3
-    }
-  ],
   "tile_3_3": [
     {
       "name": "Jardin d'Empare",
@@ -1831,6 +1889,71 @@
       "kind": "street",
       "position": "bottom-left",
       "priority": 3
+    },
+    {
+      "name": "bicycle stands",
+      "kind": "bicycle stands",
+      "position": "top-left",
+      "priority": 5
+    }
+  ],
+  "tile_3_0": [
+    {
+      "name": "Jardin de l'Évêché",
+      "kind": "public garden",
+      "position": "centre",
+      "priority": 0,
+      "description": "formal French garden attributed to Le Nôtre, beside the bishop's palace: clipped box parterres in scrolling patterns, gravel paths, trimmed trees."
+    },
+    {
+      "name": "public fountain",
+      "kind": "public fountain",
+      "position": "bottom",
+      "priority": 1
+    },
+    {
+      "name": "Place de la République",
+      "kind": "square",
+      "position": "top-left",
+      "priority": 1
+    },
+    {
+      "name": "Allée Alphonse Juin",
+      "kind": "street",
+      "position": "left",
+      "priority": 3
+    },
+    {
+      "name": "Rue de l'Évêché",
+      "kind": "street",
+      "position": "left",
+      "priority": 3
+    },
+    {
+      "name": "bench",
+      "kind": "bench",
+      "position": "bottom",
+      "priority": 6
+    }
+  ],
+  "tile_1_0": [
+    {
+      "name": "Rue Chambre de l'Édit",
+      "kind": "street",
+      "position": "centre",
+      "priority": 3
+    },
+    {
+      "name": "Rue Gabriel Guy",
+      "kind": "street",
+      "position": "right",
+      "priority": 3
+    },
+    {
+      "name": "Rue Jacques Limouzy",
+      "kind": "street",
+      "position": "bottom-right",
+      "priority": 3
     }
   ],
   "tile_3_2": [
@@ -1864,33 +1987,6 @@
       "name": "Rue de la Libération",
       "kind": "street",
       "position": "top-right",
-      "priority": 3
-    }
-  ],
-  "tile_3_0": [
-    {
-      "name": "Jardin de l'Évêché",
-      "kind": "public garden",
-      "position": "centre",
-      "priority": 0,
-      "description": "formal French garden attributed to Le Nôtre, beside the bishop's palace: clipped box parterres in scrolling patterns, gravel paths, trimmed trees."
-    },
-    {
-      "name": "Place de la République",
-      "kind": "square",
-      "position": "top-left",
-      "priority": 1
-    },
-    {
-      "name": "Allée Alphonse Juin",
-      "kind": "street",
-      "position": "left",
-      "priority": 3
-    },
-    {
-      "name": "Rue de l'Évêché",
-      "kind": "street",
-      "position": "left",
       "priority": 3
     }
   ],

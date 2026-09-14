@@ -72,6 +72,23 @@ KINDS = {
     ("highway", "pedestrian"): ("pedestrian street", 3),
     ("highway", "*"): ("street", 3),
 }
+# Elements sans nom mais qui comptent sur une carte de jeu. tile_notes ne
+# retenait que ce qui porte un name : la fontaine de la place Jean Jaures n'en a
+# pas et n'a donc jamais ete signalee au modele, qui ne l'a pas dessinee.
+UNNAMED = {
+    ("amenity", "fountain"): ("public fountain", 1),
+    ("amenity", "drinking_water"): ("drinking fountain", 3),
+    ("historic", "memorial"): ("memorial", 2),
+    ("historic", "monument"): ("monument", 2),
+    ("tourism", "artwork"): ("public artwork", 2),
+    ("amenity", "bicycle_parking"): ("bicycle stands", 5),
+    ("amenity", "bench"): ("bench", 6),
+    ("amenity", "post_box"): ("post box", 6),
+    ("amenity", "telephone"): ("phone box", 6),
+    ("amenity", "waste_basket"): ("litter bin", 6),
+    ("highway", "street_lamp"): ("street lamp", 6),
+}
+
 IGNORE = {("highway", "bus_stop"), ("highway", "service"), ("highway", "footway"),
           ("highway", "path"), ("highway", "steps"), ("highway", "cycleway")}
 MAX_PER_TILE = 18
@@ -81,6 +98,12 @@ MAX_PER_TILE = 18
 # de quoi s'accrocher — on ne cache pas un indice dans "un commerce", on le cache
 # chez le boucher.
 DEVANTURES = {
+    "public fountain": "a stone basin fountain with a low rim, water spouting from "
+                       "its centre, standing free on the paving",
+    "drinking fountain": "a small cast-iron drinking fountain on a post",
+    "bicycle stands": "a row of hoop stands with two or three bicycles locked to them",
+    "memorial": "a carved stone memorial on a low plinth",
+    "public artwork": "a sculpture on a plain plinth",
     "bakery": "wide window full of long loaves standing in baskets and round tarts on "
               "trays, a folding sign on the pavement",
     "butcher": "window with hanging hams and sausages on hooks above a tiled counter, "
@@ -175,8 +198,9 @@ def build_notes(index: dict, osm: Osm, fiches) -> dict[str, list[dict]]:
             out += [(a[0] + (b[0] - a[0]) * i / n, a[1] + (b[1] - a[1]) * i / n) for i in range(n)]
         return out + pts[-1:]
 
-    def add(name: str, tags: dict, node_ids: list[int]) -> None:
-        kind = kind_of(tags)
+    def add(name: str, tags: dict, node_ids: list[int],
+            forced: tuple[str, int] | None = None) -> None:
+        kind = forced or kind_of(tags)
         if kind is None:
             return
         label, prio = kind
@@ -204,12 +228,22 @@ def build_notes(index: dict, osm: Osm, fiches) -> dict[str, list[dict]]:
             if previous is None or entry["priority"] < previous["priority"]:
                 per_tile[tname][name] = entry
 
+    def unnamed_label(tags: dict) -> tuple[str, int] | None:
+        for key, value in tags.items():
+            if (key, value) in UNNAMED:
+                return UNNAMED[(key, value)]
+        return None
+
     for nid, tags in osm.node_tags.items():
         if "name" in tags:
             add(tags["name"], tags, [nid])
+        elif (label := unnamed_label(tags)):
+            add(label[0], tags, [nid], forced=label)
     for wid, tags in osm.way_tags.items():
         if "name" in tags:
             add(tags["name"], tags, osm.ways[wid])
+        elif (label := unnamed_label(tags)):
+            add(label[0], tags, osm.ways[wid], forced=label)
     for tags, members in osm.relations:
         if "name" in tags:
             add(tags["name"], tags, [n for _, w in members if w in osm.ways for n in osm.ways[w]])
@@ -227,7 +261,9 @@ def format_notes(entries: list[dict]) -> str:
     gagnee profite aux commerces suivants."""
     lines, described = [], set()
     for e in entries:
-        line = f"- {e['name']} ({e['kind']}, {e['position']} of this tile)"
+        anonymous = e["name"] == e["kind"]
+        line = (f"- a {e['kind']} ({e['position']} of this tile)" if anonymous
+                else f"- {e['name']} ({e['kind']}, {e['position']} of this tile)")
         detail = e.get("description")
         if not detail and e["kind"] not in described:
             detail = DEVANTURES.get(e["kind"])

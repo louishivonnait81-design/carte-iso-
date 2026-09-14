@@ -71,7 +71,7 @@ planche:
 notes:
 	$(PY) scripts/tile_notes.py --tiles $(TILES) --osm $(OSM)
 
-next:
+next: notes
 	$(PY) manual.py --tiles $(TILES) --styled $(STYLED) next
 
 status:

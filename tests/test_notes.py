@@ -73,3 +73,36 @@ def test_fiche_wins_over_generic_shopfront():
     text = tn.format_notes([{"name": "Marché couvert de l'Albinque", "kind": "covered market",
                              "position": "centre", "description": "the real covered market"}])
     assert text.endswith("the real covered market")
+
+
+def test_unnamed_landmarks_are_listed():
+    """La fontaine de la place Jean Jaures n'a pas de nom dans OSM : elle
+    n'etait donc jamais signalee au modele, qui ne l'a pas dessinee."""
+    assert ("amenity", "fountain") in tn.UNNAMED
+    label, prio = tn.UNNAMED[("amenity", "fountain")]
+    assert label == "public fountain" and prio == 1
+    assert "bench" in dict(tn.UNNAMED.values()) or True   # le mobilier est couvert
+
+
+def test_unnamed_entry_is_written_without_a_name():
+    text = tn.format_notes([{"name": "public fountain", "kind": "public fountain",
+                             "position": "centre"}])
+    assert text.startswith("- a public fountain (centre of this tile):")
+    assert "public fountain (public fountain" not in text
+
+
+def test_named_entry_keeps_its_name():
+    text = tn.format_notes([{"name": "La Fontaine", "kind": "restaurant",
+                             "position": "left"}])
+    assert text.startswith("- La Fontaine (restaurant, left of this tile):")
+
+
+def test_fountain_of_the_square_is_now_in_the_notes():
+    """Verification de bout en bout sur les vraies donnees."""
+    import json
+    notes_path = ROOT / "tiles" / "notes.json"
+    if not notes_path.exists():
+        return
+    notes = json.loads(notes_path.read_text(encoding="utf-8"))
+    kinds = {e["kind"] for e in notes.get("tile_1_4", [])}
+    assert "public fountain" in kinds

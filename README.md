@@ -67,7 +67,7 @@ les fenêtres. REF_01 elle-même est vue plus près de 45° que de 30°.
 
 ```bash
 make install                    # dépendances Python (3.11)
-make test                       # 75 tests, ni Blender ni réseau requis
+make test                       # 79 tests, ni Blender ni réseau requis
 export GEMINI_API_KEY=...       # mode API seulement — jamais dans le dépôt
 ```
 
@@ -265,6 +265,11 @@ touchent, extraits de l'OSM avec leur position dans la tuile :
   boucher, buckets de fleurs chez le fleuriste, grille et présentoirs de velours
   chez le bijoutier. Une devanture n'est décrite qu'à sa première occurrence dans
   la tuile — trois banques n'ont pas besoin de trois fois la même phrase ;
+* les **éléments sans nom** qui comptent quand même sont listés par leur type —
+  fontaine, borne-fontaine, mémorial, stationnement vélo, banc, boîte aux lettres.
+  L'extracteur ne retenait au départ que ce qui porte un `name` : la fontaine de
+  la place Jean Jaurès n'en a pas, elle n'a donc jamais été signalée au modèle,
+  qui ne l'a pas dessinée ;
 * les chemins sont échantillonnés le long de leurs segments : une rue droite n'a
   que deux nœuds, tous deux hors de la tuile qu'elle traverse pourtant.
 
@@ -376,7 +381,7 @@ test 1×2 et ~3,4 € pour la grille complète 6×4.
 ## Tests
 
 ```bash
-make test     # 75 tests
+make test     # 79 tests
 make check    # pyflakes
 ```
 
