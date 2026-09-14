@@ -22,7 +22,7 @@ ARCHITECTURE: this is Castres, a small historic town in south-west France — NO
 Paris. Even simplified, buildings must look like Castres: old half-timbered houses
 with overhanging upper floors along the river, plastered façades with hinged
 shutters, low-pitched roofs with curved terracotta tiles, 17th–18th century stone
-mansions, a Gothic cathedral, stone quays and bridges. Do NOT draw Haussmann
+mansions, stone quays and bridges. Do NOT draw Haussmann
 apartment blocks, mansard zinc roofs or Parisian wrought-iron balconies; use
 {ref01} only for the ink style, never for the architecture.
 
@@ -39,8 +39,17 @@ markings on streets, a few parked cars, plane trees and benches on green and whi
 areas, lampposts, a café terrace with tables.
 
 <!-- @section architecture -->
-The town was built between 1400 and 1800 and nothing has been added since. There
-is no building later than 1800 anywhere in this drawing.
+Every BUILDING in this drawing was built between 1400 and 1800; there is no
+building later than 1800. The STREET LIFE, however, is today's: parked cars, café
+terraces, modern lampposts, road markings. No horse carts, no period costumes.
+
+NO PEOPLE, NO ANIMALS, NO FIGURES OF ANY KIND — the characters are added later
+on a separate layer. Streets and squares are empty of people.
+
+NO INVENTED LANDMARKS. Landmarks exist only where {lines} shows their footprint:
+the cathedral only where {lines} shows a very large building with a distinct
+outline, the river and its bridges only where {sem} shows blue. Never draw water,
+a church, a tower or a spire where {lines} and {sem} show ordinary houses.
 
 CLOSED LIST OF BUILDING TYPES. Every single building belongs to one of these three
 types and to no other. There is no fourth type:

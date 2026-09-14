@@ -157,5 +157,9 @@ def test_architecture_section_is_always_included(tmp_path, monkeypatch):
     job = stylize.build_job(index["tiles"][0], tiles_dir, tmp_path / "out",
                             SECTIONS, use_ref02=False, water_mode="off")
     assert "There is no fourth type" in job.prompt
-    assert "nothing has been added since" in job.prompt
+    assert "NO PEOPLE, NO ANIMALS" in job.prompt
+    assert "NO INVENTED LANDMARKS" in job.prompt
     assert "NOTHING IN THIS DRAWING IS MODERN" in job.prompt
+    # les renvois de la section architecture doivent etre resolus eux aussi
+    assert "the river and its bridges only where image 3 shows blue" in job.prompt
+    assert "Gothic cathedral" not in job.prompt
