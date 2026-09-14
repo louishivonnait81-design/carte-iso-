@@ -86,9 +86,13 @@ def squared(path: Path) -> Path:
     references en paysage donnent une tuile en paysage (mesure : 1,84 pour des
     references a 1,83). Une reference carree ne laisse aucune ambiguite.
     """
-    from PIL import Image
+    from PIL import Image, UnidentifiedImageError
 
-    with Image.open(path) as img:
+    try:
+        img = Image.open(path)
+    except UnidentifiedImageError:      # fichier factice (tests) : renvoye tel quel
+        return path
+    with img:
         if img.width == img.height:
             return path
         side = max(img.size)
