@@ -183,3 +183,36 @@ def boxes_touching(boxes: dict[str, tuple[int, int, int, int]],
         if x < rx + rw and x + w > rx and y < ry + rh and y + h > ry:
             out.add(name)
     return out
+
+
+def _point_segment_distance(px: float, py: float,
+                            ax: float, ay: float, bx: float, by: float) -> float:
+    dx, dy = bx - ax, by - ay
+    if dx == 0.0 and dy == 0.0:
+        return ((px - ax) ** 2 + (py - ay) ** 2) ** 0.5
+    s = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)))
+    return ((px - ax - s * dx) ** 2 + (py - ay - s * dy) ** 2) ** 0.5
+
+
+def faces_place(unit: Unit, buildings: dict[int, Building],
+                outline: list[tuple[float, float]], max_gap: float = 3.0) -> bool:
+    """Vrai si une facade de l'unite borde le contour d'une place.
+
+    La question "cette rangee donne-t-elle sur la place ?" decidait jusqu'ici de
+    savoir si son rez-de-chaussee porte l'arcade, et elle etait tranchee a la
+    main, unite par unite. OSM porte la reponse : la place est un polygone
+    `place=square`, et une facade qui la borde a ses sommets a moins de quelques
+    metres de ce contour. Trois metres laissent passer le trottoir et l'erreur
+    de saisie sans attraper la rangee d'en face.
+    """
+    n = len(outline)
+    if n < 3:
+        return False
+    for wid in unit.way_ids:
+        for px, py in buildings[wid].points:
+            for i in range(n):
+                ax, ay = outline[i]
+                bx, by = outline[(i + 1) % n]
+                if _point_segment_distance(px, py, ax, ay, bx, by) <= max_gap:
+                    return True
+    return False

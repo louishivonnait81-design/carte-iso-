@@ -34,7 +34,7 @@ DRAWN = ROOT / "drawn"
 OUT = ROOT / "manual_units"
 REF01 = ROOT / "assets" / "REF_01_style.png"
 TEMPLATE = ROOT / "prompts" / "unit.md"
-LIEUX = ROOT / "prompts" / "lieux.md"
+RANGEES = ROOT / "prompts" / "rangees.md"
 
 
 def load_index() -> dict:
@@ -45,11 +45,16 @@ def load_index() -> dict:
 
 
 def load_fiches() -> dict[str, str]:
-    """Fiches de lieux, indexees par le motif cherche dans le nom OSM."""
-    if not LIEUX.exists():
+    """Fiches de RANGEE, indexees par le motif cherche dans le nom OSM.
+
+    Pas celles de prompts/lieux.md : une fiche de lieu decrit un endroit vu
+    d'ensemble et renvoie a "image 3", qui n'existe pas dans le prompt d'une
+    unite. Une fiche de rangee dit ce que porte une facade, et rien d'autre.
+    """
+    if not RANGEES.exists():
         return {}
     fiches = {}
-    for line in LIEUX.read_text(encoding="utf-8").splitlines():
+    for line in RANGEES.read_text(encoding="utf-8").splitlines():
         m = re.match(r"- \*\*(.+?)\*\*\s*:\s*(.+)", line)
         if m:
             fiches[m.group(1).lower()] = m.group(2).strip()
@@ -57,10 +62,20 @@ def load_fiches() -> dict[str, str]:
 
 
 def note_for(entry: dict, fiches: dict[str, str], names: dict[int, str]) -> str:
-    """Fiche a joindre si l'unite porte un batiment nomme que l'on connait."""
+    """Fiches a joindre : celles des batiments nommes de l'unite, et celle de la
+    place qu'elle borde.
+
+    La seconde compte autant que la premiere. Aucun batiment de la place Jean
+    Jaures ne porte son nom dans OSM, mais c'est elle qui dit que leur
+    rez-de-chaussee est une arcade continue. render_units calcule quelles unites
+    la bordent — sommets a moins de trois metres du polygone `place=square` — et
+    l'ecrit dans "faces".
+    """
     seen = []
-    for wid in entry["way_ids"]:
-        name = (names.get(wid) or "").lower()
+    labels = [(names.get(wid) or "") for wid in entry["way_ids"]]
+    labels += entry.get("faces", [])
+    for name in labels:
+        name = name.lower()
         if not name:
             continue
         for pattern, text in fiches.items():

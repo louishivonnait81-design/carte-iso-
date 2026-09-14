@@ -131,3 +131,29 @@ def test_silhouette_iou_is_the_metric_that_matters_now():
 
 def _iou(a, b):
     return float((a & b).sum() / max(1, (a | b).sum()))
+
+
+def test_a_row_fiche_never_speaks_of_the_tile_or_of_its_neighbours():
+    """Les fiches de lieux ont ete ecrites pour le prompt de TUILE : elles
+    decrivent la place, ses quatre cotes, sa rangee d'arbres, et renvoient a
+    "image 3" pour la composition. Injectees telles quelles dans le prompt d'une
+    seule rangee, elles parlent d'une image qui n'existe pas et decrivent des
+    batiments que cette rangee ne contient pas. Les fiches de rangee sont donc
+    un fichier separe, et ce test garde la separation."""
+    text = um.RANGEES.read_text(encoding="utf-8")
+    body = text[text.index("-->") + 3:]
+    for forbidden in ("image 3", "image 4", "this tile", "read from image",
+                      "how many there are", "row of trees"):
+        assert forbidden not in body, forbidden
+
+
+def test_every_row_fiche_describes_a_facade_not_a_place():
+    """Une fiche de rangee commence par situer la facade, jamais par decrire un
+    lieu vu d'en haut."""
+    import re
+    text = um.RANGEES.read_text(encoding="utf-8")
+    body = text[text.index("-->") + 3:]
+    fiches = re.findall(r"- \*\*(.+?)\*\* : (.+)", body)
+    assert len(fiches) >= 3
+    for name, desc in fiches:
+        assert desc.startswith("This row"), (name, desc[:40])

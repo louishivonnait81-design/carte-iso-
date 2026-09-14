@@ -43,7 +43,7 @@ if str(ROOT / "scripts") not in sys.path:
 import iso_tiles  # noqa: E402
 import osm_to_blend as ob  # noqa: E402
 from geo import TileGrid, latlon_to_xy, project  # noqa: E402
-from units import Building, boxes_touching, build_units  # noqa: E402
+from units import Building, boxes_touching, build_units, faces_place  # noqa: E402
 
 # Marge autour d'une unite, en metres. Elle laisse respirer le trait epais du
 # contour et evite qu'un debord de toit soit coupe au ras du cadre.
@@ -159,6 +159,27 @@ def setup_mask_pass(scene) -> None:
 
 # --------------------------------------------------------------------------
 
+# Un polygone qui delimite un espace public nomme : la place, le parvis, le
+# cours. Les rangees qui le bordent recoivent sa fiche, et donc son arcade.
+PLACE_TAGS = (("place", "square"), ("highway", "pedestrian"), ("area:highway", "pedestrian"))
+
+
+def named_places(osm, lat0: float, lon0: float) -> dict[str, list[tuple[float, float]]]:
+    out = {}
+    for wid, tags in osm.way_tags.items():
+        name = tags.get("name")
+        if not name or not any(tags.get(k) == v for k, v in PLACE_TAGS):
+            continue
+        refs = osm.ways[wid]
+        if len(refs) < 4 or refs[0] != refs[-1]:
+            continue                       # un contour de place est ferme
+        pts = [latlon_to_xy(*osm.nodes[n], lat0, lon0) for n in refs[:-1]
+               if n in osm.nodes]
+        if len(pts) >= 3 and len(pts) > len(out.get(name, [])):
+            out[name] = pts                # on garde le trace le plus detaille
+    return out
+
+
 def load_units(osm_path: Path, grid: TileGrid, max_extent: float):
     osm = ob.Osm.parse(osm_path)
     lat0, lon0 = grid.origin_lat, grid.origin_lon
@@ -175,7 +196,7 @@ def load_units(osm_path: Path, grid: TileGrid, max_extent: float):
         if len(pts) < 3:
             continue
         buildings[wid] = Building(wid, pts, tags, nodes)
-    return build_units(buildings, max_extent)
+    return build_units(buildings, max_extent), buildings, named_places(osm, lat0, lon0)
 
 
 
@@ -226,7 +247,10 @@ def main() -> int:
                           elevation_deg=args.elevation, azimuth_deg=args.azimuth)
     print(f"[unites] origine de la scene : {olat}, {olon}")
 
-    units = load_units(args.osm, grid, args.max_extent)
+    units, buildings, places = load_units(args.osm, grid, args.max_extent)
+    for name, outline in places.items():
+        n = sum(faces_place(u, buildings, outline) for u in units)
+        print(f"[unites] {n} unites bordent {name}")
     if args.units:
         wanted = set(args.units.split(","))
         units = [u for u in units if u.name in wanted]
@@ -280,6 +304,8 @@ def main() -> int:
         mask_path = args.out / f"{unit.name}_mask.png"
         index["units"].append({
             "name": unit.name, "way_ids": unit.way_ids, "order": order,
+            "faces": [n for n, o in places.items()
+                      if faces_place(unit, buildings, o)],
             "x": x, "y": y, "w": w, "h": h,
             "line": line_path.name, "mask": mask_path.name,
             "size_m": [round(bbox[2] - bbox[0], 2), round(bbox[3] - bbox[1], 2)],

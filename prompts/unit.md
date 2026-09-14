@@ -29,7 +29,9 @@ building is thrown away.
 
 WHAT TO ADD, and nothing else:
   - windows on every visible façade, aligned in vertical bays, one row per storey;
-    each window a plain rectangle taller than wide with a moulded stone surround;
+    each window a plain rectangle taller than wide with a moulded stone surround,
+    and NOTHING ELSE — no shutters, no glazing bars, no balconette. The houses of
+    Castres photographed for this map have bare windows in a stone frame;
   - a door or a shopfront at street level, one per house;
   - the party wall between two houses, drawn as a line from ground to ridge, so the
     row reads as separate houses and not as one long building;
