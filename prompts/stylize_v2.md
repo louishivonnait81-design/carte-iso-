@@ -113,9 +113,12 @@ types and to no other. There is no fourth type:
 <!-- @section architecture_rules -->
 RULES THAT APPLY TO EVERY BUILDING WITHOUT EXCEPTION:
   - two or three storeys, never more, never a single-storey shed;
-  - the roof is pitched with a visible ridge, low slope, curved terracotta canal
-    tiles, and a génoise cornice of two stacked tile courses under the eaves;
-    no roof is flat, no roof is a terrace with a parapet;
+  - the roof is pitched with a visible ridge, low slope, and a génoise cornice of
+    two stacked tile courses under the eaves; no roof is flat, no roof is a
+    terrace with a parapet. The tiles are SUGGESTED, never drawn one by one: two
+    or three short courses along the eaves and nothing on the rest of the slope,
+    which stays bare white paper. Never cover a roof with a grid or a scale
+    pattern of tiles;
   - every window is rectangular, taller than wide, with two hinged wooden
     shutters, and nothing else — no glazing bars, no reveals, no bay windows;
   - chimneys are plain rendered or brick stacks on the ridge.
@@ -190,5 +193,13 @@ or fill — the roadway, the roof slopes, the paving, the water — stays PURE W
 is defined by its black outline alone. Colour is forbidden the same way: no green
 trees, no blue water, not one coloured pixel. Trees are black outlines on white,
 water is black ripple lines on white, roads are black kerbs and markings on white.
-If any grey or any colour from {sem} has found its way into your drawing, it is wrong. If your drawing is prettier than {lines} but does not match
+If any grey or any colour from {sem} has found its way into your drawing, it is wrong.
+
+And keep the paper EMPTY. This tile is one square of a large map that will be
+printed small: a texture that looks delicate at full size turns into a grey smudge
+when the map is reduced. So no roof covered in tiles, no wall covered in stones or
+bricks, no ground covered in paving joints, no hatching, no stippling, no repeated
+pattern filling any surface. Draw the outline, the openings, and two or three
+courses of tile at the eaves — then stop. Far more than half of your paper is bare
+white, and every large surface reads as white, not as texture. If your drawing is prettier than {lines} but does not match
 it, it is wrong and must be redone.

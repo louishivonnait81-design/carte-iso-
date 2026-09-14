@@ -389,3 +389,16 @@ def test_notes_off_isolates_the_places_variable(tmp_path, monkeypatch):
     assert "WHAT IS REALLY HERE" in with_notes.prompt
     assert "WHAT IS REALLY HERE" not in without.prompt
     assert without.images == with_notes.images
+
+
+def test_texture_rule_keeps_the_paper_empty():
+    """Le premier rendu geometriquement juste (derive 0,461) portait 3,4 fois
+    l'encre du squelette : chaque tuile de toit, chaque pierre de mur, chaque
+    joint de pavage dessines un par un. A la reduction, 55,4 %% de gris contre
+    27,9 %% pour REF_01 — et une precision tombee a 0,388, 61 %% de l'encre du
+    dessin ne correspondant a rien dans le squelette."""
+    ink = SECTIONS["geometry_last"]
+    assert "keep the paper EMPTY" in ink
+    assert "no hatching" in ink
+    rules = SECTIONS["architecture_rules"]
+    assert "SUGGESTED, never drawn one by one" in rules
