@@ -55,7 +55,7 @@ def load_sections(path: Path) -> dict[str, str]:
             buf.append(line)
     if name:
         sections[name] = "\n".join(buf).strip()
-    missing = {"base", "architecture", "left", "top"} - sections.keys()
+    missing = {"base", "architecture", "geometry_last", "left", "top"} - sections.keys()
     if missing:
         raise SystemExit(f"Sections manquantes dans {path} : {sorted(missing)}")
     return sections
@@ -172,7 +172,8 @@ def load_notes(tiles_dir: Path) -> dict[str, list[dict]]:
 
 def build_job(tile: dict, tiles_dir: Path, out_dir: Path, sections: dict[str, str],
               use_ref02: bool, water_mode: str, notes: dict[str, list[dict]] | None = None,
-              use_ref01: bool = True, anchor: Path | None = None) -> Job:
+              use_ref01: bool = True, anchor: Path | None = None,
+              no_neighbours: bool = False) -> Job:
     line = tiles_dir / tile["line"]
     sem = tiles_dir / tile["semantic"]
     for path in (line, sem):
@@ -201,7 +202,7 @@ def build_job(tile: dict, tiles_dir: Path, out_dir: Path, sections: dict[str, st
     images += [line, sem]
 
     for side in ("left", "top"):
-        neighbour = tile["neighbours"].get(side)
+        neighbour = None if no_neighbours else tile["neighbours"].get(side)
         if not neighbour:
             continue
         styled = out_dir / f"{neighbour}.png"
@@ -221,6 +222,7 @@ def build_job(tile: dict, tiles_dir: Path, out_dir: Path, sections: dict[str, st
     if use_ref02 and "ref02" in sections:
         parts.append("ref02")
     parts += [r for r in ("left", "top") if r in roles]
+    parts.append("geometry_last")
 
     filled = dict(sections)
     if anchor is not None:
@@ -268,6 +270,9 @@ def main() -> int:
                    help="ajouter la legende 'bleu = eau' au prompt")
     p.add_argument("--ref02", choices=["auto", "on", "off"], default="auto",
                    help="joindre assets/REF_02_castres.png")
+    p.add_argument("--no-neighbours", action="store_true",
+                   help="ne joindre aucune voisine : sert a isoler l'effet de la "
+                        "continuite sur la fidelite geometrique")
     p.add_argument("--anchor", default=None, metavar="TUILE",
                    help="nom d'une tuile deja validee (ex. tile_1_4) : elle sert de "
                         "reference de style a la place de REF_01 et REF_02")
@@ -322,7 +327,8 @@ def main() -> int:
         out_png = args.out / f"{name}.png"
         meta_path = args.out / f"{name}.json"
         job = build_job(tiles[name], args.tiles, args.out, sections, use_ref02, args.water,
-                        notes, use_ref01=args.ref01 == "on", anchor=anchor)
+                        notes, use_ref01=args.ref01 == "on", anchor=anchor,
+                        no_neighbours=args.no_neighbours)
         key = job.cache_key(args.model, args.aspect_ratio, args.image_size)
 
         if out_png.exists() and not args.force:

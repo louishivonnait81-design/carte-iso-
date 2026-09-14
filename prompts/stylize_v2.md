@@ -127,3 +127,12 @@ of detail.
 continue it seamlessly: every street, building and line touching the top edge of
 this tile must match {top}'s bottom edge exactly, same line weight, same level
 of detail.
+
+<!-- @section geometry_last -->
+LAST AND ABOVE EVERYTHING ELSE. {Lines} is the ground truth. Every other image in
+this message — the style reference, the neighbouring tiles — shows you HOW to draw,
+never WHAT stands here or WHERE. Before you finish, check your drawing against
+{lines}: every building of {lines} must be present, at its place, at its size, at
+its angle; and no building may stand where {lines} shows none. An empty area in
+{lines} stays empty. If your drawing is prettier than {lines} but does not match
+it, it is wrong and must be redone.

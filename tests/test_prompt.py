@@ -147,8 +147,8 @@ def test_cache_key_changes_with_inputs(tmp_path, monkeypatch):
 
 def test_section_set_is_exactly_the_expected_one():
     """Le commentaire d'en-tete du gabarit ne doit pas etre pris pour une section."""
-    assert sorted(SECTIONS) == ["anchor", "architecture", "base", "left", "notes",
-                                "ref02", "top", "water"]
+    assert sorted(SECTIONS) == ["anchor", "architecture", "base", "geometry_last",
+                                "left", "notes", "ref02", "top", "water"]
 
 
 def test_architecture_section_is_always_included(tmp_path, monkeypatch):
@@ -264,3 +264,34 @@ def test_anchor_that_is_also_the_left_neighbour_is_sent_once(tmp_path, monkeypat
     assert "Image 1 is a FINISHED TILE OF THIS SAME MAP" in job.prompt
     assert "Image 1 is the finished tile directly to the LEFT" in job.prompt
     assert "image 4" not in job.prompt
+
+
+def test_geometry_reminder_is_always_last(tmp_path, monkeypatch):
+    """La recence a joue contre nous deux fois : une description riche, puis une
+    tuile voisine, ont pousse le modele a composer sa propre scene. Le rappel
+    geometrique ferme donc le prompt, apres tout le reste."""
+    tiles_dir, index = _fake_tiles(tmp_path, 2, 2)
+    out = tmp_path / "out"
+    out.mkdir()
+    (out / "tile_0_1.png").write_bytes(b"styled")
+    (out / "tile_1_0.png").write_bytes(b"styled")
+    monkeypatch.setattr(stylize, "REF01", tmp_path / "ref01.png")
+    stylize.REF01.write_bytes(b"ref")
+    tile = next(t for t in index["tiles"] if t["name"] == "tile_1_1")
+    job = stylize.build_job(tile, tiles_dir, out, SECTIONS, use_ref02=False,
+                            water_mode="off")
+    assert job.prompt.rstrip().endswith("it is wrong and must be redone.")
+    assert "LAST AND ABOVE EVERYTHING ELSE" in job.prompt
+
+
+def test_no_neighbours_isolates_the_continuity_variable(tmp_path, monkeypatch):
+    tiles_dir, index = _fake_tiles(tmp_path, 1, 2)
+    out = tmp_path / "out"
+    out.mkdir()
+    (out / "tile_0_0.png").write_bytes(b"styled")
+    monkeypatch.setattr(stylize, "REF01", tmp_path / "ref01.png")
+    stylize.REF01.write_bytes(b"ref")
+    job = stylize.build_job(index["tiles"][1], tiles_dir, out, SECTIONS, use_ref02=False,
+                            water_mode="off", no_neighbours=True)
+    assert job.roles == ["ref01", "lines", "sem"]
+    assert "directly to the LEFT" not in job.prompt

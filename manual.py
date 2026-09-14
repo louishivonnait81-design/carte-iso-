@@ -69,9 +69,10 @@ def load_index(tiles: Path) -> dict:
 
 def export_tile(tile: dict, tiles: Path, styled: Path, out: Path,
                 sections: dict, use_ref02: bool, water: str, force: bool,
-                use_ref01: bool = True, anchor=None) -> Path:
+                use_ref01: bool = True, anchor=None, no_neighbours: bool = False) -> Path:
     job = stylize.build_job(tile, tiles, styled, sections, use_ref02, water,
-                            stylize.load_notes(tiles), use_ref01=use_ref01, anchor=anchor)
+                            stylize.load_notes(tiles), use_ref01=use_ref01, anchor=anchor,
+                            no_neighbours=no_neighbours)
     folder = out / tile["name"]
     if folder.exists():
         if not force:
@@ -126,7 +127,7 @@ def cmd_export(args, index, sections) -> int:
             sys.exit(f"Tuile inconnue : {name}")
         export_tile(tiles[name], args.tiles, args.styled, args.out, sections,
                     args.use_ref02, args.water, args.force, args.ref01 == "on",
-                    stylize.resolve_anchor(args.anchor, args.styled))
+                    stylize.resolve_anchor(args.anchor, args.styled), args.no_neighbours)
 
     if not args.all and len(names) == 1:
         print(f"\nSuivre {args.out / names[0] / 'LISEZMOI.txt'}")
@@ -233,6 +234,8 @@ def main() -> int:
                    help="'off' : REF_02 seule porte le style de trait")
     p.add_argument("--anchor", default=None, metavar="TUILE",
                    help="tuile deja validee servant de reference de style")
+    p.add_argument("--no-neighbours", action="store_true",
+                   help="ne joindre aucune voisine (test d'isolement)")
     p.add_argument("--force", action="store_true")
     sub = p.add_subparsers(dest="cmd", required=True)
 
