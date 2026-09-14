@@ -69,9 +69,11 @@ def load_index(tiles: Path) -> dict:
 
 def export_tile(tile: dict, tiles: Path, styled: Path, out: Path,
                 sections: dict, use_ref02: bool, water: str, force: bool,
-                use_ref01: bool = True, anchor=None, no_neighbours: bool = False) -> Path:
+                use_ref01: bool = True, anchor=None, no_neighbours: bool = False,
+                notes_mode: str = "auto") -> Path:
     job = stylize.build_job(tile, tiles, styled, sections, use_ref02, water,
-                            stylize.load_notes(tiles), use_ref01=use_ref01, anchor=anchor,
+                            stylize.load_notes(tiles), notes_mode=notes_mode,
+                            use_ref01=use_ref01, anchor=anchor,
                             no_neighbours=no_neighbours)
     folder = out / tile["name"]
     if folder.exists():
@@ -127,7 +129,8 @@ def cmd_export(args, index, sections) -> int:
             sys.exit(f"Tuile inconnue : {name}")
         export_tile(tiles[name], args.tiles, args.styled, args.out, sections,
                     args.use_ref02, args.water, args.force, args.ref01 == "on",
-                    stylize.resolve_anchor(args.anchor, args.styled), args.no_neighbours)
+                    stylize.resolve_anchor(args.anchor, args.styled), args.no_neighbours,
+                    args.notes_mode)
 
     if not args.all and len(names) == 1:
         print(f"\nSuivre {args.out / names[0] / 'LISEZMOI.txt'}")
@@ -228,6 +231,9 @@ def main() -> int:
     p.add_argument("--tiles", type=Path, default=ROOT / "tiles")
     p.add_argument("--styled", type=Path, default=ROOT / "styled")
     p.add_argument("--out", type=Path, default=ROOT / "manual")
+    p.add_argument("--notes", choices=["auto", "off"], default="auto",
+                   dest="notes_mode",
+                   help="'off' : retirer le bloc des lieux (test d'isolement)")
     p.add_argument("--water", choices=["auto", "on", "off"], default="auto")
     p.add_argument("--ref02", choices=["auto", "on", "off"], default="auto")
     p.add_argument("--ref01", choices=["on", "off"], default="on",

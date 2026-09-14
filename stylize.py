@@ -120,7 +120,23 @@ def squared(path: Path) -> Path:
 # Detection d'eau dans la tuile semantique
 # --------------------------------------------------------------------------
 
-def has_water(sem_path: Path, tolerance: int = 40) -> bool:
+def has_water(sem_path: Path, tolerance: int = 16, min_ratio: float = 5e-4) -> bool:
+    """Vrai si la tuile semantique porte reellement de l'eau.
+
+    Deux pieges, tous deux rencontres pour de vrai sur tile_1_4, qui n'a pas une
+    goutte d'eau et pour laquelle cette fonction repondait Vrai :
+
+    * le redimensionnement interpolait. Un bord de disque de vegetation contre du
+      blanc produisait un vert pale (207, 235, 207) qui n'existe nulle part dans
+      le PNG. On echantillonne donc en NEAREST, qui ne peut rendre qu'une couleur
+      reellement presente.
+    * la tolerance de 40 sur l'ecart maximal par canal laissait ce vert pale
+      passer pour du bleu pale : 37 < 40. Les aplats semantiques sont ecrits
+      exactement, un ecart de 16 suffit largement.
+
+    Et un seul pixel ne declenche plus le paragraphe : il faut au moins
+    `min_ratio` de la surface, soit environ 33 pixels sur 256x256.
+    """
     try:
         from PIL import Image
     except ImportError:
@@ -128,8 +144,10 @@ def has_water(sem_path: Path, tolerance: int = 40) -> bool:
     import numpy as np
 
     with Image.open(sem_path) as img:
-        arr = np.asarray(img.convert("RGB").resize((256, 256)), dtype=np.int16)
-    return bool((np.abs(arr - np.array(WATER_RGB, dtype=np.int16)).max(axis=2) < tolerance).any())
+        arr = np.asarray(img.convert("RGB").resize((256, 256), Image.NEAREST),
+                         dtype=np.int16)
+    hit = np.abs(arr - np.array(WATER_RGB, dtype=np.int16)).max(axis=2) < tolerance
+    return bool(hit.mean() >= min_ratio)
 
 
 # --------------------------------------------------------------------------
@@ -172,6 +190,7 @@ def load_notes(tiles_dir: Path) -> dict[str, list[dict]]:
 
 def build_job(tile: dict, tiles_dir: Path, out_dir: Path, sections: dict[str, str],
               use_ref02: bool, water_mode: str, notes: dict[str, list[dict]] | None = None,
+              notes_mode: str = "auto",
               use_ref01: bool = True, anchor: Path | None = None,
               no_neighbours: bool = False) -> Job:
     line = tiles_dir / tile["line"]
@@ -211,10 +230,15 @@ def build_job(tile: dict, tiles_dir: Path, out_dir: Path, sections: dict[str, st
             images.append(styled)
 
     water = water_mode == "on" or (water_mode == "auto" and has_water(sem))
-    parts = ["base", "architecture"]
+    # La liste fermee des types depend de l'eau : offrir la maison a colombage
+    # "sur la riviere" a une tuile seche a suffi a faire dessiner l'Agout et un
+    # pont de pierre la ou il n'y a qu'une place.
+    parts = ["base", "architecture",
+             "types_wet" if water else "types_dry",
+             "architecture_rules"]
     if anchor is not None:
         parts.append("anchor")
-    entries = (notes or {}).get(tile["name"], [])
+    entries = [] if notes_mode == "off" else (notes or {}).get(tile["name"], [])
     if entries and "notes" in sections:
         parts.append("notes")
     if water and "water" in sections:
@@ -266,6 +290,9 @@ def main() -> int:
                    help="graine fixe : meme entree, meme sortie")
     p.add_argument("--budget-eur", type=float, default=5.0,
                    help="plafond de depense cumulee, en euros")
+    p.add_argument("--notes", choices=["auto", "off"], default="auto",
+                   dest="notes_mode",
+                   help="'off' : retirer le bloc des lieux (test d'isolement)")
     p.add_argument("--water", choices=["auto", "on", "off"], default="auto",
                    help="ajouter la legende 'bleu = eau' au prompt")
     p.add_argument("--ref02", choices=["auto", "on", "off"], default="auto",

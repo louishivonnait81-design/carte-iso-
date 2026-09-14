@@ -148,8 +148,9 @@ def test_cache_key_changes_with_inputs(tmp_path, monkeypatch):
 
 def test_section_set_is_exactly_the_expected_one():
     """Le commentaire d'en-tete du gabarit ne doit pas etre pris pour une section."""
-    assert sorted(SECTIONS) == ["anchor", "architecture", "base", "geometry_last",
-                                "left", "notes", "ref02", "top", "water"]
+    assert sorted(SECTIONS) == ["anchor", "architecture", "architecture_rules",
+                                "base", "geometry_last", "left", "notes", "ref02",
+                                "top", "types_dry", "types_wet", "water"]
 
 
 def test_architecture_section_is_always_included(tmp_path, monkeypatch):
@@ -158,7 +159,7 @@ def test_architecture_section_is_always_included(tmp_path, monkeypatch):
     stylize.REF01.write_bytes(b"ref")
     job = stylize.build_job(index["tiles"][0], tiles_dir, tmp_path / "out",
                             SECTIONS, use_ref02=False, water_mode="off")
-    assert "There is no fourth type" in job.prompt
+    assert "There is no third type" in job.prompt   # tuile seche : deux types
     assert "NO PEOPLE, NO ANIMALS" in job.prompt
     assert "NO INVENTED LANDMARKS" in job.prompt
     assert "NOTHING IN THIS DRAWING IS MODERN" in job.prompt
@@ -328,3 +329,63 @@ def test_framing_rule_anchors_the_ink_to_the_four_edges():
     base = SECTIONS["base"]
     assert "all four edges of the frame" in base
     assert "do not close what {lines} leaves" in base
+
+
+def test_dry_tile_is_offered_no_half_timbered_house_on_the_river(tmp_path, monkeypatch):
+    """tile_1_4 n'a pas une goutte d'eau, et le modele y a dessine l'Agout, un quai
+    et un pont de pierre. Une des causes est la liste fermee des types, qui lui
+    offrait la maison a colombage "sur la riviere" meme sur une tuile seche."""
+    tiles_dir, index = _fake_tiles(tmp_path, 1, 2)
+    monkeypatch.setattr(stylize, "REF01", tmp_path / "ref01.png")
+    stylize.REF01.write_bytes(b"ref")
+    dry = stylize.build_job(index["tiles"][0], tiles_dir, tmp_path / "out",
+                            SECTIONS, use_ref02=False, water_mode="off")
+    assert "THERE IS NO WATER ANYWHERE IN THIS TILE" in dry.prompt
+    assert "half-timbered house on the river" not in dry.prompt
+    assert "no bridge" in dry.prompt
+
+    wet = stylize.build_job(index["tiles"][0], tiles_dir, tmp_path / "out",
+                            SECTIONS, use_ref02=False, water_mode="on")
+    assert "half-timbered house on the river" in wet.prompt
+    assert "THERE IS NO WATER ANYWHERE IN THIS TILE" not in wet.prompt
+
+
+def test_has_water_does_not_mistake_pale_green_for_pale_blue(tmp_path):
+    """Le redimensionnement interpolait : un bord de disque de vegetation contre du
+    blanc produisait un vert pale (207, 235, 207) absent du PNG, a une distance de
+    37 du bleu de l'eau — sous l'ancienne tolerance de 40. tile_1_4, sans une
+    goutte d'eau, recevait donc la legende de l'Agout, et le modele a dessine une
+    riviere et un pont."""
+    from PIL import Image
+    import numpy as np
+    from geo import SEMANTIC_SRGB
+
+    arr = np.full((512, 512, 3), 255, dtype=np.uint8)
+    arr[100:200, 100:200] = SEMANTIC_SRGB["vegetation"][:3]
+    sec = tmp_path / "vegetation_seule.png"
+    Image.fromarray(arr).save(sec)
+    assert stylize.has_water(sec) is False
+
+    arr[300:400, 300:400] = SEMANTIC_SRGB["water"][:3]
+    wet = tmp_path / "avec_eau.png"
+    Image.fromarray(arr).save(wet)
+    assert stylize.has_water(wet) is True
+
+
+def test_notes_off_isolates_the_places_variable(tmp_path, monkeypatch):
+    """Le bloc des lieux a grossi jusqu'a 18 entrees decrites. Il faut pouvoir le
+    retirer sans rien changer d'autre pour savoir ce qu'il coute en derive."""
+    tiles_dir, index = _fake_tiles(tmp_path, 1, 2)
+    monkeypatch.setattr(stylize, "REF01", tmp_path / "ref01.png")
+    stylize.REF01.write_bytes(b"ref")
+    notes = {"tile_0_0": [{"name": "Cathédrale Saint-Benoît", "kind": "church",
+                           "position": "centre"}]}
+    with_notes = stylize.build_job(index["tiles"][0], tiles_dir, tmp_path / "out",
+                                   SECTIONS, use_ref02=False, water_mode="off",
+                                   notes=notes)
+    without = stylize.build_job(index["tiles"][0], tiles_dir, tmp_path / "out",
+                                SECTIONS, use_ref02=False, water_mode="off",
+                                notes=notes, notes_mode="off")
+    assert "WHAT IS REALLY HERE" in with_notes.prompt
+    assert "WHAT IS REALLY HERE" not in without.prompt
+    assert without.images == with_notes.images

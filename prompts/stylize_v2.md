@@ -27,10 +27,11 @@ Redraw {lines} in exactly the LINE STYLE of {ref01}: hand-inked cartoon, black i
 pure white, uniform line weight, no shading, hatching, gray or color, no text.
 
 ARCHITECTURE: this is Castres, a small historic town in south-west France — NOT
-Paris. Even simplified, buildings must look like Castres: old half-timbered houses
-with overhanging upper floors along the river, plastered façades with hinged
-shutters, low-pitched roofs with curved terracotta tiles, 17th–18th century stone
-mansions, stone quays and bridges. Do NOT draw Haussmann
+Paris. Even simplified, buildings must look like Castres: plastered façades with
+hinged shutters, low-pitched roofs with curved terracotta tiles, 17th–18th century
+stone mansions. The town's famous half-timbered houses standing in the water, and
+its stone quays and bridges, belong to the riverbank alone: draw them only where
+{sem} shows blue, and nowhere else. Do NOT draw Haussmann
 apartment blocks, mansard zinc roofs or Parisian wrought-iron balconies; use
 {ref01} only for the ink style, never for the architecture.
 
@@ -83,17 +84,33 @@ the cathedral only where {lines} shows a very large building with a distinct
 outline, the river and its bridges only where {sem} shows blue. Never draw water,
 a church, a tower or a spire where {lines} and {sem} show ordinary houses.
 
+<!-- @section types_dry -->
+CLOSED LIST OF BUILDING TYPES. Every single building belongs to one of these two
+types and to no other. There is no third type:
+  TYPE A — plastered town house: plain rendered façade, no visible frame or
+    coursing, a simple moulded string course between floors at most.
+  TYPE B — stone mansion (hôtel particulier): ashlar façade with quoins at the
+    corners, one round-arched carriage porch, slightly taller than its neighbours.
+
+THERE IS NO WATER ANYWHERE IN THIS TILE. This part of the town stands well away
+from the river: draw no river, no canal, no quay, no bridge, no arch over water,
+no boat, no half-timbered house standing in water. The famous houses of the Agout
+belong to another tile.
+
+<!-- @section types_wet -->
 CLOSED LIST OF BUILDING TYPES. Every single building belongs to one of these three
 types and to no other. There is no fourth type:
   TYPE A — half-timbered house on the river: exposed timber frame, corner posts,
     one sill beam and one or two diagonal braces per façade, upper floor clearly
     overhanging on visible corbels, ground floor rising straight out of the water
-    on stone footings.
+    on stone footings. A building is TYPE A only where it actually stands on the
+    blue of {sem}; nowhere else.
   TYPE B — plastered town house: plain rendered façade, no visible frame or
     coursing, a simple moulded string course between floors at most.
   TYPE C — stone mansion (hôtel particulier): ashlar façade with quoins at the
     corners, one round-arched carriage porch, slightly taller than its neighbours.
 
+<!-- @section architecture_rules -->
 RULES THAT APPLY TO EVERY BUILDING WITHOUT EXCEPTION:
   - two or three storeys, never more, never a single-storey shed;
   - the roof is pitched with a visible ridge, low slope, curved terracotta canal
@@ -134,8 +151,11 @@ ripple lines between stone quays, never as a building or a street.
 
 <!-- @section ref02 -->
 {Ref02} is a second reference showing the ARCHITECTURE of Castres in this same ink
-style: half-timbered houses on the river, plastered façades with shutters, curved
-terracotta roofs. Take the buildings from {ref02} and the ink style from {ref01}.
+style: plastered façades with shutters, curved terracotta roofs, stone mansions, and
+— in the part of it that shows the riverbank — half-timbered houses above the water.
+Take the buildings from {ref02} and the ink style from {ref01}. Where {ref02} shows a
+river, a quay or a bridge, that is a different part of the town: use it only if {sem}
+shows blue in yours.
 
 Two things {ref02} gets wrong, do not copy them: draw trees as isometric canopies
 seen from above at the SAME angle as the buildings, standing on no base plate,
