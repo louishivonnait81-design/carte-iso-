@@ -17,6 +17,7 @@ Les tags OSM sont recopies en proprietes personnalisees. L'origine de la scene
 from __future__ import annotations
 
 import argparse
+import json
 import math
 import sys
 import xml.etree.ElementTree as ET
@@ -96,25 +97,46 @@ def category_of(tags: dict) -> str | None:
     return None
 
 
-def building_height(tags: dict) -> float:
+# Provenance et confiance de chaque hauteur. Sur Castres, 3 738 batiments sur
+# 3 763 n'ont ni height ni building:levels : sans ce suivi, une hauteur devinee a
+# partir du seul type de batiment est indiscernable d'une hauteur mesuree, et
+# c'est le maillon le plus faible de la geometrie.
+HEIGHT_CONFIDENCE = {
+    "measured": 0.98,   # tag height, ou releve LiDAR fourni
+    "levels": 0.90,     # building:levels x hauteur d'etage
+    "kind": 0.55,       # deduite du type (eglise, immeuble, garage...)
+    "default": 0.35,    # rien du tout : 2,5 niveaux
+}
+
+
+def building_height(tags: dict, measured: dict | None = None,
+                    osm_id: int | None = None) -> tuple[float, str, float]:
+    """Renvoie (hauteur, source, confiance).
+
+    `measured` permet d'injecter des hauteurs relevees — LiDAR HD de l'IGN, BD
+    TOPO, ou simple correction a la main — sous la forme {osm_id: hauteur}.
+    """
+    if measured and osm_id is not None and osm_id in measured:
+        return float(measured[osm_id]), "measured", HEIGHT_CONFIDENCE["measured"]
     for key in ("height", "building:height"):
         if key in tags:
             try:
-                return float(str(tags[key]).replace("m", "").strip())
+                return (float(str(tags[key]).replace("m", "").strip()),
+                        "measured", HEIGHT_CONFIDENCE["measured"])
             except ValueError:
                 pass
     kind = tags.get("building", "yes")
-    if kind in HEIGHT_BY_KIND and "building:levels" not in tags:
-        return HEIGHT_BY_KIND[kind]
-    levels = DEFAULT_LEVELS
     if "building:levels" in tags:
         try:
             levels = float(tags["building:levels"])
+            if kind in {"shed", "garage", "garages", "hut", "roof"}:
+                levels = min(levels, 1.0)
+            return levels * LEVEL_HEIGHT, "levels", HEIGHT_CONFIDENCE["levels"]
         except ValueError:
             pass
-    if kind in {"shed", "garage", "garages", "hut", "roof"}:
-        levels = min(levels, 1.0)
-    return levels * LEVEL_HEIGHT
+    if kind in HEIGHT_BY_KIND:
+        return HEIGHT_BY_KIND[kind], "kind", HEIGHT_CONFIDENCE["kind"]
+    return DEFAULT_LEVELS * LEVEL_HEIGHT, "default", HEIGHT_CONFIDENCE["default"]
 
 
 # --------------------------------------------------------------------------
@@ -224,7 +246,8 @@ def ring_area(pts: list[tuple[float, float]]) -> float:
     return 0.5 * sum(x0 * y1 - x1 * y0 for (x0, y0), (x1, y1) in zip(pts, pts[1:] + pts[:1]))
 
 
-def build_scene(osm: Osm, out: Path, roof: str, max_trees: int) -> dict:
+def build_scene(osm: Osm, out: Path, roof: str, max_trees: int,
+                measured: dict | None = None) -> dict:
     import bpy            # doit preceder bmesh : le module pip l'initialise
     import bmesh
     from mathutils import Vector
@@ -265,12 +288,22 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int) -> dict:
                 obj[k.replace(".", "_")] = v
 
     counts = defaultdict(int)
+    provenance: dict[str, dict] = {}
+
+    def record_height(key, obj, height, source, conf, tags) -> None:
+        if obj is not None:
+            obj["height_source"] = source
+            obj["height_confidence"] = conf
+        provenance[str(key)] = {
+            "height_m": round(height, 2), "source": source, "confidence": conf,
+            "name": tags.get("name"), "building": tags.get("building"),
+        }
 
     def add_polygon(name: str, col, rings: list[list[tuple[float, float]]], z: float,
                     height: float, tags: dict, surface: str | None = None) -> None:
         rings = [r for r in rings if len(r) >= 3]
         if not rings:
-            return
+            return None
         # anneau exterieur = le plus grand ; les autres sont des trous
         rings.sort(key=lambda r: -abs(ring_area(r)))
         outer, holes = rings[0], rings[1:]
@@ -284,7 +317,7 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int) -> dict:
         tris = tessellate_polygon([[Vector((x, y, 0.0)) for x, y in r] for r in loops])
         if not tris:
             bm.free()
-            return
+            return None
         top_z = z + height
         top = [bm.verts.new((v.x, v.y, top_z)) for v in verts_2d]
         bm.verts.ensure_lookup_table()
@@ -336,6 +369,7 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int) -> dict:
         set_props(obj, tags)
         if surface:
             obj["surface"] = surface
+        return obj
 
     def add_street(name: str, refs: list[int], tags: dict) -> None:
         """Ruban plat le long d'une voie. Le nom du collection cible decoule de
@@ -376,8 +410,10 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int) -> dict:
         elif closed:
             ring = ring_xy(refs)
             if cat == "building":
-                add_polygon(f"building.{wid}", collections["buildings"], [ring], 0.0,
-                            building_height(tags), tags)
+                height, source, conf = building_height(tags, measured, wid)
+                obj = add_polygon(f"building.{wid}", collections["buildings"], [ring], 0.0,
+                                  height, tags)
+                record_height(wid, obj, height, source, conf, tags)
                 counts["buildings"] += 1
             elif cat == "vegetation":
                 add_polygon(f"vegetation.{wid}", collections["vegetation"], [ring], 0.02, 0.0, tags)
@@ -408,8 +444,10 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int) -> dict:
             rings = [ring_xy(outer)] + inner_xy
             rid = f"rel.{abs(hash(tuple(outer))) % 10**9}.{i}"
             if cat == "building":
-                add_polygon(f"building.{rid}", collections["buildings"], rings, 0.0,
-                            building_height(tags), tags)
+                height, source, conf = building_height(tags, measured)
+                obj = add_polygon(f"building.{rid}", collections["buildings"], rings, 0.0,
+                                  height, tags)
+                record_height(rid, obj, height, source, conf, tags)
                 counts["buildings"] += 1
             elif cat == "vegetation":
                 add_polygon(f"vegetation.{rid}", collections["vegetation"], rings, 0.02, 0.0, tags)
@@ -449,6 +487,12 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int) -> dict:
 
     out.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.wm.save_as_mainfile(filepath=str(out), compress=True)
+    provenance_path = out.with_name(out.stem + "_confidence.json")
+    provenance_path.write_text(json.dumps(
+        {"heights": provenance,
+         "legend": {k: f"confiance {v}" for k, v in HEIGHT_CONFIDENCE.items()}},
+        indent=2, ensure_ascii=False), encoding="utf-8")
+    counts["_provenance_path"] = str(provenance_path)
     return dict(counts)
 
 
@@ -460,6 +504,9 @@ def main() -> int:
     p.add_argument("--roof", choices=["hip", "flat"], default="hip",
                    help="toiture suggeree sur les batiments")
     p.add_argument("--max-trees", type=int, default=400)
+    p.add_argument("--heights", type=Path, default=None,
+                   help="JSON {osm_id: hauteur_m} de hauteurs relevees (LiDAR HD, "
+                        "BD TOPO, ou corrections a la main) : elles priment sur tout")
     args = p.parse_args()
 
     if not args.osm.exists():
@@ -471,9 +518,26 @@ def main() -> int:
     print(f"[osm] origine scene : lat {lat0:.6f} lon {lon0:.6f}"
           + (f"  emprise {osm.bounds}" if osm.bounds else ""))
 
-    counts = build_scene(osm, args.out, args.roof, args.max_trees)
+    measured = None
+    if args.heights:
+        measured = {int(k): float(v) for k, v in
+                    json.loads(args.heights.read_text(encoding="utf-8")).items()}
+        print(f"[osm] {len(measured)} hauteurs relevees chargees depuis {args.heights}")
+    counts = build_scene(osm, args.out, args.roof, args.max_trees, measured)
+    provenance_path = counts.pop("_provenance_path", None)
     for k, v in sorted(counts.items()):
         print(f"[osm] {k:<11}: {v}")
+    if provenance_path:
+        prov = json.loads(Path(provenance_path).read_text(encoding="utf-8"))["heights"]
+        from collections import Counter
+        tally = Counter(e["source"] for e in prov.values())
+        total = sum(tally.values()) or 1
+        print("[osm] provenance des hauteurs :")
+        for src in ("measured", "levels", "kind", "default"):
+            n = tally.get(src, 0)
+            print(f"[osm]   {src:<9} {n:5d}  {n/total*100:5.1f} %  "
+                  f"(confiance {HEIGHT_CONFIDENCE[src]})")
+        print(f"[osm] provenance ecrite : {provenance_path}")
     print(f"[osm] scene ecrite : {args.out}")
     return 0
 

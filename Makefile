@@ -50,8 +50,11 @@ density:
 OSM     ?= assets/castres.osm
 export LIBGL_ALWAYS_SOFTWARE ?= 1
 
+HEIGHTS ?=
+
 blend:
-	$(PY) scripts/osm_to_blend.py $(OSM) --out assets/castres.blend
+	$(PY) scripts/osm_to_blend.py $(OSM) --out assets/castres.blend \
+		$(if $(HEIGHTS),--heights $(HEIGHTS),)
 
 render:
 	$(PY) render.py --rows $(ROWS) --cols $(COLS) --tile $(TILE) --px $(PX) \

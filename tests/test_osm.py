@@ -36,11 +36,28 @@ def test_car_free_ways_are_open_ground_not_street():
 
 
 def test_building_height_from_tags():
-    assert o.building_height({"height": "14"}) == 14.0
-    assert o.building_height({"height": "12 m"}) == 12.0
-    assert o.building_height({"building:levels": "3"}) == 3 * o.LEVEL_HEIGHT
-    assert o.building_height({"building": "yes"}) == o.DEFAULT_LEVELS * o.LEVEL_HEIGHT
-    assert o.building_height({"building": "shed", "building:levels": "4"}) == o.LEVEL_HEIGHT
+    assert o.building_height({"height": "14"})[0] == 14.0
+    assert o.building_height({"height": "12 m"})[0] == 12.0
+    assert o.building_height({"building:levels": "3"})[0] == 3 * o.LEVEL_HEIGHT
+    assert o.building_height({"building": "yes"})[0] == o.DEFAULT_LEVELS * o.LEVEL_HEIGHT
+    assert o.building_height({"building": "shed", "building:levels": "4"})[0] == o.LEVEL_HEIGHT
+
+
+def test_height_provenance_is_recorded():
+    """Sur Castres, 3 738 batiments sur 3 763 n'ont aucune hauteur : une valeur
+    devinee ne doit pas etre indiscernable d'une valeur mesuree."""
+    assert o.building_height({"height": "14"})[1:] == ("measured", 0.98)
+    assert o.building_height({"building:levels": "3"})[1:] == ("levels", 0.90)
+    assert o.building_height({"building": "church"})[1:] == ("kind", 0.55)
+    assert o.building_height({"building": "yes"})[1:] == ("default", 0.35)
+
+
+def test_measured_heights_take_precedence():
+    """Le point d'entree pour du LiDAR HD, de la BD TOPO ou une correction
+    manuelle : une hauteur relevee prime sur le tag OSM lui-meme."""
+    tags = {"height": "9", "building:levels": "2"}
+    assert o.building_height(tags, measured={42: 17.8}, osm_id=42) == (17.8, "measured", 0.98)
+    assert o.building_height(tags, measured={42: 17.8}, osm_id=7)[0] == 9.0
 
 
 def test_ring_assembly_joins_open_ways_in_any_direction():

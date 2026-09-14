@@ -67,7 +67,7 @@ les fenêtres. REF_01 elle-même est vue plus près de 45° que de 30°.
 
 ```bash
 make install                    # dépendances Python (3.11)
-make test                       # 67 tests, ni Blender ni réseau requis
+make test                       # 70 tests, ni Blender ni réseau requis
 export GEMINI_API_KEY=...       # mode API seulement — jamais dans le dépôt
 ```
 
@@ -282,6 +282,32 @@ l'incohérence ne se voit qu'à l'assemblage final, quand il est trop tard.
    ## .. .. .. .. .. ..
 ```
 
+### Provenance et confiance des hauteurs
+
+`make blend` écrit `assets/castres_confidence.json` : pour chaque bâtiment, sa
+hauteur, d'où elle vient et à quel point on peut s'y fier.
+
+| source | confiance | Castres |
+|---|---|---|
+| `measured` — tag `height`, ou relevé fourni | 0,98 | **0 %** |
+| `levels` — `building:levels` × 3,2 m | 0,90 | 0,7 % |
+| `kind` — déduite du type (église, immeuble, garage) | 0,55 | 4,0 % |
+| `default` — 2,5 niveaux, faute de mieux | 0,35 | **95,4 %** |
+
+C'est le maillon le plus faible de la géométrie, et sans ce suivi une hauteur
+devinée était indiscernable d'une hauteur mesurée. Le point d'entrée pour la
+corriger existe :
+
+```bash
+make blend HEIGHTS=heights.json      # {osm_id: hauteur_m}
+```
+
+Ce fichier peut venir du **LiDAR HD de l'IGN**, de la BD TOPO, ou de corrections à
+la main sur les bâtiments qui comptent. Attention : `data.geopf.fr`, `wxs.ign.fr`,
+`geoservices.ign.fr` et `api-adresse.data.gouv.fr` sont **tous bloqués** par le
+proxy de l'environnement de rendu — comme l'extrait OSM, ces données doivent être
+téléchargées depuis un navigateur.
+
 ### Relire les données avant de générer — `scripts/contact_sheet.py`
 
 ```bash
@@ -333,7 +359,7 @@ test 1×2 et ~3,4 € pour la grille complète 6×4.
 ## Tests
 
 ```bash
-make test     # 67 tests
+make test     # 70 tests
 make check    # pyflakes
 ```
 
