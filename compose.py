@@ -48,7 +48,7 @@ def load_index(units_dir: Path) -> dict:
 
 
 def compose(index: dict, units_dir: Path, drawn_dir: Path | None,
-            source: str = "line") -> Image.Image:
+            source: str = "line", grow_px: int = MASK_GROW_PX) -> Image.Image:
     """Pose toutes les unites sur une toile blanche aux dimensions de la mosaique.
 
     `source` vaut "line" pour les rendus bruts de Blender, ou le nom du dossier
@@ -77,7 +77,7 @@ def compose(index: dict, units_dir: Path, drawn_dir: Path | None,
         if mask.size != box:
             mask = mask.resize(box, Image.NEAREST)
 
-        canvas.paste(art, (entry["x"], entry["y"]), grow(mask))
+        canvas.paste(art, (entry["x"], entry["y"]), grow(mask, grow_px))
     return canvas
 
 
@@ -103,7 +103,13 @@ def check(index: dict, units_dir: Path, tile: str, skeleton: Path,
     """
     import numpy as np
 
-    got = np.asarray(tile_crop(compose(index, units_dir, None), index, tile)) < 128
+    # sans dilatation : ce controle juge le CALCUL DES BOITES, pas la politique
+    # de collage. Les 3 px de MASK_GROW_PX font deliberement deborder chaque
+    # unite hors de sa silhouette exacte, ce qui abaisse la concordance de
+    # 81,5 % a 74,0 % sans qu'aucune unite ait bouge — mesure faite. Baisser le
+    # seuil pour l'accepter aurait masque de vraies erreurs de placement.
+    got = np.asarray(tile_crop(compose(index, units_dir, None, grow_px=0),
+                               index, tile)) < 128
     want = np.asarray(Image.open(skeleton).convert("L")) < 128
     if got.shape != want.shape:
         raise SystemExit(f"tailles differentes : {got.shape} vs {want.shape}")

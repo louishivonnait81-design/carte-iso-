@@ -145,3 +145,18 @@ def test_compose_rescales_a_drawing_that_came_back_the_wrong_size():
 
     assert canvas.getpixel((10, 10)) == 0      # le dessin, pas le rendu brut
     assert canvas.getpixel((30, 30)) == 255    # et rien hors de la boite
+
+
+def test_the_chain_check_ignores_the_paste_dilation():
+    """Le controle juge le CALCUL DES BOITES, pas la politique de collage. Les
+    3 px de dilatation font deliberement deborder chaque unite hors de sa
+    silhouette exacte, ce qui abaissait la concordance de 81,5 % a 74,0 % sans
+    qu'aucune unite ait bouge. Baisser le seuil pour l'accepter aurait masque de
+    vraies erreurs de placement : le controle compose donc sans dilatation."""
+    import inspect
+    import sys
+    sys.path.insert(0, str(ROOT))
+    import compose as C
+    source = inspect.getsource(C.check)
+    assert "grow_px=0" in source
+    assert C.MASK_GROW_PX > 0            # mais le collage reel, lui, dilate
