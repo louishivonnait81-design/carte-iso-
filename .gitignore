@@ -1,6 +1,14 @@
 # Sorties de rendu et d'habillage
 tiles/*.png
 tiles/index.json
+tiles/notes.json
+manual*/
+
+# Scene Blender : entierement reconstruite depuis assets/castres.osm par
+# `make blend` en une quarantaine de secondes. La suivre ajoutait 2,3 Mo a
+# l'historique a chaque retouche du convertisseur, et elle n'a aucune valeur
+# sans le module bpy, qui sait de toute facon la regenerer.
+assets/castres.blend
 styled/
 qa_out/
 out/
@@ -22,5 +30,4 @@ venv/
 # Ne jamais commiter de cle
 .env
 *.key
-manual/
 assets/square/
