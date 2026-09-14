@@ -65,6 +65,7 @@ def main() -> int:
         debut = time.time()
         w, h = camera.rendre(scene, cfg, float(z), largeur, sortie)
         print(f"[apercus] Z={int(z):3d}  {w:.0f} m x {h:.0f} m  "
+              f"{scene.render.resolution_x}x{scene.render.resolution_y} px  "
               f"{time.time() - debut:5.1f} s  -> {sortie.name}")
 
     print(f"[apercus] {len(cfg['orientations_a_tester'])} apercus dans {args.out}")

@@ -14,15 +14,15 @@
     ],
     "_bbox": "rempli par 01_bbox.py — surtout pas a la main",
     "bbox": [
-      43.604626,
-      2.240602,
-      43.606255,
-      2.242835
+      43.604445,
+      2.240354,
+      43.606436,
+      2.243083
     ],
     "marge_m": 60,
     "coeur": {
       "centre": "Place Jean Jaurès",
-      "cote_m": 180.0
+      "cote_m": 220.0
     }
   },
   "import": {
@@ -39,7 +39,7 @@
   "camera": {
     "_rotation_x_deg": "60 = visee a 30 deg au-dessus de l'horizon. Une isometrie 2:1 exacte demanderait 63,43 deg (arctan 0,5) ; 60 donne un rapport 1,73:1. Voir la note de l'etape 3.",
     "rotation_x_deg": 60.0,
-    "rotation_z_deg": 45.0,
+    "rotation_z_deg": 315.0,
     "type": "ORTHO",
     "marge_cadrage": 1.02
   },

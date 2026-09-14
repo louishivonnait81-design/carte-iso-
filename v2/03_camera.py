@@ -213,7 +213,12 @@ def preparer(cfg: dict, moteur: str | None = None):
 
 def rendre(scene, cfg: dict, z_deg: float, largeur: int, sortie: Path):
     cam, taille = poser_camera(scene, cfg, z_deg)
-    hauteur = largeur                      # la camera est cadree au carre
+    # L'IMAGE PREND LE FORMAT DE LA ZONE, pas un carre. Vue a 60 deg, un carre au
+    # sol se projette en losange large et bas : 311 x 173 m pour un coeur de
+    # 220 m. Rendu carre, 44 % de la hauteur etait du blanc — 44 % des pixels du
+    # rendu final, et autant de papier a l'impression.
+    l_m, h_m = taille
+    hauteur = max(1, int(round(largeur * h_m / l_m))) if l_m else largeur
     r = scene.render
     r.resolution_x, r.resolution_y = largeur, hauteur
     r.resolution_percentage = 100
@@ -245,7 +250,8 @@ def main() -> int:
     print(f"[camera] {n} objets en blanc plat, X={cfg['camera']['rotation_x_deg']}, Z={z}")
     w, h = rendre(scene, cfg, z, largeur, args.sortie)
     print(f"[camera] scene cadree : {w:.0f} m x {h:.0f} m a l'ecran")
-    print(f"[camera] -> {args.sortie}  {largeur}x{largeur}")
+    print(f"[camera] -> {args.sortie}  "
+          f"{scene.render.resolution_x}x{scene.render.resolution_y}")
     return 0
 
 
