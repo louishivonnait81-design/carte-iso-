@@ -170,6 +170,19 @@ def assemble_rings(way_lists: list[list[int]]) -> list[list[int]]:
 # Construction Blender
 # --------------------------------------------------------------------------
 
+def is_boxy(pts: list[tuple[float, float]], box_fit_2d, min_fill: float = 0.82,
+            max_vertices: int = 8) -> bool:
+    """Vrai si le polygone remplit presque son rectangle englobant oriente."""
+    if len(pts) > max_vertices:
+        return False
+    angle = box_fit_2d(pts)
+    c, s_ = math.cos(angle), math.sin(angle)
+    xs = [x * c - y * s_ for x, y in pts]
+    ys = [x * s_ + y * c for x, y in pts]
+    box = (max(xs) - min(xs)) * (max(ys) - min(ys))
+    return box > 0 and abs(ring_area(pts)) / box >= min_fill
+
+
 def obb_short_side(pts: list[tuple[float, float]], box_fit_2d) -> float:
     """Petite dimension du rectangle englobant oriente d'un polygone."""
     angle = box_fit_2d(pts)
@@ -267,7 +280,11 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int) -> dict:
                 offset += n
             bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
             # toiture : le dessus est rentre et surhausse -> lecture "toit a croupes"
-            if roof == "hip" and top_faces and not holes:
+            # Toit a croupes seulement si l'empreinte est quasi rectangulaire :
+            # sur une empreinte OSM irreguliere, la rentree du dessus produit des
+            # pointes et des quadrilateres gauches que Freestyle couvre de
+            # diagonales. Une boite propre vaut mieux qu'un toit faux.
+            if roof == "hip" and top_faces and not holes and is_boxy(outer, box_fit_2d):
                 bmesh.ops.dissolve_edges(bm, edges=[e for e in bm.edges
                                                     if all(f in top_faces for f in e.link_faces)
                                                     and len(e.link_faces) == 2],
@@ -366,7 +383,9 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int) -> dict:
     if trees:
         proto_mesh = bpy.data.meshes.new("tree_canopy")
         bm = bmesh.new()
-        bmesh.ops.create_icosphere(bm, subdivisions=1, radius=TREE_RADIUS)
+        bmesh.ops.create_icosphere(bm, subdivisions=3, radius=TREE_RADIUS)
+        for f in bm.faces:
+            f.smooth = True
         bm.to_mesh(proto_mesh)
         bm.free()
         for nid in trees[:max_trees]:

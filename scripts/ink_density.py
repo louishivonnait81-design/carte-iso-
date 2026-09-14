@@ -43,9 +43,24 @@ def main() -> int:
     p.add_argument("images", nargs="+", type=Path)
     p.add_argument("--scale", type=float, default=0.15,
                    help="taux de reduction teste (0.15 = la taille d'une maison sur la carte)")
-    p.add_argument("--max-gray", type=float, default=0.25,
-                   help="part de gris toleree apres reduction")
+    p.add_argument("--max-gray", type=float, default=None,
+                   help="part de gris toleree apres reduction (defaut : celle de --reference)")
+    p.add_argument("--reference", type=Path, default=Path("assets/REF_01_style.png"),
+                   help="image dont la densite sert de plafond quand --max-gray est absent")
     args = p.parse_args()
+
+    # Le plafond n'est pas absolu : une tuile ou une reference est "trop dense"
+    # si elle depasse la bible de style elle-meme. Mesure sur REF_01 : 51 %.
+    if args.max_gray is None:
+        if args.reference.exists():
+            with Image.open(args.reference) as ref:
+                small = ref.convert("L").resize((max(1, int(ref.width * args.scale)),
+                                                 max(1, int(ref.height * args.scale))),
+                                                Image.LANCZOS)
+                args.max_gray = measure(small)[1] * 1.10
+            print(f"plafond : {args.max_gray:.0%} de gris (110 % de {args.reference.name})")
+        else:
+            args.max_gray = 0.25
 
     worst = 0.0
     for path in args.images:
