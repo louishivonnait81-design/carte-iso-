@@ -27,9 +27,10 @@ def _setup(tmp_path: Path) -> dict[str, Path]:
 
 
 def _run(paths: dict[str, Path], *args: str, ref01: Path | None = None) -> str:
+    # --ref02 off : le test ne doit pas dependre de la presence de assets/REF_02
     cmd = [sys.executable, str(ROOT / "manual.py"),
            "--tiles", str(paths["tiles"]), "--styled", str(paths["styled"]),
-           "--out", str(paths["manual"]), *args]
+           "--out", str(paths["manual"]), "--ref02", "off", *args]
     env = {"PATH": "/usr/bin:/bin", "PYTHONPATH": str(ROOT)}
     result = subprocess.run(cmd, capture_output=True, text=True, env=env)
     assert result.returncode == 0, result.stderr
