@@ -114,6 +114,25 @@ def arche(bm, origine, u, v, largeur, hauteur, normale, segments: int = 8):
     bm.faces.new([bm.verts.new(p) for p in pts])
 
 
+def devanture(bm, origine, u, v, largeur, hauteur, normale):
+    """Vitrine en retrait sous une arche : cadre, traverse, porte.
+
+    Sous l'arcade de la place, les baies etaient des trous vides. Une vitrine ne
+    se creuse pas non plus : un cadre pose a l'interieur du contour de l'arche
+    suffit a la lire, et la traverse a hauteur d'imposte suffit a la dater.
+    """
+    retrait = 0.28
+    l = largeur - 2 * retrait
+    h = hauteur - 1.1
+    if l < 0.8 or h < 1.4:
+        return 0
+    base = origine + u * retrait + v * 0.15
+    quad(bm, base, u, v, l, h, normale)
+    # traverse d'imposte, a hauteur de porte
+    quad(bm, base + v * (h * 0.62), u, v, l, 0.10, normale)
+    return 2
+
+
 def murs(obj):
     """Faces verticales assez grandes pour porter des ouvertures."""
     for face in obj.data.polygons:
@@ -162,13 +181,25 @@ def habiller(obj, bm_out, contour_place) -> int:
                 if n == 0 and sur_la_place:
                     if pas < ARCADE_L + 0.4 or hauteur < ARCADE_H + 1.0:
                         continue
-                    arche(bm_out,
-                          origine + u * (u0 - ARCADE_L / 2) + v * (z0 - bas - 0.3),
-                          u, v, ARCADE_L, ARCADE_H, normale)
+                    pied = origine + u * (u0 - ARCADE_L / 2) + v * (z0 - bas - 0.3)
+                    arche(bm_out, pied, u, v, ARCADE_L, ARCADE_H, normale)
+                    poses += devanture(bm_out, pied, u, v,
+                                       ARCADE_L, ARCADE_H, normale)
                 elif n == 0 and t == travees // 2:
                     l, h = PORTE
                     arche(bm_out, origine + u * (u0 - l / 2) + v * (z0 - bas - 0.5),
                           u, v, l, h, normale)
+                elif n == 0:
+                    # rez-de-chaussee ordinaire : une devanture, pas une fenetre
+                    l, h = min(2.10, pas - 0.6), 2.30
+                    if l > 1.0:
+                        quad(bm_out,
+                             origine + u * (u0 - l / 2) + v * (z0 - bas - 0.3),
+                             u, v, l, h, normale)
+                        quad(bm_out,
+                             origine + u * (u0 - l / 2) + v * (z0 - bas - 0.3 + h),
+                             u, v, l, 0.14, normale)   # bandeau d'enseigne
+                        poses += 1
                 else:
                     l, h = FENETRE
                     quad(bm_out, origine + u * (u0 - l / 2) + v * (z0 - bas + 0.5),
