@@ -56,7 +56,14 @@
       1.0
     ],
     "_moteur": "Freestyle ne fonctionne pas avec Workbench : Workbench est un moteur d apercu de fenetre et ne passe pas par le post-traitement ou vit Freestyle. Le brief demandant Freestyle et interdisant Cycles, il ne reste qu EEVEE.",
-    "moteur_note": "BLENDER_EEVEE est le choix pour le Mac (GPU). En rendu logiciel, dans le conteneur, EEVEE met 86 s pour 600 px : les apercus y sont produits avec --moteur CYCLES, qui sur cette scene plate et emissive est environ vingt fois plus rapide. Le moteur est donc un parametre, pas une constante."
+    "moteur_note": "BLENDER_EEVEE est le choix pour le Mac (GPU). En rendu logiciel, dans le conteneur, EEVEE met 86 s pour 600 px : les apercus y sont produits avec --moteur CYCLES, qui sur cette scene plate et emissive est environ vingt fois plus rapide. Le moteur est donc un parametre, pas une constante.",
+    "epaisseurs": {
+      "masses": 2.2,
+      "plis": 1.0,
+      "facades": 0.8,
+      "sol": 0.55
+    },
+    "_epaisseurs": "Hierarchie du trait, en pixels. Un dessin au trait se lit par le poids relatif des lignes, pas par leur nombre : masse du batiment, pli de toiture, ouverture, joint de sol."
   },
   "orientations_a_tester": [
     45,

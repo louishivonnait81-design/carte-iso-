@@ -179,6 +179,23 @@ def memoriaux(cfg: dict, scene):
     return out
 
 
+
+def _ranger(scene, objet, nom_collection: str):
+    """Range l'objet dans une collection NOMMEE.
+
+    Ce n'est pas du rangement : c'est ce qui permet a Freestyle de lui donner sa
+    propre epaisseur de trait. Sans collection, tout le dessin sort au meme
+    poids de ligne — le joint de dallage aussi fort que le mur — et la
+    hierarchie qui fait lire un dessin au trait disparait.
+    """
+    coll = bpy.data.collections.get(nom_collection)
+    if coll is None:
+        coll = bpy.data.collections.new(nom_collection)
+        scene.collection.children.link(coll)
+    coll.objects.link(objet)
+    return objet
+
+
 def main() -> int:
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     p = argparse.ArgumentParser(description=__doc__,
@@ -207,7 +224,7 @@ def main() -> int:
     mesh = bpy.data.meshes.new("V2_PAVAGE")
     bm.to_mesh(mesh)
     bm.free()
-    scene.collection.objects.link(bpy.data.objects.new("V2_PAVAGE", mesh))
+    _ranger(scene, bpy.data.objects.new("V2_PAVAGE", mesh), "pavage")
 
     print(f"[pavage] {joints} joints, {len(eaux)} nappes d'eau")
     bpy.ops.wm.save_as_mainfile(filepath=str(args.out))

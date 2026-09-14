@@ -169,32 +169,93 @@ def poser_camera(scene, cfg: dict, z_deg: float, distance: float = 4000.0):
 
 
 def poser_freestyle(scene, cfg: dict, moteur: str | None = None) -> None:
-    # EEVEE est le choix par defaut, celui du Mac. En rendu LOGICIEL il est
-    # inutilisable : mesure dans le conteneur, 86 s pour 600 px. Sur cette scene
-    # plate et emissive, Cycles CPU est environ vingt fois plus rapide, d'ou le
-    # parametre. Workbench, lui, n'est pas une option : il ne rend pas Freestyle.
+    """Moteur, et HIERARCHIE DU TRAIT.
+
+    EEVEE est le choix par defaut, celui du Mac. En rendu LOGICIEL il est
+    inutilisable : 86 s pour 600 px, mesure faite. Sur cette scene plate et
+    emissive, Cycles CPU est une vingtaine de fois plus rapide, d'ou le
+    parametre. Workbench n'est pas une option : il ne rend pas Freestyle.
+
+    Un dessin au trait ne se lit pas par la quantite de lignes mais par leur
+    POIDS RELATIF : la masse d'un batiment prime sur le pli de son toit, et un
+    joint de dallage s'efface devant les deux. Tout etait a 1,5 px, et le pavage
+    criait aussi fort que les murs.
+
+    Un jeu de lignes Freestyle ne filtre que sur UNE collection. Exclure
+    "facades" seule laissait le pavage et les cheminees repasser au poids des
+    masses : l'encre passait de 2,4 % a 7,5 % et le dessin devenait illisible.
+    Et ce filtre ne descend pas dans les collections filles : un parent ne
+    contenant que des enfants n'exclut rien. On construit donc une collection
+    PLATE de tous les objets structurels, a laquelle les masses se limitent.
+    """
     scene.render.engine = moteur or cfg["rendu"]["moteur"]
     if scene.render.engine == "CYCLES":
         scene.cycles.device = "CPU"
         scene.cycles.samples = 4          # aplat emissif : quelques rayons suffisent
         scene.cycles.use_denoising = False
         scene.cycles.max_bounces = 0
+
+    epaisseurs = cfg["rendu"]["epaisseurs"]
     scene.render.use_freestyle = True
     scene.render.line_thickness_mode = "ABSOLUTE"
-    scene.render.line_thickness = cfg["rendu"]["epaisseur_trait_px"]
+    scene.render.line_thickness = epaisseurs["masses"]
 
     vue = scene.view_layers[0]
     vue.use_freestyle = True
-    for jeu in list(vue.freestyle_settings.linesets):
-        vue.freestyle_settings.linesets.remove(jeu)
-    jeu = vue.freestyle_settings.linesets.new("V2_LIGNES")
-    jeu.select_silhouette = True
-    jeu.select_border = True
-    jeu.select_crease = True
-    jeu.select_contour = True
-    jeu.select_external_contour = True
-    jeu.linestyle.color = (0.0, 0.0, 0.0)
-    jeu.linestyle.thickness = cfg["rendu"]["epaisseur_trait_px"]
+    reglages = vue.freestyle_settings
+    for jeu in list(reglages.linesets):
+        reglages.linesets.remove(jeu)
+
+    # UNE COLLECTION PLATE POUR LA STRUCTURE. Le filtre de collection d'un jeu
+    # de lignes ne descend PAS dans les collections filles : un parent "details"
+    # ne contenant que des enfants n'excluait rien du tout, et les 8103
+    # ouvertures ressortaient au poids des masses — l'encre passait de 2,4 % a
+    # 9,3 %. On construit donc une collection PLATE qui contient directement
+    # tous les objets structurels, et les masses s'y limitent.
+    secondaires = {"facades", "pavage", "cheminees"}
+    objets_secondaires = set()
+    for nom in secondaires:
+        coll = bpy.data.collections.get(nom)
+        if coll:
+            objets_secondaires.update(o.name for o in coll.objects)
+
+    structure = bpy.data.collections.get("structure")
+    if structure is None:
+        structure = bpy.data.collections.new("structure")
+        scene.collection.children.link(structure)
+    deja = {o.name for o in structure.objects}
+    for obj in scene.objects:
+        if obj.type != "MESH":
+            continue
+        if obj.name in objets_secondaires or obj.name in deja:
+            continue
+        structure.objects.link(obj)
+
+    def jeu_de_lignes(nom, epaisseur, collection=None, exclusif=False, **drapeaux):
+        jeu = reglages.linesets.new(nom)
+        for cle in ("select_silhouette", "select_border", "select_crease",
+                    "select_contour", "select_external_contour", "select_edge_mark"):
+            setattr(jeu, cle, drapeaux.get(cle, False))
+        coll = bpy.data.collections.get(collection) if collection else None
+        if coll is not None:
+            jeu.select_by_collection = True
+            jeu.collection = coll
+            jeu.collection_negation = "EXCLUSIVE" if exclusif else "INCLUSIVE"
+        jeu.linestyle.color = (0.0, 0.0, 0.0)
+        jeu.linestyle.thickness = epaisseur
+        return jeu
+
+    jeu_de_lignes("V2_MASSES", epaisseurs["masses"], collection="structure",
+                  select_silhouette=True, select_border=True,
+                  select_contour=True, select_external_contour=True)
+    jeu_de_lignes("V2_PLIS", epaisseurs["plis"], collection="structure",
+                  select_crease=True)
+    jeu_de_lignes("V2_FACADES", epaisseurs["facades"], collection="facades",
+                  select_border=True)
+    jeu_de_lignes("V2_CHEMINEES", epaisseurs["plis"], collection="cheminees",
+                  select_border=True, select_silhouette=True)
+    jeu_de_lignes("V2_SOL", epaisseurs["sol"], collection="pavage",
+                  select_border=True)
 
     # le blanc doit rester blanc pur : aucune transformation de vue
     scene.view_settings.view_transform = "Standard"
