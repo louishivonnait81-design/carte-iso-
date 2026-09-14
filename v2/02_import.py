@@ -68,6 +68,11 @@ def importer_par_convertisseur(cfg: dict) -> int:
     cmd = [sys.executable, str(ROOT / "scripts" / "osm_to_blend.py"), str(osm),
            "--out", str(SORTIE),
            "--bbox", *[str(v) for v in cfg["zone"]["bbox"]],
+           # PRISMES NUS. Les toits sont poses a l'etape 6, sur une geometrie
+           # propre : le generateur de croupes de l'importateur part en facettes
+           # desordonnees sur les emprises irregulieres, et corriger apres coup
+           # une toiture ratee est plus difficile que d'en poser une bonne.
+           "--roof", "flat",
            "--default-height", str(cfg["import"]["hauteur_defaut_m"]),
            # aucune variation de hauteur : le brief demande une valeur par
            # defaut nette de 9 m, pas une valeur bruitee
