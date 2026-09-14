@@ -73,7 +73,17 @@ def _tokens(obj: bpy.types.Object) -> str:
     return " ".join(parts).lower()
 
 
+# Marque explicite posee par osm_to_blend.py sur les objets dont la nature ne se
+# devine pas au nom : une voie pietonne porte le tag `highway`, qui declencherait
+# la regle "rue" avant toute autre. La marque prime donc sur les mots-cles.
+SURFACE_PROPERTY = "surface"
+SURFACE_TO_CATEGORY = {"open_ground": "ground", "street": "street"}
+
+
 def classify(obj: bpy.types.Object, rules: dict[str, list[str]], default: str) -> str:
+    marked = SURFACE_TO_CATEGORY.get(obj.get(SURFACE_PROPERTY))
+    if marked:
+        return marked
     text = _tokens(obj)
     for category, keywords in rules.items():
         if any(k in text for k in keywords):
@@ -386,7 +396,9 @@ def main() -> None:
         print("[iso] ATTENTION : aucun batiment ni rue reconnu. Verifier le nommage "
               "de la scene avec --dump-categories.")
 
-    widened = widen_street_curves(buckets["street"], args.road_width)
+    # les voies pietonnes sont des sols, mais elles ont besoin de la meme
+    # largeur qu'une rue pour couvrir une surface au rendu
+    widened = widen_street_curves(buckets["street"] + buckets["ground"], args.road_width)
     if widened:
         print(f"[iso] {widened} courbes de rue elargies a {args.road_width} m")
     if not args.no_ground:

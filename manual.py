@@ -67,9 +67,10 @@ def load_index(tiles: Path) -> dict:
 
 
 def export_tile(tile: dict, tiles: Path, styled: Path, out: Path,
-                sections: dict, use_ref02: bool, water: str, force: bool) -> Path:
+                sections: dict, use_ref02: bool, water: str, force: bool,
+                use_ref01: bool = True) -> Path:
     job = stylize.build_job(tile, tiles, styled, sections, use_ref02, water,
-                            stylize.load_notes(tiles))
+                            stylize.load_notes(tiles), use_ref01=use_ref01)
     folder = out / tile["name"]
     if folder.exists():
         if not force:
@@ -111,7 +112,7 @@ def cmd_export(args, index, sections) -> int:
         if name not in tiles:
             sys.exit(f"Tuile inconnue : {name}")
         export_tile(tiles[name], args.tiles, args.styled, args.out, sections,
-                    args.use_ref02, args.water, args.force)
+                    args.use_ref02, args.water, args.force, args.ref01 == "on")
 
     if not args.all and len(names) == 1:
         print(f"\nSuivre {args.out / names[0] / 'LISEZMOI.txt'}")
@@ -171,6 +172,8 @@ def main() -> int:
     p.add_argument("--out", type=Path, default=ROOT / "manual")
     p.add_argument("--water", choices=["auto", "on", "off"], default="auto")
     p.add_argument("--ref02", choices=["auto", "on", "off"], default="auto")
+    p.add_argument("--ref01", choices=["on", "off"], default="on",
+                   help="'off' : REF_02 seule porte le style de trait")
     p.add_argument("--force", action="store_true")
     sub = p.add_subparsers(dest="cmd", required=True)
 

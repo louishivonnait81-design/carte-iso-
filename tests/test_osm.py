@@ -14,12 +14,25 @@ def test_category_rules():
     assert o.category_of({"building": "yes"}) == "building"
     assert o.category_of({"building:part": "yes"}) == "building"
     assert o.category_of({"highway": "residential"}) == "street"
-    assert o.category_of({"highway": "pedestrian", "area": "yes"}) is None   # place = sol blanc
     assert o.category_of({"amenity": "parking"}) == "street_area"
     assert o.category_of({"leisure": "park"}) == "vegetation"
     assert o.category_of({"natural": "water"}) == "water"
     assert o.category_of({"waterway": "riverbank"}) == "water"
     assert o.category_of({"name": "Agout"}) is None
+
+
+def test_car_free_ways_are_open_ground_not_street():
+    """Une esplanade pietonne classee 'rue' ressortait en gris fonce, et le
+    modele y dessinait chaussee, passages pietons et voitures : c'est ce qui est
+    arrive a la place Jean Jaures."""
+    for tags in ({"highway": "pedestrian"}, {"highway": "footway"},
+                 {"highway": "path"}, {"highway": "steps"},
+                 {"highway": "pedestrian", "area": "yes"}, {"place": "square"}):
+        assert o.category_of(tags) == "open_ground", tags
+    # les voies ouvertes aux voitures restent des rues
+    for tags in ({"highway": "residential"}, {"highway": "primary"},
+                 {"highway": "living_street"}, {"highway": "service"}):
+        assert o.category_of(tags) == "street", tags
 
 
 def test_building_height_from_tags():

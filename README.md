@@ -67,7 +67,7 @@ les fenêtres. REF_01 elle-même est vue plus près de 45° que de 30°.
 
 ```bash
 make install                    # dépendances Python (3.11)
-make test                       # 56 tests, ni Blender ni réseau requis
+make test                       # 58 tests, ni Blender ni réseau requis
 export GEMINI_API_KEY=...       # mode API seulement — jamais dans le dépôt
 ```
 
@@ -180,10 +180,11 @@ de `scripts/iso_tiles.py` s'ajuste.
 | catégorie | couleur | note |
 |---|---|---|
 | bâtiment | gris clair | |
-| rue / trottoir | gris foncé | les courbes Blosm sont élargies en rubans plats (`--road-width`) |
+| rue / trottoir | gris foncé | **voies ouvertes aux voitures seulement** ; élargies en rubans plats |
+| sol piéton | blanc | `pedestrian`, `footway`, `path`, `steps`, `place=square` |
 | végétation | vert | |
 | **eau** | **bleu** | **ajout** au cahier des charges, voir ci-dessous |
-| sol ouvert | blanc | plan de sol ajouté sous toute la grille |
+| sol ouvert | blanc | cours, places, plan de sol sous toute la grille |
 
 > **Écart assumé, à valider :** le cahier des charges ne prévoit que quatre
 > couleurs. L'Agout traverse la zone : sans couleur propre il tomberait en
@@ -253,6 +254,20 @@ touchent, extraits de l'OSM avec leur position dans la tuile :
 Les noms disent quoi dessiner ; ils ne sont **jamais lettrés** — une enseigne peut
 porter un emblème dessiné, jamais un mot.
 
+### Relire les données avant de générer — `scripts/contact_sheet.py`
+
+```bash
+make planche        # qa_out/planche_sem.png et planche_lines.png
+```
+
+Les 28 tuiles côte à côte avec leur nom. Le goût du modèle n'est pas le goulot
+d'étranglement, **la justesse des données l'est** : la place Jean Jaurès est une
+esplanade piétonne, mais ses allées sont des `highway=footway` dans OSM, que le
+convertisseur classait en « rue ». Elles ressortaient en gris foncé, et le modèle
+y dessinait consciencieusement chaussée, passages piétons et voitures en travers
+de la place. Les données étaient bonnes, la traduction était fausse. Une planche
+relue avant de générer aurait montré l'erreur en dix secondes.
+
 ### 3. `qa.py`
 
 * **Dérive géométrique** : Canny sur la tuile stylisée et sur le squelette, après
@@ -290,7 +305,7 @@ test 1×2 et ~3,4 € pour la grille complète 6×4.
 ## Tests
 
 ```bash
-make test     # 56 tests
+make test     # 58 tests
 make check    # pyflakes
 ```
 

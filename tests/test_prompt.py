@@ -197,3 +197,21 @@ def test_landscape_reference_is_padded_to_square(tmp_path):
         assert px[0, 0] == (255, 255, 255)        # marge blanche en haut
         assert px[704, 704] == (0, 0, 0)          # contenu centre
     assert stylize.squared(sq) == sq              # deja carre : inchange
+
+
+def test_ref01_can_be_dropped_and_ref02_carries_the_style(tmp_path, monkeypatch):
+    """Sans REF_01, c'est REF_02 qui devient la reference de trait : elle passe
+    en image 1 et la section qui la presentait comme un second avis disparait."""
+    tiles_dir, index = _fake_tiles(tmp_path, 1, 2)
+    monkeypatch.setattr(stylize, "REF01", tmp_path / "ref01.png")
+    monkeypatch.setattr(stylize, "REF02", tmp_path / "ref02.png")
+    stylize.REF01.write_bytes(b"ref1")
+    stylize.REF02.write_bytes(b"ref2")
+
+    job = stylize.build_job(index["tiles"][0], tiles_dir, tmp_path / "out", SECTIONS,
+                            use_ref02=True, water_mode="off", use_ref01=False)
+    assert job.roles == ["ref02", "lines", "sem"]
+    assert job.prompt.startswith("Image 1 is the style reference.")
+    assert "Image 2 is a line drawing" in job.prompt
+    assert "second reference showing the ARCHITECTURE" not in job.prompt
+    assert "{" not in job.prompt

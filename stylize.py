@@ -152,17 +152,23 @@ def load_notes(tiles_dir: Path) -> dict[str, list[dict]]:
 
 
 def build_job(tile: dict, tiles_dir: Path, out_dir: Path, sections: dict[str, str],
-              use_ref02: bool, water_mode: str, notes: dict[str, list[dict]] | None = None) -> Job:
+              use_ref02: bool, water_mode: str, notes: dict[str, list[dict]] | None = None,
+              use_ref01: bool = True) -> Job:
     line = tiles_dir / tile["line"]
     sem = tiles_dir / tile["semantic"]
     for path in (line, sem):
         if not path.exists():
             raise SystemExit(f"Tuile de squelette manquante : {path}")
 
-    roles, images = ["ref01"], [squared(REF01)]
+    roles, images = [], []
+    if use_ref01:
+        roles.append("ref01")
+        images.append(squared(REF01))
     if use_ref02:
         roles.append("ref02")
         images.append(squared(REF02))
+    if not roles:
+        raise SystemExit("Au moins une reference de style est necessaire (--ref01 / --ref02).")
     roles += ["lines", "sem"]
     images += [line, sem]
 
@@ -187,6 +193,11 @@ def build_job(tile: dict, tiles_dir: Path, out_dir: Path, sections: dict[str, st
     parts += [r for r in ("left", "top") if r in roles]
 
     filled = dict(sections)
+    if not use_ref01:
+        # la section base parle du "style reference" : c'est REF_02 qui le porte
+        filled = {k: v.replace("{Ref01}", "{Ref02}").replace("{ref01}", "{ref02}")
+                  for k, v in filled.items()}
+        parts = [p for p in parts if p != "ref02"]
     if entries and "notes" in sections:
         from tile_notes import format_notes
         filled["notes"] = sections["notes"].replace("{notes_list}", format_notes(entries))
@@ -216,6 +227,9 @@ def main() -> int:
                    help="ajouter la legende 'bleu = eau' au prompt")
     p.add_argument("--ref02", choices=["auto", "on", "off"], default="auto",
                    help="joindre assets/REF_02_castres.png")
+    p.add_argument("--ref01", choices=["on", "off"], default="on",
+                   help="joindre assets/REF_01_style.png ; 'off' laisse REF_02 porter "
+                        "le style de trait et supprime une image parisienne du lot")
     p.add_argument("--only", help="ne traiter que ces tuiles, ex. 'tile_0_0,tile_0_1'")
     p.add_argument("--limit", type=int, default=None, help="s'arreter apres N tuiles")
     p.add_argument("--retries", type=int, default=4)
@@ -262,7 +276,8 @@ def main() -> int:
     for name in order:
         out_png = args.out / f"{name}.png"
         meta_path = args.out / f"{name}.json"
-        job = build_job(tiles[name], args.tiles, args.out, sections, use_ref02, args.water, notes)
+        job = build_job(tiles[name], args.tiles, args.out, sections, use_ref02, args.water,
+                        notes, use_ref01=args.ref01 == "on")
         key = job.cache_key(args.model, args.aspect_ratio, args.image_size)
 
         if out_png.exists() and not args.force:

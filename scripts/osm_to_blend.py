@@ -54,6 +54,16 @@ WATER_Z = 0.01          # a plat, juste au-dessus du sol blanc pour rester visib
 BRIDGE_Z = 1.0
 TREE_RADIUS, TREE_HEIGHT = 3.0, 5.5
 
+# Voies sans voiture : ce sont des SOLS, pas des rues. Les classer en rue les
+# faisait ressortir en gris fonce dans la passe semantique, et le modele y
+# dessinait chaussee, passages pietons et voitures en travers d'une esplanade
+# pietonne — c'est ce qui est arrive a la place Jean Jaures.
+PEDESTRIAN_HIGHWAYS = {"pedestrian", "footway", "path", "steps", "corridor",
+                       "platform", "track"}
+# Surfaces explicitement pietonnes ou minerales : du sol ouvert, blanc.
+OPEN_GROUND_TAGS = {("place", "square"), ("highway", "pedestrian"),
+                    ("area:highway", "pedestrian"), ("man_made", "courtyard")}
+
 VEGETATION_TAGS = {
     ("leisure", "park"), ("leisure", "garden"), ("leisure", "pitch"),
     ("landuse", "grass"), ("landuse", "forest"), ("landuse", "village_green"),
@@ -75,10 +85,14 @@ def category_of(tags: dict) -> str | None:
         return "water"
     if any((k, v) in VEGETATION_TAGS for k, v in tags.items()):
         return "vegetation"
+    if any((k, v) in OPEN_GROUND_TAGS for k, v in tags.items()):
+        return "open_ground"
     if any((k, v) in STREET_AREA_TAGS for k, v in tags.items()):
         return "street_area"
-    if "highway" in tags and tags.get("area") != "yes":
-        return "street"
+    if "highway" in tags:
+        if tags["highway"] in PEDESTRIAN_HIGHWAYS:
+            return "open_ground"
+        return "street" if tags.get("area") != "yes" else "open_ground"
     return None
 
 
@@ -225,7 +239,7 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int) -> dict:
     scene.unit_settings.system = "METRIC"
 
     collections = {}
-    for name in ("buildings", "streets", "vegetation", "water"):
+    for name in ("buildings", "streets", "vegetation", "water", "open_ground"):
         col = bpy.data.collections.new(name)
         scene.collection.children.link(col)
         collections[name] = col
@@ -253,7 +267,7 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int) -> dict:
     counts = defaultdict(int)
 
     def add_polygon(name: str, col, rings: list[list[tuple[float, float]]], z: float,
-                    height: float, tags: dict) -> None:
+                    height: float, tags: dict, surface: str | None = None) -> None:
         rings = [r for r in rings if len(r) >= 3]
         if not rings:
             return
@@ -320,8 +334,12 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int) -> dict:
         obj = bpy.data.objects.new(name, mesh)
         col.objects.link(obj)
         set_props(obj, tags)
+        if surface:
+            obj["surface"] = surface
 
     def add_street(name: str, refs: list[int], tags: dict) -> None:
+        """Ruban plat le long d'une voie. Le nom du collection cible decoule de
+        la categorie : une voie pietonne va dans open_ground, pas dans streets."""
         pts = [q for q in (xy(n) for n in refs) if q is not None]
         if len(pts) < 2:
             return
@@ -334,9 +352,11 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int) -> dict:
         for p, (x, y) in zip(spline.points, pts):
             p.co = (x, y, z, 1.0)
         obj = bpy.data.objects.new(name, curve)
-        collections["streets"].objects.link(obj)
+        target = "open_ground" if name.startswith("ground.") else "streets"
+        collections[target].objects.link(obj)
         set_props(obj, tags)
         obj["road_width"] = ROAD_WIDTH.get(tags.get("highway", ""), 4.0)
+        obj["surface"] = "open_ground" if target == "open_ground" else "street"
 
     # --- chemins fermes et ouverts ---
     used_in_relation = {ref for _, members in osm.relations for _, ref in members}
@@ -349,6 +369,10 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int) -> dict:
         if cat == "street":
             add_street(f"street.{wid}", refs, tags)
             counts["streets"] += 1
+        elif cat == "open_ground" and not closed:
+            # ruelle ou traverse pietonne : un ruban de sol, pas une chaussee
+            add_street(f"ground.{wid}", refs, tags)
+            counts["open_ground"] += 1
         elif closed:
             ring = ring_xy(refs)
             if cat == "building":
@@ -362,8 +386,13 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int) -> dict:
                 add_polygon(f"water.{wid}", collections["water"], [ring], WATER_Z, 0.0, tags)
                 counts["water"] += 1
             elif cat == "street_area":
-                add_polygon(f"street.{wid}", collections["streets"], [ring], 0.01, 0.0, tags)
+                add_polygon(f"street.{wid}", collections["streets"], [ring], 0.01, 0.0,
+                            tags, surface="street")
                 counts["streets"] += 1
+            elif cat == "open_ground":
+                add_polygon(f"ground.{wid}", collections["open_ground"], [ring], 0.03, 0.0,
+                            tags, surface="open_ground")
+                counts["open_ground"] += 1
 
     # --- multipolygones (batiments a cour, rives de l'Agout, parcs) ---
     for tags, members in osm.relations:
@@ -389,8 +418,13 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int) -> dict:
                 add_polygon(f"water.{rid}", collections["water"], rings, WATER_Z, 0.0, tags)
                 counts["water"] += 1
             elif cat == "street_area":
-                add_polygon(f"street.{rid}", collections["streets"], rings, 0.01, 0.0, tags)
+                add_polygon(f"street.{rid}", collections["streets"], rings, 0.01, 0.0,
+                            tags, surface="street")
                 counts["streets"] += 1
+            elif cat == "open_ground":
+                add_polygon(f"ground.{rid}", collections["open_ground"], rings, 0.03, 0.0,
+                            tags, surface="open_ground")
+                counts["open_ground"] += 1
 
     # --- arbres isoles ---
     trees = [nid for nid, tags in osm.node_tags.items() if tags.get("natural") == "tree"]

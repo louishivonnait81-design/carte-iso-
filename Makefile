@@ -14,7 +14,7 @@ QA      ?= qa_out
 OUT     ?= out
 BUDGET  ?= 5
 
-.PHONY: help install test check density blend notes render render-test next status ref02 stylize stylize-dry qa seam assemble all clean
+.PHONY: help install test check density blend notes planche render render-test next status ref02 stylize stylize-dry qa seam assemble all clean
 
 help:
 	@echo "make install       installe les dependances Python"
@@ -22,6 +22,7 @@ help:
 	@echo "make blend         construit assets/castres.blend depuis assets/castres.osm"
 	@echo "make render        rend la grille $(ROWS)x$(COLS) depuis assets/castres.blend"
 	@echo "make render-test   rend seulement 1x2 tuiles (verification rapide)"
+	@echo "make planche      planche-contact des tuiles, pour relire les donnees"
 	@echo "make notes         extrait les lieux de chaque tuile depuis l'OSM"
 	@echo "make next          MODE MANUEL : prepare la prochaine tuile a coller dans Gemini"
 	@echo "make status        MODE MANUEL : avancement de la grille"
@@ -59,6 +60,10 @@ render:
 render-test:
 	$(PY) render.py --rows 1 --cols 2 --tile $(TILE) --px $(PX) \
 		--center-latlon $(CENTER) --elevation $(ELEV) --out $(TILES)/
+
+planche:
+	$(PY) scripts/contact_sheet.py --tiles $(TILES) --source sem
+	$(PY) scripts/contact_sheet.py --tiles $(TILES) --source lines
 
 notes:
 	$(PY) scripts/tile_notes.py --tiles $(TILES) --osm $(OSM)
