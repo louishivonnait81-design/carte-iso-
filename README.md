@@ -33,14 +33,35 @@ scène Blender → tuiles lignes et sémantiques → mosaïque aux raccords exac
 > (repli si « too many nodes » :
 > https://overpass-api.de/api/map?bbox=2.2335,43.6010,2.2485,43.6095)
 
-## Zone
+## Zone et échelle
 
-* Vieux Castres : bd Léon Bourgeois (O) → Agout / bd Raymond Vittoz (E),
-  bd Miredames (N) → bd Henri Sizaire (S), jardin de l'Évêché inclus.
-* Import Blender avec 150 m de marge : lat 43.6010 → 43.6095, lon 2.2335 → 2.2485.
-* Centre de la grille : **43.6052 / 2.2405**.
-* Grille par défaut : **6 colonnes × 4 lignes**, tuiles de **180 m** de large à
-  l'écran, **2048 px** chacune → carte finale **12 288 × 8 192 px**.
+Le cahier des charges initial visait tout le vieux Castres (900 × 610 m) en
+tuiles de 180 m. La première tuile passée par Gemini a montré que c'était
+injouable : une tuile de 180 m aligne déjà 25 à 30 bâtiments, soit toute une
+carte *MicroMacro Crime City* (110 × 75 cm, ~20 bâtiments en largeur, un
+personnage ≈ 1 cm). Pour retrouver cette proportion il faut ~33 px/m à 2048 px,
+donc des **tuiles de 60 m**, et une carte couvre alors 300 à 400 m de ville.
+
+Cadre retenu, trouvé par recherche systématique (azimut × grille × centre) sur
+neuf lieux nommés extraits de l'OSM :
+
+* **7 colonnes × 4 lignes de 60 m, 28 tuiles, 420 × 240 m, 14 336 × 8 192 px**
+* centre **43.60482 / 2.24177**, élévation **45°**, azimut 45°
+* contient Pont Vieux, Pont Neuf, place Jean Jaurès, place Saint-Jacques, la
+  cathédrale Saint-Benoît, l'hôtel de ville et le musée Goya, le jardin de
+  l'Évêché, le théâtre et la place de la République ; l'Agout traverse la carte
+  en diagonale.
+* `qa_out/plan_cadre_7x3.png` montre le cadre sur le plan OSM.
+
+L'extrait OSM importé reste le grand rectangle (lat 43.6010 → 43.6095, lon
+2.2335 → 2.2485) : la scène Blender contient toute la vieille ville, seule la
+grille rendue est réduite. Changer de cadre ne demande qu'un nouveau
+`--center-latlon`.
+
+**Pourquoi 45° et non 30°.** À 30°, un bâtiment de 9,5 m masque 16,5 m de sol
+derrière lui : les ruelles de 4 à 6 m du vieux Castres disparaissent. À 45°, il
+n'en masque que 9,5 m, la trame des rues se lit et il reste assez de façade pour
+les fenêtres. REF_01 elle-même est vue plus près de 45° que de 30°.
 
 ## Installation
 

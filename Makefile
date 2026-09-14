@@ -3,10 +3,11 @@
 
 PY      ?= python3
 ROWS    ?= 4
-COLS    ?= 6
-TILE    ?= 180
+COLS    ?= 7
+TILE    ?= 60
 PX      ?= 2048
-CENTER  ?= 43.6052 2.2405
+CENTER  ?= 43.60482 2.24177
+ELEV    ?= 45
 TILES   ?= tiles
 STYLED  ?= styled
 QA      ?= qa_out
@@ -52,11 +53,11 @@ blend:
 
 render:
 	$(PY) render.py --rows $(ROWS) --cols $(COLS) --tile $(TILE) --px $(PX) \
-		--center-latlon $(CENTER) --out $(TILES)/
+		--center-latlon $(CENTER) --elevation $(ELEV) --out $(TILES)/
 
 render-test:
 	$(PY) render.py --rows 1 --cols 2 --tile $(TILE) --px $(PX) \
-		--center-latlon $(CENTER) --out $(TILES)/
+		--center-latlon $(CENTER) --elevation $(ELEV) --out $(TILES)/
 
 next:
 	$(PY) manual.py --tiles $(TILES) --styled $(STYLED) next

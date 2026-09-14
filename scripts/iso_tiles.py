@@ -314,16 +314,16 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         description="Rend une grille de tuiles isometriques jointives depuis une scene Blosm.",
     )
     p.add_argument("--rows", type=int, default=4, help="nombre de lignes de la grille")
-    p.add_argument("--cols", type=int, default=6, help="nombre de colonnes de la grille")
-    p.add_argument("--tile", type=float, default=180.0,
+    p.add_argument("--cols", type=int, default=7, help="nombre de colonnes de la grille")
+    p.add_argument("--tile", type=float, default=60.0,
                    help="largeur d'une tuile a l'ecran, en metres")
     p.add_argument("--px", type=int, default=2048, help="cote d'une tuile en pixels")
     p.add_argument("--center-latlon", type=float, nargs=2, metavar=("LAT", "LON"),
-                   default=(43.6052, 2.2405), help="centre de la grille")
+                   default=(43.60482, 2.24177), help="centre de la grille")
     p.add_argument("--origin-latlon", type=float, nargs=2, metavar=("LAT", "LON"), default=None,
                    help="origine de la scene si scene['lat'/'lon'] est absent")
     p.add_argument("--out", type=Path, default=Path("tiles"), help="dossier de sortie")
-    p.add_argument("--elevation", type=float, default=30.0, help="elevation camera, degres")
+    p.add_argument("--elevation", type=float, default=45.0, help="elevation camera, degres")
     p.add_argument("--azimuth", type=float, default=45.0, help="azimut camera, degres")
     p.add_argument("--line-thickness", type=float, default=2.0, help="epaisseur Freestyle, px")
     p.add_argument("--samples", type=int, default=8, help="echantillons de la passe lignes")
