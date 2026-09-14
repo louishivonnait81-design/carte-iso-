@@ -1,0 +1,42 @@
+{
+  "_lisezmoi": "Tout parametre modifiable vit ici. Les scripts ne contiennent aucune valeur en dur.",
+
+  "zone": {
+    "nom": "Vieux Castres",
+    "limites": [
+      "Boulevard Léon Bourgeois",
+      "Agout (rive)",
+      "Boulevard Miredames",
+      "Boulevard Henri Sizaire"
+    ],
+    "reperes_centraux": ["Place Jean Jaurès", "Jardin de l'Évêché"],
+    "_bbox": "rempli par 01_bbox.py — surtout pas a la main",
+    "bbox": null,
+    "marge_m": 60
+  },
+
+  "import": {
+    "source_osm": null,
+    "hauteur_defaut_m": 9.0,
+    "calques": ["buildings", "highways", "water", "forests", "vegetation"]
+  },
+
+  "camera": {
+    "_rotation_x_deg": "60 = visee a 30 deg au-dessus de l'horizon. Une isometrie 2:1 exacte demanderait 63,43 deg (arctan 0,5) ; 60 donne un rapport 1,73:1. Voir la note de l'etape 3.",
+    "rotation_x_deg": 60.0,
+    "rotation_z_deg": 45.0,
+    "type": "ORTHO",
+    "marge_cadrage": 1.02
+  },
+
+  "rendu": {
+    "moteur": "BLENDER_WORKBENCH",
+    "largeur_test_px": 2000,
+    "largeur_finale_px": 8000,
+    "largeur_apercu_px": 1500,
+    "epaisseur_trait_px": 1.5,
+    "fond": [1.0, 1.0, 1.0, 1.0]
+  },
+
+  "orientations_a_tester": [45, 135, 225, 315]
+}
