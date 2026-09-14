@@ -40,7 +40,7 @@ def test_first_tile_has_three_images_and_correct_numbering(tmp_path, monkeypatch
     assert job.roles == ["ref01", "lines", "sem"]
     assert job.prompt.startswith("Image 1 is the style reference.")
     assert "Image 2 is a line drawing" in job.prompt
-    assert "Image 3 is the same view with flat colors" in job.prompt
+    assert "Image 3 is a COLOUR-CODED KEY" in job.prompt
     assert "Redraw image 2 in exactly the LINE STYLE of image 1" in job.prompt
     assert "EVERY light gray shape in image 3" in job.prompt
     assert "image 4" not in job.prompt and "Image 4" not in job.prompt
@@ -74,7 +74,7 @@ def test_ref02_shifts_the_numbering(tmp_path, monkeypatch):
                             SECTIONS, use_ref02=True, water_mode="off")
     assert job.roles == ["ref01", "ref02", "lines", "sem"]
     assert "Image 3 is a line drawing" in job.prompt
-    assert "Image 4 is the same view with flat colors" in job.prompt
+    assert "Image 4 is a COLOUR-CODED KEY" in job.prompt
     assert "Image 2 is a second reference showing the ARCHITECTURE" in job.prompt
 
 
