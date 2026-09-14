@@ -51,3 +51,25 @@ def test_format_notes_lines():
                             {"name": "Rue Y", "kind": "street", "position": "top"}])
     assert text.splitlines() == ["- Place X (square, centre of this tile): a square",
                                  "- Rue Y (street, top of this tile)"]
+
+
+def test_each_trade_gets_its_own_shopfront():
+    text = tn.format_notes([{"name": "Au Bon Pain", "kind": "bakery", "position": "left"},
+                            {"name": "Chez Marcel", "kind": "butcher", "position": "right"}])
+    assert "long loaves" in text.splitlines()[0]
+    assert "hanging hams" in text.splitlines()[1]
+
+
+def test_repeated_trade_is_described_once():
+    text = tn.format_notes([{"name": "BNP", "kind": "bank", "position": "left"},
+                            {"name": "CIC", "kind": "bank", "position": "right"},
+                            {"name": "Banque Populaire", "kind": "bank", "position": "top"}])
+    lines = text.splitlines()
+    assert "cash machine" in lines[0]
+    assert lines[1].endswith("same shopfront") and lines[2].endswith("same shopfront")
+
+
+def test_fiche_wins_over_generic_shopfront():
+    text = tn.format_notes([{"name": "Marché couvert de l'Albinque", "kind": "covered market",
+                             "position": "centre", "description": "the real covered market"}])
+    assert text.endswith("the real covered market")

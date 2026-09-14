@@ -76,6 +76,43 @@ IGNORE = {("highway", "bus_stop"), ("highway", "service"), ("highway", "footway"
           ("highway", "path"), ("highway", "steps"), ("highway", "cycleway")}
 MAX_PER_TILE = 18
 
+# Devanture par type de commerce : ce qui rend une boutique reconnaissable au
+# premier coup d'oeil, sans une seule lettre. C'est ce qui donnera aux enquetes
+# de quoi s'accrocher — on ne cache pas un indice dans "un commerce", on le cache
+# chez le boucher.
+DEVANTURES = {
+    "bakery": "wide window full of long loaves standing in baskets and round tarts on "
+              "trays, a folding sign on the pavement",
+    "butcher": "window with hanging hams and sausages on hooks above a tiled counter, "
+               "a striped awning",
+    "confectioner": "small bowed window with tiered stands of boxes and jars",
+    "café": "pavement terrace of small round tables and bentwood chairs under a long "
+            "awning, a waiter's till by the door",
+    "bar": "narrow front with a few high tables outside, shutters folded back, crates "
+           "of bottles stacked by the side door",
+    "restaurant": "terrace with square tables and cloths, a blackboard easel by the "
+                  "door, potted bay trees framing the entrance",
+    "takeaway": "narrow counter opening onto the street, a queue rail, a rolled awning",
+    "pharmacy": "sober front with a cross sign bracketed over the door and an orderly "
+                "window of boxes on glass shelves",
+    "clothes shop": "large plate-glass window with dressed mannequins and a rail, "
+                    "a tall glass door",
+    "shoe shop": "window of tiered shelves with single shoes displayed on each step",
+    "jeweller": "small deep window behind a metal grille, velvet stands, a heavy door",
+    "optician": "window with rows of spectacle frames on small stands",
+    "hairdresser": "window showing mirrors, basins and swivel chairs inside",
+    "bookshop": "window of stacked and fanned books, a trestle of second-hand books "
+                "outside under the awning",
+    "newsagent": "revolving rack of newspapers and postcards on the pavement",
+    "florist": "flowers in zinc buckets spilling out onto the pavement, an open front",
+    "shop": "plain shopfront with a canvas awning and a display window",
+    "bank": "sober stone ground floor, tall barred windows, a cash machine set into "
+            "the wall, no awning and no terrace",
+    "hotel": "canopy over the entrance, a doorway with steps, shuttered windows above",
+    "covered market": "large open hall with iron columns and a glazed roof, stalls "
+                      "and crates under it",
+}
+
 
 def kind_of(tags: dict) -> tuple[str, int] | None:
     for key in ("place", "leisure", "natural", "waterway", "bridge", "man_made", "amenity",
@@ -185,11 +222,21 @@ def build_notes(index: dict, osm: Osm, fiches) -> dict[str, list[dict]]:
 
 
 def format_notes(entries: list[dict]) -> str:
-    lines = []
+    """Une devanture n'est decrite qu'a sa premiere occurrence dans la tuile :
+    trois banques n'ont pas besoin de trois fois la meme phrase, et la place
+    gagnee profite aux commerces suivants."""
+    lines, described = [], set()
     for e in entries:
         line = f"- {e['name']} ({e['kind']}, {e['position']} of this tile)"
-        if e.get("description"):
-            line += f": {e['description']}"
+        detail = e.get("description")
+        if not detail and e["kind"] not in described:
+            detail = DEVANTURES.get(e["kind"])
+            if detail:
+                described.add(e["kind"])
+        if detail:
+            line += f": {detail}"
+        elif e["kind"] in described:
+            line += ", same shopfront"
         lines.append(line)
     return "\n".join(lines)
 

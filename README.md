@@ -67,7 +67,7 @@ les fenêtres. REF_01 elle-même est vue plus près de 45° que de 30°.
 
 ```bash
 make install                    # dépendances Python (3.11)
-make test                       # 45 tests, ni Blender ni réseau requis
+make test                       # 56 tests, ni Blender ni réseau requis
 export GEMINI_API_KEY=...       # mode API seulement — jamais dans le dépôt
 ```
 
@@ -221,28 +221,37 @@ voisines **déjà stylisées** — gauche, puis haut.
 * `--dry-run` écrit les prompts dans `styled/prompts/` sans appeler l'API.
 
 **Le prompt** est dans `prompts/stylize_v2.md`, découpé en sections
-(`base`, `architecture`, `water`, `ref02`, `left`, `top`). Les renvois aux images y sont des
-variables (`{lines}`, `{sem}`, `{left}`…) et non des numéros écrits en dur : quand
-REF_02 s'ajoute, tout se renumérote automatiquement. C'est le seul écart au texte
-fourni, et il est couvert par les tests (`tests/test_prompt.py`).
+(`base`, `architecture`, `notes`, `water`, `ref02`, `left`, `top`). Les renvois aux
+images y sont des variables (`{lines}`, `{sem}`, `{left}`…) et non des numéros
+écrits en dur : quand REF_02 s'ajoute, tout se renumérote automatiquement. C'est le
+seul écart au texte fourni, et il est couvert par les tests (`tests/test_prompt.py`).
 
-### Densité de trait — `scripts/ink_density.py`
+### Ce qu'il y a vraiment dans la tuile — `scripts/tile_notes.py`
 
 ```bash
-make density        # ou : python scripts/ink_density.py assets/REF_02_castres.png
+python scripts/tile_notes.py        # -> tiles/notes.json
 ```
 
-Le piège du style « ligne claire » n'est pas la quantité d'encre à taille réelle,
-c'est ce qu'elle devient à la réduction : une texture fine — chaque tuile d'un
-toit, chaque pierre d'un quai — ne disparaît pas en rétrécissant, elle s'agglomère
-en **gris**, ce que le cahier des charges interdit. L'outil réduit l'image à 15 %
-(l'ordre de grandeur d'une maison sur la carte finale : à 180 m pour 2048 px, une
-façade de 7 m ne fait que ~80 px) et mesure la part de pixels ni noirs ni blancs.
-Au-delà de 25 %, la référence est trop dense pour l'échelle visée.
+Le prompt de base dit *comment* dessiner ; il ne dit jamais *ce qu'il y a*. Or le
+modèle connaît Castres. Chaque tuile reçoit donc la liste des lieux nommés qui la
+touchent, extraits de l'OSM avec leur position dans la tuile :
 
-À passer sur REF_01 et REF_02 **avant** de s'en servir : une référence trop dense
-tire tout le rendu vers le gris, et fait exploser le nombre de chemins à la
-vectorisation.
+* les **lieux notables** portent une fiche rédigée dans `prompts/lieux.md`
+  (cathédrale, palais épiscopal, jardin de l'Évêché, ponts, maisons sur l'Agout,
+  place Jean Jaurès, théâtre, hôtels particuliers). Ces fiches sont écrites de
+  mémoire et **restent à vérifier par quelqu'un qui connaît la ville** : une fiche
+  fausse vaut pire qu'aucune. Elles ont déjà corrigé une erreur du cahier des
+  charges — Saint-Benoît n'est pas gothique mais baroque (1678-1718) ;
+* les **commerces** reçoivent la devanture de leur métier (`DEVANTURES` dans
+  `tile_notes.py`) : pains en corbeilles chez le boulanger, jambons pendus chez le
+  boucher, buckets de fleurs chez le fleuriste, grille et présentoirs de velours
+  chez le bijoutier. Une devanture n'est décrite qu'à sa première occurrence dans
+  la tuile — trois banques n'ont pas besoin de trois fois la même phrase ;
+* les chemins sont échantillonnés le long de leurs segments : une rue droite n'a
+  que deux nœuds, tous deux hors de la tuile qu'elle traverse pourtant.
+
+Les noms disent quoi dessiner ; ils ne sont **jamais lettrés** — une enseigne peut
+porter un emblème dessiné, jamais un mot.
 
 ### 3. `qa.py`
 
@@ -281,7 +290,7 @@ test 1×2 et ~3,4 € pour la grille complète 6×4.
 ## Tests
 
 ```bash
-make test     # 45 tests
+make test     # 56 tests
 make check    # pyflakes
 ```
 

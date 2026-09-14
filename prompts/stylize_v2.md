@@ -81,8 +81,11 @@ WHAT IS REALLY HERE. This tile shows a real part of the old town of Castres
 (Tarn, France). Use what you know of these real places and draw them as they
 actually look, each at its position in {lines}:
 {notes_list}
-These names only tell you what to draw — a bakery gets a bakery shopfront, a café
-gets a terrace, a square gets its trees. Do not letter any name or text anywhere.
+Give every listed shop the shopfront described for it, and make each one clearly
+DIFFERENT from its neighbours at a glance — a passer-by should be able to tell the
+baker from the butcher without reading anything. Signs, awnings and hanging brackets
+may carry a drawn emblem (a pretzel, a boot, a pair of scissors) but NEVER a letter,
+a word or a number, here or anywhere else in the image.
 
 <!-- @section water -->
 In {sem}, blue marks water: the river Agout and its mill races. Draw water as calm

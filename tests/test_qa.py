@@ -31,7 +31,8 @@ def blocks(offset: int = 0, detail: bool = False) -> np.ndarray:
 
 def test_identical_tiles_score_high():
     d = qa.drift_score(blocks(), blocks(), tolerance_px=4)
-    assert d.f1 > 0.95
+    assert d.recall > 0.95
+    assert d.score > 0.9
 
 
 def test_added_detail_keeps_recall_high():
@@ -40,19 +41,30 @@ def test_added_detail_keeps_recall_high():
     d = qa.drift_score(blocks(), blocks(detail=True), tolerance_px=4)
     assert d.recall > 0.95
     assert d.precision < d.recall
+    assert d.score > 0.8
+
+
+def test_dense_noise_scores_near_zero_despite_high_recall():
+    """Le point du score ramene au hasard : un dessin tres dense couvre le
+    squelette par accident. Le rappel brut reste eleve, le score doit s'effondrer."""
+    noise = np.where(np.random.RandomState(0).rand(SIZE, SIZE) < 0.25, 0, 255).astype(np.uint8)
+    d = qa.drift_score(blocks(), noise, tolerance_px=4)
+    assert d.recall > 0.9          # le hasard couvre presque tout
+    assert d.chance > 0.9
+    assert d.score < 0.2           # mais il n'y a aucune geometrie commune
 
 
 def test_shifted_geometry_is_detected():
     good = qa.drift_score(blocks(), blocks(), tolerance_px=4)
     drifted = qa.drift_score(blocks(), blocks(offset=40), tolerance_px=4)
-    assert drifted.f1 < 0.35
-    assert drifted.f1 < good.f1
+    assert drifted.score < 0.35
+    assert drifted.score < good.score
 
 
 def test_tolerance_absorbs_small_offsets():
     tight = qa.drift_score(blocks(), blocks(offset=6), tolerance_px=1)
     loose = qa.drift_score(blocks(), blocks(offset=6), tolerance_px=8)
-    assert loose.f1 > tight.f1
+    assert loose.recall > tight.recall
 
 
 def test_seam_perfect_when_lines_continue():

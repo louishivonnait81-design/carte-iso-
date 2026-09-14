@@ -69,21 +69,39 @@ def thumb_b64(path: Path, size: int = 320) -> str:
 class Drift:
     tile: str
     recall: float        # part du squelette retrouvee dans la tuile stylisee
-    precision: float     # part du dessin stylise adossee au squelette
-    f1: float
+    chance: float        # rappel obtenu par le hasard seul (tuile desorientee)
+    score: float         # rappel ramene au hasard : (rappel - hasard) / (1 - hasard)
+    precision: float     # part du dessin stylise adossee au squelette (indicatif)
+
+
+def _recall(a: np.ndarray, b_dilated: np.ndarray) -> float:
+    return float((a & b_dilated).sum() / a.sum()) if a.sum() else 1.0
+
+
+def _dilate(mask: np.ndarray, tolerance_px: int) -> np.ndarray:
+    k = 2 * tolerance_px + 1
+    return cv2.dilate(mask.astype(np.uint8), np.ones((k, k), np.uint8)) > 0
 
 
 def drift_score(skeleton: np.ndarray, styled: np.ndarray, tolerance_px: int) -> Drift:
-    a, b = edges(skeleton), edges(styled)
-    k = 2 * tolerance_px + 1
-    kernel = np.ones((k, k), np.uint8)
-    a_dil = cv2.dilate(a.astype(np.uint8), kernel) > 0
-    b_dil = cv2.dilate(b.astype(np.uint8), kernel) > 0
+    """Rappel du squelette, ramene au niveau du hasard.
 
-    recall = float((a & b_dil).sum() / a.sum()) if a.sum() else 1.0
-    precision = float((b & a_dil).sum() / b.sum()) if b.sum() else 0.0
-    f1 = 2 * recall * precision / (recall + precision) if (recall + precision) else 0.0
-    return Drift("", round(recall, 4), round(precision, 4), round(f1, 4))
+    Une tuile stylisee est bien plus dense que son squelette (mesure a 60 m :
+    23 % de pixels de contour contre 3,6 %). A cette densite, n'importe quel
+    trait du squelette tombe pres d'un trait du dessin par pur hasard : le
+    rappel brut vaut deja 0,80 pour une tuile tournee de 90 degres, et ne
+    distingue plus rien. On mesure donc ce hasard sur place — meme dessin,
+    desoriente — et on y ramene le rappel reel.
+    """
+    a, b = edges(skeleton), edges(styled)
+    recall = _recall(a, _dilate(b, tolerance_px))
+    # trois desorientations : on garde la plus favorable au hasard
+    chance = max(_recall(a, _dilate(edges(t), tolerance_px))
+                 for t in (np.rot90(styled), styled[:, ::-1], styled[::-1, :]))
+    score = (recall - chance) / (1.0 - chance) if chance < 1.0 else 0.0
+    precision = _recall(b, _dilate(a, tolerance_px))
+    return Drift("", round(recall, 4), round(chance, 4),
+                 round(max(0.0, score), 4), round(precision, 4))
 
 
 # --------------------------------------------------------------------------
@@ -141,9 +159,10 @@ def html_report(out: Path, drifts: list[Drift], seams: list[Seam], redo: list[st
         return "bad" if value < low else ("warn" if value < low + 0.1 else "")
 
     drift_rows = "".join(
-        f'<tr class="{row_class(d.f1, thresholds["drift"])}"><td>{d.tile}</td>'
-        f"<td>{d.recall:.3f}</td><td>{d.precision:.3f}</td><td>{d.f1:.3f}</td></tr>"
-        for d in sorted(drifts, key=lambda d: d.f1))
+        f'<tr class="{row_class(d.score, thresholds["drift"])}"><td>{d.tile}</td>'
+        f"<td>{d.recall:.3f}</td><td>{d.chance:.3f}</td><td><b>{d.score:.3f}</b></td>"
+        f"<td>{d.precision:.3f}</td></tr>"
+        for d in sorted(drifts, key=lambda d: d.score))
     seam_rows = "".join(
         f'<tr class="{row_class(s.score, thresholds["seam"])}"><td>{s.left} | {s.right}</td>'
         f"<td>{s.axis}</td><td>{s.edge_match:.3f}</td><td>{s.density_delta:.4f}</td>"
@@ -160,10 +179,11 @@ def html_report(out: Path, drifts: list[Drift], seams: list[Seam], redo: list[st
 <title>QA MicroMacro Castres</title><style>{CSS}</style>
 <h1>Controle qualite des tuiles</h1>
 <div class="meta">{len(drifts)} tuiles, {len(seams)} frontieres &middot;
-seuil derive F1 &lt; {thresholds['drift']} &middot; seuil raccord &lt; {thresholds['seam']}</div>
+seuil de derive &lt; {thresholds['drift']} &middot; seuil raccord &lt; {thresholds['seam']}</div>
 <h2>Tuiles a regenerer</h2><div class="redo">{redo_html}</div>
 <h2>Derive geometrique</h2>
-<table><tr><th>tuile</th><th>rappel</th><th>precision</th><th>F1</th></tr>{drift_rows}</table>
+<table><tr><th>tuile</th><th>rappel</th><th>hasard</th><th>score</th>
+<th>precision</th></tr>{drift_rows}</table>
 <h2>Raccords</h2>
 <table><tr><th>frontiere</th><th>axe</th><th>encre a la couture</th>
 <th>ecart de densite</th><th>score</th></tr>{seam_rows}</table>
@@ -185,7 +205,8 @@ def main() -> int:
     p.add_argument("--tolerance", type=int, default=4,
                    help="tolerance de recouvrement des contours, en pixels de travail")
     p.add_argument("--band", type=int, default=64, help="largeur de bande de raccord, en px")
-    p.add_argument("--min-drift", type=float, default=0.55, help="seuil de F1 acceptable")
+    p.add_argument("--min-drift", type=float, default=0.50,
+                   help="score de derive minimal (rappel ramene au hasard)")
     p.add_argument("--min-seam", type=float, default=0.60, help="seuil de raccord acceptable")
     args = p.parse_args()
 
@@ -203,10 +224,11 @@ def main() -> int:
         skeleton = load_gray(args.tiles / f"{name}.png", args.work_size)
         styled = load_gray(path, args.work_size)
         d = drift_score(skeleton, styled, args.tolerance)
-        d = Drift(name, d.recall, d.precision, d.f1)
+        d = Drift(name, d.recall, d.chance, d.score, d.precision)
         drifts.append(d)
-        cards.append((f"{name}  F1 {d.f1:.2f}", thumb_b64(path)))
-        print(f"[qa] {name}: rappel {d.recall:.3f} precision {d.precision:.3f} F1 {d.f1:.3f}")
+        cards.append((f"{name}  score {d.score:.2f}", thumb_b64(path)))
+        print(f"[qa] {name}: rappel {d.recall:.3f} (hasard {d.chance:.3f}) "
+              f"-> score {d.score:.3f}")
 
     seams = []
     by_name = {t["name"]: t for t in index["tiles"]}
@@ -225,7 +247,7 @@ def main() -> int:
             print(f"[qa] raccord {other} | {name} ({axis}): "
                   f"encre {s.edge_match:.3f} densite {s.density_delta:.4f} score {s.score:.3f}")
 
-    bad = {d.tile for d in drifts if d.f1 < args.min_drift}
+    bad = {d.tile for d in drifts if d.score < args.min_drift}
     bad |= {s.right for s in seams if s.score < args.min_seam}
     redo = sorted(bad)
 
