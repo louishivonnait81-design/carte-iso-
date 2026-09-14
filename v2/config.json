@@ -14,12 +14,16 @@
     ],
     "_bbox": "rempli par 01_bbox.py — surtout pas a la main",
     "bbox": [
-      43.600184,
-      2.232236,
-      43.609406,
-      2.245883
+      43.604626,
+      2.240602,
+      43.606255,
+      2.242835
     ],
-    "marge_m": 60
+    "marge_m": 60,
+    "coeur": {
+      "centre": "Place Jean Jaurès",
+      "cote_m": 180.0
+    }
   },
   "import": {
     "source_osm": "assets/castres.osm",

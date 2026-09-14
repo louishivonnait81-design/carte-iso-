@@ -74,6 +74,26 @@ def noeuds_des_voies_nommees(osm_path: Path, noms: list[str]):
     return points, bounds, len(trouves)
 
 
+def centre_du_lieu(osm_path: Path, nom: str):
+    """Centre du polygone portant ce nom. Sert d'ancre au coeur jouable."""
+    voulu = nom.lower()
+    nodes, pts = {}, []
+    for _, el in ET.iterparse(osm_path, events=("end",)):
+        if el.tag == "node":
+            nodes[int(el.get("id"))] = (float(el.get("lat")), float(el.get("lon")))
+            el.clear()
+        elif el.tag == "way":
+            etiquette = next((tag.get("v") for tag in el.findall("tag")
+                              if tag.get("k") == "name"), None)
+            if etiquette and etiquette.lower() == voulu:
+                refs = [int(n.get("ref")) for n in el.findall("nd")]
+                pts.extend(nodes[r] for r in refs if r in nodes)
+            el.clear()
+    if not pts:
+        sys.exit(f"Lieu introuvable dans l'extrait : {nom}")
+    return (sum(q[0] for q in pts) / len(pts), sum(q[1] for q in pts) / len(pts))
+
+
 def englobe(points):
     lats = [p[0] for p in points]
     lons = [p[1] for p in points]
@@ -88,6 +108,12 @@ def main() -> int:
     p.add_argument("--osm", type=Path, default=ROOT / "assets" / "castres.osm")
     p.add_argument("--marge", type=float, default=None,
                    help="marge en metres ; par defaut celle de config.json")
+    p.add_argument("--coeur", action="store_true",
+                   help="coeur jouable a l'echelle MicroMacro, au lieu de toute la zone")
+    p.add_argument("--centre", default="Place Jean Jaurès",
+                   help="lieu servant d'ancre au coeur")
+    p.add_argument("--cote", type=float, default=180.0,
+                   help="cote du coeur en metres")
     p.add_argument("--dry-run", action="store_true", help="ne pas ecrire config.json")
     args = p.parse_args()
 
@@ -98,6 +124,35 @@ def main() -> int:
 
     if not args.osm.exists():
         sys.exit(f"{args.osm} introuvable.")
+
+    if args.coeur:
+        # COEUR JOUABLE. La zone entre les boulevards fait 1499 m projetes ; a
+        # l'echelle de MicroMacro — un personnage de 5 mm sur une affiche de
+        # 75 cm, soit 1/150e de la largeur — une ville tient dans 255 m. La zone
+        # complete represente donc 35 affiches. Augmenter la resolution n'y
+        # change rien : la taille du personnage sur le papier est un RAPPORT,
+        # elle vaut 0,9 mm a 8000 px comme a 100000 px.
+        clat, clon = centre_du_lieu(args.osm, args.centre)
+        mlat, mlon = M_PAR_DEG_LAT, m_par_deg_lon(clat)
+        demi = args.cote / 2.0
+        bbox = [round(clat - demi / mlat, 6), round(clon - demi / mlon, 6),
+                round(clat + demi / mlat, 6), round(clon + demi / mlon, 6)]
+        proj = 1.414 * args.cote      # un carre au sol vu a 45 deg d'azimut
+        print(f"[bbox] coeur jouable centre sur {args.centre}")
+        print(f"[bbox] {args.cote:.0f} x {args.cote:.0f} m au sol, "
+              f"{proj:.0f} m projetes")
+        print(f"[bbox] un personnage de 1,70 m fera {1.7 / proj * 750:.1f} mm "
+              f"sur une affiche de 75 cm (MicroMacro : ~5 mm)")
+        print(f"[bbox] lat {bbox[0]:.6f} .. {bbox[2]:.6f}")
+        print(f"[bbox] lon {bbox[1]:.6f} .. {bbox[3]:.6f}")
+        if not args.dry_run:
+            cfg["zone"]["bbox"] = bbox
+            cfg["zone"]["coeur"] = {"centre": args.centre, "cote_m": args.cote}
+            cfg["import"]["source_osm"] = str(args.osm.relative_to(ROOT))
+            CONFIG.write_text(json.dumps(cfg, indent=2, ensure_ascii=False) + "\n",
+                              encoding="utf-8")
+            print(f"[bbox] -> {CONFIG}")
+        return 0
 
     noms = [n for n in cfg["zone"]["limites"] if "(" not in n]
     noms += cfg["zone"]["reperes_centraux"]
