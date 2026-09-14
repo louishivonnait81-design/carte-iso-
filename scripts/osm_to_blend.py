@@ -88,6 +88,11 @@ PEDESTRIAN_HIGHWAYS = {"pedestrian", "footway", "path", "steps", "corridor",
 # Surfaces explicitement pietonnes ou minerales : du sol ouvert, blanc.
 OPEN_GROUND_TAGS = {("place", "square"), ("highway", "pedestrian"),
                     ("area:highway", "pedestrian"), ("man_made", "courtyard")}
+# Bassins cartographies comme surfaces. La vasque de la statue de Jean Jaures est
+# un polygone ferme de 8,3 x 7,5 m dans OSM, et La Fontaine des Angelots un autre
+# de 8,9 m : category_of les ignorait tous les deux, aucun n'etait rendu.
+BASIN_TAGS = {("amenity", "fountain")}
+BASIN_RIM = 0.55        # hauteur de margelle
 
 VEGETATION_TAGS = {
     ("leisure", "park"), ("leisure", "garden"), ("leisure", "pitch"),
@@ -110,6 +115,8 @@ def category_of(tags: dict) -> str | None:
         return "water"
     if any((k, v) in VEGETATION_TAGS for k, v in tags.items()):
         return "vegetation"
+    if any((k, v) in BASIN_TAGS for k, v in tags.items()):
+        return "basin"
     if any((k, v) in OPEN_GROUND_TAGS for k, v in tags.items()):
         return "open_ground"
     if any((k, v) in STREET_AREA_TAGS for k, v in tags.items()):
@@ -478,6 +485,10 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int,
                 add_polygon(f"ground.{wid}", collections["open_ground"], [ring], 0.0,
                             KERB_HEIGHT, tags, surface="open_ground")
                 counts["open_ground"] += 1
+            elif cat == "basin":
+                add_polygon(f"basin.{wid}", collections["open_ground"], [ring], 0.0,
+                            BASIN_RIM, tags, surface="open_ground")
+                counts["basins"] += 1
 
     # --- multipolygones (batiments a cour, rives de l'Agout, parcs) ---
     for tags, members in osm.relations:

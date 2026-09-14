@@ -516,12 +516,6 @@
       "description": "the main square of Castres, a long paved esplanade. The buildings around it are classical, three storeys, pale rendered stone; their GROUND FLOORS RUN UNDER A CONTINUOUS ARCADE OF ROUND STONE ARCHES, and the shops and café terraces are set back under those arches. This arcade is the defining feature of the square: draw it along the WHOLE length of every building that faces the square, arch after arch without interruption — not one arch at a corner and plain walls elsewhere. (Verified on Street View; two businesses are actually named after them.)"
     },
     {
-      "name": "public fountain",
-      "kind": "public fountain",
-      "position": "bottom-right",
-      "priority": 1
-    },
-    {
       "name": "Pierre de Fermat",
       "kind": "historic building",
       "position": "left",
@@ -609,6 +603,12 @@
       "name": "Latapie",
       "kind": "jeweller",
       "position": "right",
+      "priority": 5
+    },
+    {
+      "name": "Marty",
+      "kind": "jeweller",
+      "position": "bottom-left",
       "priority": 5
     }
   ],

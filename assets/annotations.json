@@ -11,15 +11,11 @@
     "Types : terrace, planter, fountain, statue, kiosk, stall, wall, steps.",
     "size et height sont facultatifs, en metres.",
     "",
-    "Tout ce qui vient d'ici est marque confiance 0,6 : vu, pas mesure."
+    "Tout ce qui vient d'ici est marque confiance 0,6 : vu, pas mesure.",
+    "",
+    "La terrasse de la statue a ete retiree d'ici : OSM la cartographie",
+    "deja, en polygone ferme de 8,3 x 7,5 m. Une donnee mesuree vaut",
+    "toujours mieux qu'une estimation — c'est le premier reflexe a avoir."
   ],
-  "tile_1_4": [
-    {
-      "kind": "terrace",
-      "at": "G7",
-      "size": [10, 6],
-      "height": 0.4,
-      "note": "terrasse surelevee de la statue de Jean Jaures, visible sur la capture satellite fournie ; etendue ESTIMEE, a confirmer"
-    }
-  ]
+  "tile_1_4": []
 }

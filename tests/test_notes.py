@@ -97,12 +97,23 @@ def test_named_entry_keeps_its_name():
     assert text.startswith("- La Fontaine (restaurant, left of this tile):")
 
 
-def test_fountain_of_the_square_is_now_in_the_notes():
-    """Verification de bout en bout sur les vraies donnees."""
+def test_a_basin_at_a_memorial_is_not_a_second_place():
+    """La vasque de la statue de Jean Jaures est a 1 m de la statue et taguee
+    amenity=fountain : les deux apparaissaient comme deux lieux distincts. Un
+    memorial et un bassin au meme endroit sont un seul monument."""
     import json
     notes_path = ROOT / "tiles" / "notes.json"
     if not notes_path.exists():
         return
     notes = json.loads(notes_path.read_text(encoding="utf-8"))
-    kinds = {e["kind"] for e in notes.get("tile_1_4", [])}
-    assert "public fountain" in kinds
+
+    entries = notes.get("tile_1_4", [])
+    statue = next((e for e in entries if "Jaurès" in e["name"]), None)
+    assert statue is not None, "la statue doit rester listee"
+    doublons = [e for e in entries if e["kind"] == "public fountain"
+                and e["position"] == statue["position"]]
+    assert not doublons, "la vasque ne doit pas etre listee a part"
+
+    # La vraie fontaine nommee de Castres est ailleurs, 103 m plus haut
+    ailleurs = {e["name"] for e in notes.get("tile_0_3", [])}
+    assert "La Fontaine des Angelots" in ailleurs

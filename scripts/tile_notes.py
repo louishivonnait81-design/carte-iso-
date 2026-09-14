@@ -248,6 +248,18 @@ def build_notes(index: dict, osm: Osm, fiches) -> dict[str, list[dict]]:
         if "name" in tags:
             add(tags["name"], tags, [n for _, w in members if w in osm.ways for n in osm.ways[w]])
 
+    # Un memorial et un bassin au meme endroit sont un seul monument : la vasque
+    # de la statue de Jean Jaures est a 1 m de la statue, et les deux
+    # apparaissaient comme deux lieux distincts.
+    for tname, entries in per_tile.items():
+        memorials = [e for e in entries.values()
+                     if e["kind"] in {"historic building", "memorial", "monument"}]
+        if memorials:
+            for key in [k for k, e in entries.items()
+                        if e["kind"] == "public fountain"
+                        and any(m["position"] == e["position"] for m in memorials)]:
+                del entries[key]
+
     notes = {}
     for tname, entries in per_tile.items():
         ordered = sorted(entries.values(), key=lambda e: (e["priority"], e["kind"], e["name"]))

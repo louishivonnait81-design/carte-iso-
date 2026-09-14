@@ -109,6 +109,11 @@ make blend          # assets/castres.osm -> assets/castres.blend
   sortent en blanc dans la passe sémantique : un repère n'est pas un bâtiment, et
   la règle « toute forme gris clair devient un bâtiment » ne doit pas s'y appliquer.
 * Végétation : surfaces plates + arbres isolés en icosphères.
+* **Bassins** : `amenity=fountain` cartographié en polygone fermé devient une
+  vasque à margelle. La vasque de la statue de Jean Jaurès fait 8,3 × 7,5 m dans
+  OSM et *La Fontaine des Angelots* 8,9 m — `category_of` les ignorait toutes les
+  deux, aucune n'était rendue. Corollaire utile : l'entourage de la statue n'avait
+  pas à être estimé à la main, il était mesuré depuis le début.
 * Eau : surfaces plates juste au-dessus du sol blanc.
 * Origine de scène (`scene["lat"]`, `scene["lon"]`) = centre de l'emprise, comme
   chez Blosm ; les tags OSM sont recopiés en propriétés personnalisées.
