@@ -101,6 +101,21 @@ def category_of(tags: dict) -> str | None:
 # 3 763 n'ont ni height ni building:levels : sans ce suivi, une hauteur devinee a
 # partir du seul type de batiment est indiscernable d'une hauteur mesuree, et
 # c'est le maillon le plus faible de la geometrie.
+# Hauteur deduite de la FONCTION quand le tag building ne dit rien.
+HEIGHT_BY_FUNCTION = {
+    ("amenity", "place_of_worship"): 16.0, ("amenity", "townhall"): 13.0,
+    ("amenity", "theatre"): 14.0, ("amenity", "courthouse"): 13.0,
+    ("amenity", "hospital"): 14.0, ("amenity", "school"): 10.0,
+    ("amenity", "college"): 12.0, ("amenity", "university"): 12.0,
+    ("amenity", "library"): 11.0, ("amenity", "marketplace"): 9.0,
+    ("amenity", "police"): 11.0, ("amenity", "fire_station"): 9.0,
+    ("amenity", "prison"): 12.0, ("amenity", "cinema"): 12.0,
+    ("tourism", "museum"): 12.0, ("tourism", "hotel"): 12.0,
+    ("historic", "castle"): 20.0, ("historic", "tower"): 20.0,
+    ("historic", "monument"): 12.0, ("man_made", "tower"): 20.0,
+    ("man_made", "water_tower"): 25.0,
+}
+
 HEIGHT_CONFIDENCE = {
     "measured": 0.98,   # tag height, ou releve LiDAR fourni
     "levels": 0.90,     # building:levels x hauteur d'etage
@@ -136,6 +151,13 @@ def building_height(tags: dict, measured: dict | None = None,
             pass
     if kind in HEIGHT_BY_KIND:
         return HEIGHT_BY_KIND[kind], "kind", HEIGHT_CONFIDENCE["kind"]
+    # Beaucoup d'edifices publics sont tagues building=yes et ne se reconnaissent
+    # qu'a leur fonction : l'eglise Saint-Jean-Saint-Louis se retrouvait a 8 m,
+    # la hauteur d'une maison de ville.
+    for key in ("amenity", "historic", "tourism", "man_made"):
+        value = tags.get(key)
+        if value and (key, value) in HEIGHT_BY_FUNCTION:
+            return HEIGHT_BY_FUNCTION[(key, value)], "kind", HEIGHT_CONFIDENCE["kind"]
     return DEFAULT_LEVELS * LEVEL_HEIGHT, "default", HEIGHT_CONFIDENCE["default"]
 
 

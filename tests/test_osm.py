@@ -94,3 +94,16 @@ def test_fixture_parses_with_bounds_and_relation():
     assert tags["building"] == "yes"
     assert {role for role, _ in members} == {"outer", "inner"}
     assert sum(1 for t in osm.node_tags.values() if t.get("natural") == "tree") == 4
+
+
+def test_public_buildings_tagged_building_yes_are_recognised_by_function():
+    """L'eglise Saint-Jean-Saint-Louis est taguee building=yes : elle se
+    retrouvait a 8 m, la hauteur d'une maison de ville."""
+    church = {"building": "yes", "amenity": "place_of_worship", "name": "Église X"}
+    height, source, _ = o.building_height(church)
+    assert height == 16.0 and source == "kind"
+    assert o.building_height({"building": "yes", "tourism": "museum"})[0] == 12.0
+    assert o.building_height({"building": "yes", "amenity": "townhall"})[0] == 13.0
+    # un tag explicite garde la main
+    assert o.building_height({"building": "yes", "amenity": "place_of_worship",
+                              "building:levels": "2"})[0] == 2 * o.LEVEL_HEIGHT
