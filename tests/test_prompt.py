@@ -13,6 +13,7 @@ import stylize  # noqa: E402
 from geo import TileGrid  # noqa: E402
 
 SECTIONS = stylize.load_sections(ROOT / "prompts" / "stylize_v2.md")
+LIEUX = ROOT / "prompts" / "lieux.md"
 
 
 def _fake_tiles(tmp_path: Path, rows: int, cols: int) -> tuple[Path, dict]:
@@ -295,3 +296,35 @@ def test_no_neighbours_isolates_the_continuity_variable(tmp_path, monkeypatch):
                             water_mode="off", no_neighbours=True)
     assert job.roles == ["ref01", "lines", "sem"]
     assert "directly to the LEFT" not in job.prompt
+
+
+def test_place_jean_jaures_fiche_states_identity_not_composition():
+    """Mesure a l'appui, deux fois : une fiche qui decrit la place comme une SCENE
+    ("une longue esplanade pavee, les batiments autour d'elle") fait composer au
+    modele sa propre place fermee, et la derive tombe a 0,000 — le niveau du
+    hasard. La fiche doit donner l'identite (l'arcade continue au rez-de-chaussee)
+    et renvoyer explicitement au squelette pour tout ce qui est forme, nombre et
+    position."""
+    fiche = next(l for l in LIEUX.read_text(encoding="utf-8").splitlines()
+                 if l.startswith("- **Place Jean Jaurès**"))
+    assert "ARCADE" in fiche
+    assert "read from image 3, never invented" in fiche
+    for scene in ("long paved esplanade", "The buildings around it"):
+        assert scene not in fiche
+
+
+def test_ink_rule_forbids_grey_not_only_colour():
+    """Le premier rendu sans couleur est revenu a 25 %% de gris : chaussee, pans de
+    toit et pavage remplis. Interdire la couleur ne suffit pas, il faut nommer le
+    gris."""
+    ink = SECTIONS["geometry_last"]
+    assert "NO GREY" in ink
+    assert "TWO TONES AND NO OTHER" in ink
+
+
+def test_framing_rule_anchors_the_ink_to_the_four_edges():
+    """Le rendu flottait au milieu de la page, 16 %% de bande blanche en haut et en
+    bas, et fermait la place que le squelette laisse ouverte."""
+    base = SECTIONS["base"]
+    assert "all four edges of the frame" in base
+    assert "do not close what {lines} leaves" in base

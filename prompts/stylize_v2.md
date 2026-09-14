@@ -50,6 +50,13 @@ away: buildings are meant to look small, and a wide empty area — a river, a sq
 stays wide and empty. The style references are close-up plates drawn at a much
 larger scale; copy their ink, never their zoom.
 
+Your ink must reach all four edges of the frame exactly as it does in {lines}. A
+building that runs off the edge of {lines} runs off the edge of yours, cut at the
+same place — do not pull it back inside, do not leave a white band at the top or the
+bottom, do not centre the drawing on the page. And do not close what {lines} leaves
+open: a street that leaves the frame keeps going, a square open on one side stays
+open on that side. You are not composing a scene, you are inking a fragment.
+
 Add only surface detail: façade windows with shutters and doors, small shopfronts
 with awnings on ground floors, tiled roofs with chimneys, curbs, crosswalks and lane
 markings on streets, a few parked cars, plane trees and benches on green and white
@@ -156,9 +163,12 @@ its angle; and no BUILDING may stand where {lines} shows none. An area left blan
 in {lines} carries no building — only the paving, the greenery and the street life
 that {sem} calls for.
 
-Finally, the ink. Your output is BLACK LINES ON PURE WHITE PAPER and nothing else:
-no green trees, no blue water, no grey roads, no fill of any kind, not one coloured
-pixel anywhere. Trees are drawn with black outlines on white, water with black
-ripple lines on white, roads with black kerbs and markings on white. If any colour
-from {sem} has found its way into your drawing, it is wrong. If your drawing is prettier than {lines} but does not match
+Finally, the ink. Your output uses TWO TONES AND NO OTHER: black ink, white paper.
+NO GREY. Not a grey road, not a grey roof, not a grey wall in shadow, not a grey
+tint, not a wash, not a screen of dots. Every surface you might be tempted to shade
+or fill — the roadway, the roof slopes, the paving, the water — stays PURE WHITE and
+is defined by its black outline alone. Colour is forbidden the same way: no green
+trees, no blue water, not one coloured pixel. Trees are black outlines on white,
+water is black ripple lines on white, roads are black kerbs and markings on white.
+If any grey or any colour from {sem} has found its way into your drawing, it is wrong. If your drawing is prettier than {lines} but does not match
 it, it is wrong and must be redone.
