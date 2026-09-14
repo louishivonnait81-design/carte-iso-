@@ -157,3 +157,15 @@ def test_every_row_fiche_describes_a_facade_not_a_place():
     assert len(fiches) >= 3
     for name, desc in fiches:
         assert desc.startswith("This row"), (name, desc[:40])
+
+
+def test_the_prompt_says_the_bottom_edge_is_the_ground():
+    """Mesure sur u83181573 : 26,2 %% de l'encre du dessin tombait hors du masque,
+    dont 79 %% dans le tiers bas. Le modele dessinait l'arcade comme un etage
+    AJOUTE SOUS le volume, et le compositeur la coupait. Ce n'etait pas un
+    debord de contour — dilater le masque de 20 px n'en recuperait que 30 %%."""
+    text = um.TEMPLATE.read_text(encoding="utf-8")
+    body = text[text.index("-->") + 3:]
+    assert "THE BOTTOM EDGE IS THE GROUND" in body
+    assert "no arcade hanging underneath" in body
+    assert "cut INTO the ground floor" in body

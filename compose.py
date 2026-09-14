@@ -20,9 +20,24 @@ import argparse
 import json
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageFilter
 
 ROOT = Path(__file__).resolve().parent
+
+# Dilatation du masque, en pixels. Le trait de contour d'un dessin tombe A CHEVAL
+# sur la silhouette : sa moitie exterieure serait rognee, et la rangee perdrait
+# son arete. Trois pixels la sauvent et ne cachent rien de ce qui est derriere.
+#
+# Ce n'est PAS la reponse au vrai probleme mesure : sur u83181573, 26,2 % de
+# l'encre tombait hors du masque, dont 79 % dans le tiers bas, parce que le
+# modele dessinait l'arcade comme un etage ajoute SOUS le volume. Dilater de
+# 20 px n'en recuperait que 30 % — c'etait un etage entier, pas un bord. Cela se
+# corrige dans le prompt, qui dit maintenant que la ligne du bas est le sol.
+MASK_GROW_PX = 3
+
+
+def grow(mask: Image.Image, radius: int = MASK_GROW_PX) -> Image.Image:
+    return mask.filter(ImageFilter.MaxFilter(2 * radius + 1)) if radius else mask
 
 
 def load_index(units_dir: Path) -> dict:
@@ -62,7 +77,7 @@ def compose(index: dict, units_dir: Path, drawn_dir: Path | None,
         if mask.size != box:
             mask = mask.resize(box, Image.NEAREST)
 
-        canvas.paste(art, (entry["x"], entry["y"]), mask)
+        canvas.paste(art, (entry["x"], entry["y"]), grow(mask))
     return canvas
 
 

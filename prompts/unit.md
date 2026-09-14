@@ -27,6 +27,13 @@ street, no pavement, no neighbouring building, no shadow, no vignette. This draw
 will be cut out along its silhouette and pasted onto a map, so anything outside the
 building is thrown away.
 
+THE BOTTOM EDGE IS THE GROUND. The lowest line of the shape in image {lines} is where
+the building meets the pavement. Draw NOTHING BELOW IT — no extra storey, no steps, no
+plinth, no terrace, and above all no arcade hanging underneath the building. An arcade,
+where one is asked for, is cut INTO the ground floor of the volume you are given: its
+arches rise from that bottom edge and their tops stay well inside the shape. Everything
+you draw outside the shape of image {lines} is cut away and lost.
+
 WHAT TO ADD, and nothing else:
   - windows on every visible façade, aligned in vertical bays, one row per storey;
     each window a plain rectangle taller than wide with a moulded stone surround,
