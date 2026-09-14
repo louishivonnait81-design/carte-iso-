@@ -1,0 +1,25 @@
+{
+  "_lisezmoi": [
+    "Ce que l'observation ajoute a OpenStreetMap. OSM ne cartographie pas la",
+    "terrasse surelevee autour de la statue, les jardinieres d'une place ou",
+    "l'etendue d'un pavement — mais tout cela se voit sur une vue aerienne.",
+    "",
+    "Methode : ouvrir qa_out/reperage/<tuile>_grille.png a cote de Google Maps,",
+    "et designer les cases. Colonnes A a H de gauche a droite, lignes 1 a 8 de",
+    "haut en bas, dans le plan de l'image (pas du nord).",
+    "",
+    "Types : terrace, planter, fountain, statue, kiosk, stall, wall, steps.",
+    "size et height sont facultatifs, en metres.",
+    "",
+    "Tout ce qui vient d'ici est marque confiance 0,6 : vu, pas mesure."
+  ],
+  "tile_1_4": [
+    {
+      "kind": "terrace",
+      "at": "G7",
+      "size": [10, 6],
+      "height": 0.4,
+      "note": "terrasse surelevee de la statue de Jean Jaures, visible sur la capture satellite fournie ; etendue ESTIMEE, a confirmer"
+    }
+  ]
+}

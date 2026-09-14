@@ -67,7 +67,7 @@ les fenêtres. REF_01 elle-même est vue plus près de 45° que de 30°.
 
 ```bash
 make install                    # dépendances Python (3.11)
-make test                       # 79 tests, ni Blender ni réseau requis
+make test                       # 88 tests, ni Blender ni réseau requis
 export GEMINI_API_KEY=...       # mode API seulement — jamais dans le dépôt
 ```
 
@@ -340,6 +340,33 @@ la main sur les bâtiments qui comptent. Attention : `data.geopf.fr`, `wxs.ign.f
 proxy de l'environnement de rendu — comme l'extrait OSM, ces données doivent être
 téléchargées depuis un navigateur.
 
+### Annoter à la main ce qu'OSM ignore
+
+```bash
+make reperage       # qa_out/reperage/<tuile>_grille.png
+```
+
+OSM ne cartographie ni la terrasse surélevée autour de la statue de Jean Jaurès,
+ni les jardinières d'une place, ni l'étendue d'un pavement — mais tout cela se
+voit d'un coup d'œil sur une vue aérienne.
+
+Une capture d'écran ne suffit pas : elle n'est pas géoréférencée, rien n'y dit où
+commence la zone ni à quelle échelle. Il faudrait la recaler à la main, tuile par
+tuile. La grille de repérage évite ce détour : colonnes **A à H** de gauche à
+droite, lignes **1 à 8** de haut en bas, dans le plan de l'image. On regarde
+Google Maps d'un côté, la tuile quadrillée de l'autre, et on écrit :
+
+```json
+{"tile_1_4": [{"kind": "terrace", "at": "G7", "size": [10, 6],
+               "note": "terrasse de la statue, étendue estimée"}]}
+```
+
+Vérifié : la case `G7` tombe à **3 m** du nœud OSM de la statue, pour une case de
+7,5 m de côté. Types disponibles : `terrace`, `planter`, `fountain`, `statue`,
+`kiosk`, `stall`, `wall`, `steps`. Tout ce qui vient de là est marqué **confiance
+0,6 — vu, pas mesuré**, et se distingue donc des données OSM dans le fichier de
+provenance.
+
 ### Relire les données avant de générer — `scripts/contact_sheet.py`
 
 ```bash
@@ -391,7 +418,7 @@ test 1×2 et ~3,4 € pour la grille complète 6×4.
 ## Tests
 
 ```bash
-make test     # 79 tests
+make test     # 88 tests
 make check    # pyflakes
 ```
 

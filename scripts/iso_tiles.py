@@ -26,6 +26,7 @@ from pathlib import Path
 import bpy
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import annotations as ann  # noqa: E402
 from geo import SEMANTIC_LINEAR, TileGrid  # noqa: E402
 
 # --------------------------------------------------------------------------
@@ -234,6 +235,42 @@ def eevee_engine() -> str:
     return "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in items else "BLENDER_EEVEE"
 
 
+def build_annotations(grid: TileGrid, path: Path) -> int:
+    """Construit la geometrie des annotations faites a la main.
+
+    Elles vivent ici plutot que dans osm_to_blend parce qu'elles sont reperees
+    sur la grille de tuiles, que seul ce script connait.
+    """
+    import bmesh
+
+    entries = ann.load(path, grid)
+    for a in entries:
+        bm = bmesh.new()
+        if a.shape == "basin":
+            bmesh.ops.create_cone(bm, cap_ends=True, segments=8,
+                                  radius1=a.size[0] / 2, radius2=a.size[0] / 2 * 0.92,
+                                  depth=a.height)
+            bmesh.ops.translate(bm, verts=bm.verts, vec=(0, 0, a.height / 2))
+        else:
+            bmesh.ops.create_cube(bm, size=1.0)
+            bmesh.ops.scale(bm, verts=bm.verts, vec=(a.size[0], a.size[1], a.height))
+            bmesh.ops.translate(bm, verts=bm.verts, vec=(0, 0, a.height / 2))
+            if a.shape == "plinth":
+                top = bmesh.ops.create_cube(bm, size=1.0)["verts"]
+                bmesh.ops.scale(bm, verts=top, vec=(0.55, 0.4, 1.8))
+                bmesh.ops.translate(bm, verts=top, vec=(0, 0, a.height + 0.9))
+        mesh = bpy.data.meshes.new(f"annotation_{a.kind}")
+        bm.to_mesh(mesh)
+        bm.free()
+        obj = bpy.data.objects.new(f"annotation.{a.tile}.{a.kind}", mesh)
+        obj.location = (a.x, a.y, 0.0)
+        bpy.context.scene.collection.objects.link(obj)
+        obj["surface"] = "open_ground"
+        obj["annotation"] = a.kind
+        obj["confidence"] = ann.CONFIDENCE
+    return len(entries)
+
+
 def is_tree(obj: bpy.types.Object) -> bool:
     return obj.get("natural") == "tree" or obj.name.startswith("tree.")
 
@@ -366,6 +403,9 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument("--camera-distance", type=float, default=2000.0,
                    help="recul de la camera orthographique")
     p.add_argument("--no-ground", action="store_true", help="ne pas ajouter de plan de sol")
+    p.add_argument("--annotations", type=Path,
+                   default=Path(__file__).resolve().parents[1] / "assets" / "annotations.json",
+                   help="relevés faits a la main sur la grille de reperage")
     p.add_argument("--trees", choices=["both", "sem", "none"], default="sem",
                    help="ou faire apparaitre les arbres. 'sem' (defaut) : dans la "
                         "passe semantique seulement — leur position est transmise "
@@ -428,6 +468,10 @@ def main() -> None:
         print(f"[iso] {widened} courbes de rue elargies a {args.road_width} m")
     if not args.no_ground:
         add_ground_plane(grid, args.ground_z)
+
+    added = build_annotations(grid, args.annotations)
+    if added:
+        print(f"[iso] {added} annotations a la main construites")
 
     cam = setup_camera(scene, grid, args.camera_distance)
     setup_output(scene, grid.tile_px)
