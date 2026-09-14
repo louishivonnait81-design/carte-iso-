@@ -67,7 +67,7 @@ les fenêtres. REF_01 elle-même est vue plus près de 45° que de 30°.
 
 ```bash
 make install                    # dépendances Python (3.11)
-make test                       # 70 tests, ni Blender ni réseau requis
+make test                       # 75 tests, ni Blender ni réseau requis
 export GEMINI_API_KEY=...       # mode API seulement — jamais dans le dépôt
 ```
 
@@ -171,6 +171,14 @@ blender -b assets/castres.blend -P scripts/iso_tiles.py -- \
   tuile en lat/lon).
 * Reprend là où il s'est arrêté ; `--force` pour re-rendre.
 
+**Les arbres ne sont pas dans le dessin au trait** (`--trees sem`, défaut). Leurs
+icosphères sortaient en cercles nus, et un cercle nu est une mauvaise consigne : le
+styliseur les recopiait tels quels, ronds vides sans feuillage. Masqués de la passe
+lignes, leur position reste transmise par le vert de la passe sémantique, et le
+prompt demande déjà des platanes sur les surfaces vertes. La géométrie donne la
+position, le modèle donne la forme — un arbre à deux mètres près ne change rien,
+contrairement à une façade. `--trees both` rétablit l'ancien comportement.
+
 **Classement sémantique.** Les objets sont classés par mots-clés cherchés dans
 leur nom, celui de leurs collections et leurs propriétés personnalisées.
 `osm_to_blend.py` nomme tout de façon à tomber juste ; pour une scène venue
@@ -184,6 +192,7 @@ de `scripts/iso_tiles.py` s'ajuste.
 | sol piéton | blanc | `pedestrian`, `footway`, `path`, `steps`, `place=square` |
 | végétation | vert | |
 | **eau** | **bleu** | **ajout** au cahier des charges, voir ci-dessous |
+| arbres | vert | **hors du dessin au trait** par défaut (`--trees`), voir ci-dessous |
 | sol ouvert | blanc | cours, places, plan de sol sous toute la grille |
 
 > **Écart assumé, à valider :** le cahier des charges ne prévoit que quatre
@@ -359,7 +368,7 @@ test 1×2 et ~3,4 € pour la grille complète 6×4.
 ## Tests
 
 ```bash
-make test     # 70 tests
+make test     # 75 tests
 make check    # pyflakes
 ```
 

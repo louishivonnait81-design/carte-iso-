@@ -234,6 +234,19 @@ def eevee_engine() -> str:
     return "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in items else "BLENDER_EEVEE"
 
 
+def is_tree(obj: bpy.types.Object) -> bool:
+    return obj.get("natural") == "tree" or obj.name.startswith("tree.")
+
+
+def show_trees(scene: bpy.types.Scene, visible: bool) -> int:
+    n = 0
+    for obj in scene.objects:
+        if is_tree(obj):
+            obj.hide_render = not visible
+            n += 1
+    return n
+
+
 def setup_line_pass(scene: bpy.types.Scene, thickness: float, samples: int,
                     engine: str = "cycles") -> None:
     # Cycles sur CPU par defaut : Freestyle y est supporte et, la scene etant un
@@ -353,6 +366,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument("--camera-distance", type=float, default=2000.0,
                    help="recul de la camera orthographique")
     p.add_argument("--no-ground", action="store_true", help="ne pas ajouter de plan de sol")
+    p.add_argument("--trees", choices=["both", "sem", "none"], default="sem",
+                   help="ou faire apparaitre les arbres. 'sem' (defaut) : dans la "
+                        "passe semantique seulement — leur position est transmise "
+                        "par le vert, sans imposer au styliseur un cercle nu a "
+                        "recopier ; 'both' : aussi dans la passe lignes")
     p.add_argument("--only", default=None,
                    help="ne rendre que ces tuiles, ex. '0_0,0_1'")
     p.add_argument("--pass", dest="passes", choices=["line", "sem", "both"], default="both",
@@ -432,8 +450,14 @@ def main() -> None:
     for label, suffix, setup in passes:
         if label == "line":
             setup(scene, args.line_thickness, args.samples, args.line_engine)
+            n = show_trees(scene, args.trees == "both")
         else:
             setup(scene)
+            n = show_trees(scene, args.trees != "none")
+        if n:
+            print(f"[iso] {n} arbres " + ("visibles" if
+                  (args.trees == "both" if label == "line" else args.trees != "none")
+                  else "masques") + f" dans la passe {label}")
         for i, tile in enumerate(tiles, 1):
             path = out / f"{tile.name}{suffix}.png"
             if path.exists() and not args.force:
