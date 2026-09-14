@@ -61,6 +61,24 @@ KERB_HEIGHT = 0.16
 BRIDGE_Z = 1.0
 TREE_RADIUS, TREE_HEIGHT = 3.0, 5.5
 
+# Reperes ponctuels. OSM decrit la statue de Jean Jaures, la fontaine de la place
+# ou les toilettes par un simple noeud ; osm_to_blend ne construisait de la
+# geometrie que pour les chemins, si bien que leur position n'atteignait le
+# modele que par une phrase — "en bas a droite", soit un neuvieme de tuile.
+# Chaque repere recoit donc un volume simple mais physiquement plausible, a
+# l'inverse des icospheres d'arbre qui ne ressemblaient a rien.
+POINT_MARKERS = {
+    ("historic", "memorial"): "plinth",
+    ("historic", "monument"): "plinth",
+    ("tourism", "artwork"): "plinth",
+    ("amenity", "fountain"): "basin",
+    ("amenity", "toilets"): "kiosk",
+}
+PLINTH = (1.5, 1.5, 2.2)      # socle : largeur, profondeur, hauteur
+FIGURE = (0.55, 0.4, 1.8)     # la figure dessus
+BASIN_RADIUS, BASIN_HEIGHT = 1.8, 0.8
+KIOSK = (2.2, 2.2, 2.6)
+
 # Voies sans voiture : ce sont des SOLS, pas des rues. Les classer en rue les
 # faisait ressortir en gris fonce dans la passe semantique, et le modele y
 # dessinait chaussee, passages pietons et voitures en travers d'une esplanade
@@ -494,6 +512,49 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int,
                 add_polygon(f"ground.{rid}", collections["open_ground"], rings, 0.0,
                             KERB_HEIGHT, tags, surface="open_ground")
                 counts["open_ground"] += 1
+
+    # --- reperes ponctuels ---
+    def marker_mesh(kind: str):
+        bm = bmesh.new()
+        if kind == "basin":
+            bmesh.ops.create_cone(bm, cap_ends=True, segments=8,
+                                  radius1=BASIN_RADIUS, radius2=BASIN_RADIUS * 0.92,
+                                  depth=BASIN_HEIGHT)
+            bmesh.ops.translate(bm, verts=bm.verts, vec=(0, 0, BASIN_HEIGHT / 2))
+        else:
+            box = KIOSK if kind == "kiosk" else PLINTH
+            bmesh.ops.create_cube(bm, size=1.0)
+            bmesh.ops.scale(bm, verts=bm.verts, vec=box)
+            bmesh.ops.translate(bm, verts=bm.verts, vec=(0, 0, box[2] / 2))
+            if kind == "plinth":
+                top = bmesh.ops.create_cube(bm, size=1.0)["verts"]
+                bmesh.ops.scale(bm, verts=top, vec=FIGURE)
+                bmesh.ops.translate(bm, verts=top,
+                                    vec=(0, 0, box[2] + FIGURE[2] / 2))
+        mesh = bpy.data.meshes.new(f"marker_{kind}")
+        bm.to_mesh(mesh)
+        bm.free()
+        return mesh
+
+    meshes: dict[str, object] = {}
+    for nid, tags in osm.node_tags.items():
+        kind = next((v for k, v in POINT_MARKERS.items() if tags.get(k[0]) == k[1]), None)
+        if kind is None:
+            continue
+        p = xy(nid)
+        if p is None:
+            continue
+        if kind not in meshes:
+            meshes[kind] = marker_mesh(kind)
+        obj = bpy.data.objects.new(f"landmark.{nid}", meshes[kind])
+        obj.location = (p[0], p[1], 0.0)
+        collections["open_ground"].objects.link(obj)
+        set_props(obj, tags)
+        # sol blanc dans la passe semantique : un repere n'est pas un batiment,
+        # et la regle "toute forme gris clair devient un batiment" ne doit pas
+        # s'y appliquer. Sa silhouette suffit dans le dessin au trait.
+        obj["surface"] = "open_ground"
+        counts["landmarks"] += 1
 
     # --- arbres isoles ---
     trees = [nid for nid, tags in osm.node_tags.items() if tags.get("natural") == "tree"]

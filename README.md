@@ -98,6 +98,16 @@ make blend          # assets/castres.osm -> assets/castres.blend
   plats.
 * Rues : courbes au sol, largeur par classe OSM dans `obj["road_width"]`
   (résidentielle 6 m, tertiaire 7 m, passage 2,5 m…), ponts surélevés d'un mètre.
+* **Repères ponctuels** : OSM décrit la statue de Jean Jaurès, la fontaine de la
+  place ou les toilettes par un simple nœud, et le convertisseur ne construisait de
+  la géométrie que pour les chemins — 23 éléments ponctuels dans un rayon de 60 m
+  autour de la statue, aucun rendu. Leur position n'atteignait le modèle que par
+  une phrase, « en bas à droite », soit un neuvième de tuile. Chacun reçoit
+  désormais un volume simple mais **physiquement plausible** — socle surmonté d'une
+  figure pour une statue, vasque octogonale pour une fontaine, édicule pour des
+  toilettes — à l'inverse des icosphères d'arbre qui ne ressemblaient à rien. Ils
+  sortent en blanc dans la passe sémantique : un repère n'est pas un bâtiment, et
+  la règle « toute forme gris clair devient un bâtiment » ne doit pas s'y appliquer.
 * Végétation : surfaces plates + arbres isolés en icosphères.
 * Eau : surfaces plates juste au-dessus du sol blanc.
 * Origine de scène (`scene["lat"]`, `scene["lon"]`) = centre de l'emprise, comme
