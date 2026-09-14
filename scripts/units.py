@@ -164,18 +164,22 @@ def build_units(buildings: dict[int, Building],
     return units
 
 
-def units_touching(units: list[Unit],
-                   bbox: tuple[float, float, float, float]) -> list[Unit]:
-    """Unites dont l'emprise recoupe `bbox` — y compris a cheval sur le bord.
+def boxes_touching(boxes: dict[str, tuple[int, int, int, int]],
+                   rect: tuple[int, int, int, int]) -> set[str]:
+    """Unites dont la boite en PIXELS recoupe `rect`, en pixels de la mosaique.
 
-    Une rangee coupee par la frontiere d'une tuile appartient aux deux : elle
-    est dessinee une fois et collee une fois, le compositeur travaillant sur la
-    carte entiere et non tuile par tuile.
+    La selection se fait a l'ecran, jamais au sol. L'emprise au sol d'une tuile
+    isometrique est un LOSANGE, pas un rectangle : prendre le rectangle aligne
+    sur les axes de ses quatre coins deborde largement sur les tuiles voisines.
+    C'est l'erreur qui avait fait recoller des rangees a deux tuiles de la, et
+    que le controle de chainage a rattrapee — 5 % de concordance au lieu de 95.
+
+    Et surtout, la selection utilise exactement la boite qui servira au collage :
+    les deux ne peuvent donc plus se contredire.
     """
-    minx, miny, maxx, maxy = bbox
-    out = []
-    for u in units:
-        a, b, c, d = u.bbox
-        if a <= maxx and c >= minx and b <= maxy and d >= miny:
-            out.append(u)
+    rx, ry, rw, rh = rect
+    out = set()
+    for name, (x, y, w, h) in boxes.items():
+        if x < rx + rw and x + w > rx and y < ry + rh and y + h > ry:
+            out.add(name)
     return out

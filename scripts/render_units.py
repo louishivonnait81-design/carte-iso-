@@ -43,7 +43,7 @@ if str(ROOT / "scripts") not in sys.path:
 import iso_tiles  # noqa: E402
 import osm_to_blend as ob  # noqa: E402
 from geo import TileGrid, latlon_to_xy, project  # noqa: E402
-from units import Building, build_units, units_touching  # noqa: E402
+from units import Building, boxes_touching, build_units  # noqa: E402
 
 # Marge autour d'une unite, en metres. Elle laisse respirer le trait epais du
 # contour et evite qu'un debord de toit soit coupe au ras du cadre.
@@ -178,12 +178,6 @@ def load_units(osm_path: Path, grid: TileGrid, max_extent: float):
     return build_units(buildings, max_extent)
 
 
-def tile_ground_bbox(grid: TileGrid, name: str):
-    tile = next(t for t in grid.to_index()["tiles"] if t["name"] == name)
-    cs = tile["ground_corners_xy"]
-    return (min(c[0] for c in cs), min(c[1] for c in cs),
-            max(c[0] for c in cs), max(c[1] for c in cs))
-
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__,
@@ -199,6 +193,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument("--tile", type=float, default=60.0)
     p.add_argument("--px", type=int, default=2048)
     p.add_argument("--center-latlon", type=float, nargs=2, default=(43.60482, 2.24177))
+    p.add_argument("--origin-latlon", type=float, nargs=2, default=None,
+                   help="origine du monde Blender ; par defaut celle ecrite dans la scene")
     p.add_argument("--elevation", type=float, default=45.0)
     p.add_argument("--azimuth", type=float, default=45.0)
     p.add_argument("--max-extent", type=float, default=45.0)
@@ -217,16 +213,23 @@ def main() -> int:
     scene = bpy.context.scene
 
     lat, lon = args.center_latlon
-    grid = TileGrid.build(args.rows, args.cols, args.tile, args.px, lat, lon, lat, lon,
+    # L'ORIGINE DU MONDE BLENDER N'EST PAS LE CENTRE DE LA GRILLE. La scene est
+    # construite autour de son propre point de reference, ecrit dans
+    # scene["lat"]/["lon"] ; ici (43,60525 ; 2,2410), soit le centre de la grille
+    # decale de 62 m en x et de -48 m en y. Batir la grille avec le centre comme
+    # origine decalait donc chaque unite d'autant, et le controle de chainage est
+    # tombe a 5 % de concordance. On lit l'origine dans la scene, comme le fait
+    # iso_tiles pour les tuiles : les deux repartent ainsi du meme point.
+    olat, olon = iso_tiles.scene_origin(
+        scene, tuple(args.origin_latlon) if args.origin_latlon else None)
+    grid = TileGrid.build(args.rows, args.cols, args.tile, args.px, lat, lon, olat, olon,
                           elevation_deg=args.elevation, azimuth_deg=args.azimuth)
+    print(f"[unites] origine de la scene : {olat}, {olon}")
 
     units = load_units(args.osm, grid, args.max_extent)
     if args.units:
         wanted = set(args.units.split(","))
         units = [u for u in units if u.name in wanted]
-    elif args.only:
-        units = units_touching(units, tile_ground_bbox(grid, args.only))
-    print(f"[unites] {len(units)} unites a rendre")
 
     args.out.mkdir(parents=True, exist_ok=True)
     cam = iso_tiles.setup_camera(scene, grid, args.camera_distance)
@@ -243,13 +246,22 @@ def main() -> int:
         names = {f"building.{w}" for w in unit.way_ids}
         objects = [bpy.data.objects[n] for n in names if n in bpy.data.objects]
         if not objects:
-            print(f"[unites] {unit.name} : aucun objet dans la scene, ignoree")
             continue
         umin, vmin, umax, vmax = screen_bbox(objects, grid)
         bbox = (umin - args.margin, vmin - args.margin,
                 umax + args.margin, vmax + args.margin)
         x, y, w, h = mosaic_box(bbox, grid)
         records.append((unit, names, objects, bbox, (x, y, w, h)))
+
+    # Selection A L'ECRAN, avec la boite meme qui servira au collage : selection
+    # et placement ne peuvent donc pas se contredire.
+    if args.only:
+        px = grid.tile_px
+        row, col = (int(v) for v in args.only.split("_")[1:3])
+        keep = boxes_touching({r[0].name: r[4] for r in records},
+                              (col * px, row * px, px, px))
+        records = [r for r in records if r[0].name in keep]
+    print(f"[unites] {len(records)} unites a rendre")
 
     # d'arriere en avant : le compositeur repassera dans cet ordre
     records.sort(key=lambda r: depth_key(r[2], grid), reverse=True)

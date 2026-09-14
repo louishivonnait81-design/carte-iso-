@@ -51,6 +51,19 @@ HEIGHT_BY_KIND = {
 }
 DEFAULT_LEVELS = 2.5    # vieux Castres : R+2 dominant, quelques R+1
 ROOF_RISE = 8.0         # hauteur maximale de toiture au-dessus du dernier niveau
+
+# Une emprise minuscule n'est pas un volume habitable : c'est une cage
+# d'escalier, une courette, un appentis, ou l'epaisseur d'un mur saisie comme
+# polygone. Extrudee a 12 m et coiffee d'une croupe, elle sort en pic. Mesure
+# sur la grille : 5,5 % des "batiments" font moins de 4 m2, et 10 % ont un petit
+# cote de moins de 2 m. Ils appartiennent de toute facon a la masse voisine,
+# avec laquelle ils partagent leurs noeuds.
+MIN_BUILDING_AREA = 4.0   # m2
+
+# Une croupe a besoin de place. L'inset des versants vaut la moitie du petit
+# cote ; sous ce seuil la face du dessus degenere et se replie sur elle-meme,
+# ce qui produisait les diagonales que Freestyle dessinait ensuite fidelement.
+MIN_HIP_SHORT_SIDE = 4.0  # m
 WATER_Z = 0.01          # a plat, juste au-dessus du sol blanc pour rester visible
 # Hauteur de bordure. Les surfaces pietonnes sont des dalles, pas des nappes :
 # Freestyle ne sort aucun trait sur une nappe posee a plat, et le sol restait
@@ -399,7 +412,8 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int,
             # pointes et des quadrilateres gauches que Freestyle couvre de
             # diagonales. Une boite propre vaut mieux qu'un toit faux.
             if (roof == "hip" and top_faces and not holes and surface is None
-                    and is_boxy(outer, box_fit_2d)):
+                    and is_boxy(outer, box_fit_2d)
+                    and obb_short_side(outer, box_fit_2d) >= MIN_HIP_SHORT_SIDE):
                 bmesh.ops.dissolve_edges(bm, edges=[e for e in bm.edges
                                                     if all(f in top_faces for f in e.link_faces)
                                                     and len(e.link_faces) == 2],
@@ -411,7 +425,7 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int,
                     # dimension du rectangle englobant oriente, a un cheveu pres
                     # pour ne pas degenerer la face de dessus.
                     short = obb_short_side(outer, box_fit_2d)
-                    inset = max(0.5, 0.49 * short)
+                    inset = 0.49 * short
                     rise = min(ROOF_RISE, 0.53 * inset)     # ~28 deg, pente des tuiles canal
                     bmesh.ops.inset_region(bm, faces=tops, thickness=inset, depth=rise,
                                            use_even_offset=True)
@@ -466,6 +480,9 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int,
         elif closed:
             ring = ring_xy(refs)
             if cat == "building":
+                if abs(ring_area(ring)) < MIN_BUILDING_AREA:
+                    counts["buildings_skipped"] += 1
+                    continue
                 height, source, conf = building_height(tags, measured, wid)
                 obj = add_polygon(f"building.{wid}", collections["buildings"], [ring], 0.0,
                                   height, tags)

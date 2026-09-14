@@ -6,8 +6,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from units import (Building, adjacency_groups, build_units, split_long_group,  # noqa: E402
-                   units_touching, unit_name)
+from units import (Building, adjacency_groups, boxes_touching, build_units,  # noqa: E402
+                   split_long_group, unit_name)
 
 
 def _box(wid: int, x0: float, y0: float, w: float = 10.0, d: float = 10.0,
@@ -69,11 +69,79 @@ def test_unit_name_survives_reordering():
     assert unit_name([7, 3, 11]) == unit_name([11, 7, 3]) == "u3"
 
 
-def test_units_touching_keeps_a_row_straddling_the_border():
-    """Une rangee coupee par la frontiere d'une tuile appartient aux deux. Elle
-    est dessinee une fois et collee une fois : le compositeur travaille sur la
-    carte entiere, pas tuile par tuile."""
-    bs = {1: _box(1, -5, 0, w=20), 2: _box(2, 100, 100)}
-    units = build_units(bs)
-    touching = units_touching(units, (0, 0, 60, 60))
-    assert [u.name for u in touching] == ["u1"]
+def test_selection_is_done_on_screen_boxes_not_on_ground_boxes():
+    """L'emprise au sol d'une tuile isometrique est un LOSANGE. Selectionner les
+    unites avec le rectangle aligne sur ses quatre coins debordait de deux
+    tuiles : le controle de chainage est tombe a 5 % de concordance au lieu de
+    95. La selection se fait donc sur la boite EN PIXELS, celle-la meme qui
+    servira au collage — les deux ne peuvent plus se contredire."""
+    boxes = {"dedans": (8300, 2500, 400, 400),
+             "a_cheval": (8100, 2000, 300, 300),
+             "dehors": (100, 100, 200, 200),
+             "juste_a_cote": (8192 + 2048, 2048, 100, 100)}
+    keep = boxes_touching(boxes, (8192, 2048, 2048, 2048))
+    assert keep == {"dedans", "a_cheval"}
+
+
+def test_a_box_touching_only_by_its_edge_is_excluded():
+    """Deux boites qui se touchent bord a bord ne se recouvrent pas : sans cela
+    chaque unite appartiendrait a ses quatre voisines."""
+    assert boxes_touching({"u": (0, 0, 10, 10)}, (10, 0, 10, 10)) == set()
+    assert boxes_touching({"u": (0, 0, 11, 10)}, (10, 0, 10, 10)) == {"u"}
+
+
+def test_compose_places_each_unit_at_its_own_box():
+    """Le compositeur pose a la boite, pas a l'image : un dessin revenu a une
+    autre taille est remis a l'echelle de sa boite, jamais l'inverse."""
+    import json
+    import sys
+    from PIL import Image
+    sys.path.insert(0, str(ROOT))
+    import compose as C
+
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        units = Path(d)
+        # deux unites de 20x20, l'une posee sur l'autre a un endroit connu
+        for name, val in (("a", 0), ("b", 0)):
+            Image.new("L", (20, 20), val).save(units / f"{name}_line.png")
+            Image.new("L", (20, 20), 255).save(units / f"{name}_mask.png")
+        index = {"grid": {"mosaic_px": [100, 100], "tile_px": 50},
+                 "units": [
+                     {"name": "a", "order": 0, "x": 5, "y": 5, "w": 20, "h": 20,
+                      "line": "a_line.png", "mask": "a_mask.png"},
+                     {"name": "b", "order": 1, "x": 60, "y": 60, "w": 20, "h": 20,
+                      "line": "b_line.png", "mask": "b_mask.png"}]}
+        (units / "index.json").write_text(json.dumps(index), encoding="utf-8")
+        canvas = C.compose(index, units, None)
+
+    assert canvas.size == (100, 100)
+    assert canvas.getpixel((10, 10)) == 0     # unite a, posee en (5,5)
+    assert canvas.getpixel((65, 65)) == 0     # unite b, posee en (60,60)
+    assert canvas.getpixel((40, 40)) == 255   # rien entre les deux
+
+
+def test_compose_rescales_a_drawing_that_came_back_the_wrong_size():
+    """Le modele rend rarement la taille exacte demandee. C'est la boite qui fait
+    foi : le dessin est remis a son echelle, il ne deplace jamais la boite."""
+    import json
+    import sys
+    import tempfile
+    from PIL import Image
+    sys.path.insert(0, str(ROOT))
+    import compose as C
+
+    with tempfile.TemporaryDirectory() as d:
+        units, drawn = Path(d) / "u", Path(d) / "dessins"
+        units.mkdir()
+        drawn.mkdir()
+        Image.new("L", (20, 20), 128).save(units / "a_line.png")
+        Image.new("L", (20, 20), 255).save(units / "a_mask.png")
+        Image.new("L", (77, 77), 0).save(drawn / "a.png")      # mauvaise taille
+        index = {"grid": {"mosaic_px": [100, 100], "tile_px": 50},
+                 "units": [{"name": "a", "order": 0, "x": 5, "y": 5, "w": 20, "h": 20,
+                            "line": "a_line.png", "mask": "a_mask.png"}]}
+        canvas = C.compose(index, units, drawn)
+
+    assert canvas.getpixel((10, 10)) == 0      # le dessin, pas le rendu brut
+    assert canvas.getpixel((30, 30)) == 255    # et rien hors de la boite
