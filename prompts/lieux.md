@@ -10,8 +10,10 @@ Fiches des lieux notables, injectees dans le prompt de la tuile ou le lieu se
 trouve. Une ligne par lieu : `- **motif** : description`. Le motif est cherche
 (sans casse) dans le nom OSM. Descriptions en anglais, factuelles, courtes.
 
-A VERIFIER PAR QUELQU'UN QUI CONNAIT CASTRES : ces fiches sont ecrites de memoire
-et n'ont pas ete controlees sur place. Une fiche fausse vaut pire qu'aucune.
+ETAT DE VERIFICATION. Les fiches marquees "(Verified on Street View)" ont ete
+controlees sur des captures Google Maps fournies par l'auteur — l'environnement de
+rendu n'a pas acces a Google. Les autres restent ecrites de memoire et sont a
+verifier de la meme facon : une fiche fausse vaut pire qu'aucune.
 -->
 
 - **Cathédrale Saint-Benoît** : the cathedral of Castres, BAROQUE, built 1678–1718: a massive plain classical stone façade, a single wide nave under a low tiled roof, and beside it an older square stone bell tower. NOT Gothic — no spires, no pinnacles, no flying buttresses.
@@ -21,7 +23,9 @@ et n'ont pas ete controlees sur place. Une fiche fausse vaut pire qu'aucune.
 - **Pont Vieux** : the old stone arch bridge over the Agout: several round arches, low stone parapets.
 - **Pont Neuf** : stone arch bridge over the Agout with round arches and stone parapets.
 - **Agout** : the river Agout: calm water between stone quays. On its west bank between the two bridges stand the famous old houses of the tanners and weavers, built directly in the water on stone footings, with painted plaster façades, wooden balconies and overhanging upper floors, and open drying lofts under the roof.
-- **Place Jean Jaurès** : the main square of Castres, 18th century: the buildings around it have uniform classical façades with shops and café terraces on the ground floor, and it is planted with plane trees.
+- **Place Jean Jaurès** : the main square of Castres, a long paved esplanade. The buildings around it are classical, three storeys, pale rendered stone; their GROUND FLOORS RUN UNDER A CONTINUOUS ARCADE OF ROUND STONE ARCHES, and the shops and café terraces are set back under those arches. (Verified on Street View; two businesses are actually named after them.)
+- **Statue de Jean Jaurès** : a standing bronze figure of Jaurès in a frock coat, on a tall rectangular stone pedestal, itself on a raised paved terrace edged with a low stone kerb and a step. (Verified on Street View.)
+- **Quai des Jacobins** : the quay street running along the west bank of the Agout, its parapet overlooking the water.
 - **Théâtre Municipal** : the municipal theatre of 1904, an ornate Belle Époque façade on the place de la République.
 - **Hôtel de Nayrac** : a 16th-century Renaissance mansion in brick and stone with corner pavilions and mullioned windows.
 - **Hôtel de Viviès** : a 17th-century stone mansion with a large carriage porch and a courtyard.
