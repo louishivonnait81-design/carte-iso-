@@ -310,8 +310,7 @@ def test_place_jean_jaures_fiche_states_identity_not_composition():
                  if l.startswith("- **Place Jean Jaurès**"))
     assert "ARCADE" in fiche
     assert "read from image 3, never invented" in fiche
-    for scene in ("long paved esplanade", "The buildings around it"):
-        assert scene not in fiche
+    assert "The buildings around it" not in fiche
 
 
 def test_ink_rule_forbids_grey_not_only_colour():
@@ -421,9 +420,8 @@ def test_a_verified_fiche_overrides_the_period_and_the_closed_list():
 
     fiche = next(l for l in LIEUX.read_text(encoding="utf-8").splitlines()
                  if l.startswith("- **Place Jean Jaurès**"))
-    assert "19th-CENTURY" in fiche
-    assert "MANSARD ROOF" in fiche
-    assert "CAST-IRON BALCONY" in fiche
+    assert "mansard roof pierced by dormers" in fiche
+    assert "cast-iron balcony" in fiche
 
 
 def test_the_statue_and_its_fountain_are_one_object():
@@ -435,3 +433,18 @@ def test_the_statue_and_its_fountain_are_one_object():
                  if l.startswith("- **Statue de Jean Jaurès**"))
     assert "PALE WHITE STONE" in fiche and "not bronze" in fiche
     assert "the fountain and the statue are one and the same object" in fiche
+
+
+def test_the_mansard_building_is_one_building_not_the_whole_square():
+    """Correction d'une correction. La photo de la statue montrait un immeuble
+    a toit mansarde, lucarnes, balcon de fonte et horloge, et j'en ai fait la
+    regle de toute la place. Les vues d'ensemble suivantes montrent l'inverse :
+    l'arcade est universelle, mais les autres facades sont trois niveaux de
+    pierre claire a fenetres nues, sans balcon ni mansarde. Un seul immeuble,
+    celui derriere la statue, porte ce traitement."""
+    fiche = next(l for l in LIEUX.read_text(encoding="utf-8").splitlines()
+                 if l.startswith("- **Place Jean Jaurès**"))
+    assert "UNIVERSAL" in fiche          # l'arcade, et elle seule
+    assert "A SINGLE building" in fiche
+    assert "must not be copied onto" in fiche
+    assert "NO balcony, NO mansard" in fiche

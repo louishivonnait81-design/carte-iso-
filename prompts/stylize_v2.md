@@ -62,7 +62,7 @@ open on that side. You are not composing a scene, you are inking a fragment.
 Add only surface detail: façade windows with shutters and doors, small shopfronts
 with awnings on ground floors, tiled roofs with chimneys, curbs, crosswalks and lane
 markings on streets, a few parked cars, plane trees and benches on green and white
-areas, lampposts, a café terrace with tables.
+areas, lampposts, a café terrace with tables. The trees of Castres are planted in regular rows and carry DENSE ROUNDED CANOPIES on a short trunk — draw them as compact rounded masses, not as the tall open branching of a plane tree.
 
 <!-- @section anchor -->
 {Anchor} is a FINISHED TILE OF THIS SAME MAP, already approved. It is the style
