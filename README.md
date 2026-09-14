@@ -67,7 +67,7 @@ les fenêtres. REF_01 elle-même est vue plus près de 45° que de 30°.
 
 ```bash
 make install                    # dépendances Python (3.11)
-make test                       # 58 tests, ni Blender ni réseau requis
+make test                       # 61 tests, ni Blender ni réseau requis
 export GEMINI_API_KEY=...       # mode API seulement — jamais dans le dépôt
 ```
 
@@ -254,6 +254,34 @@ touchent, extraits de l'OSM avec leur position dans la tuile :
 Les noms disent quoi dessiner ; ils ne sont **jamais lettrés** — une enseigne peut
 porter un emblème dessiné, jamais un mot.
 
+### Deux garde-fous pour la chaîne de 28 tuiles
+
+**Ancrer le style sur une tuile validée** — `--anchor tile_1_4`
+
+Une fois une tuile approuvée, elle devient la meilleure référence de style
+possible : vraie Castres, bonne échelle, bonne projection, bonne épaisseur de
+trait. REF_01 et REF_02 sont des planches hors échelle et hors projection ; la
+première est même la seule image parisienne du lot. Passée en `--anchor`, la tuile
+validée les remplace toutes les deux, devient l'image 1, et le prompt lui demande
+de tout reprendre **sauf la géométrie**.
+
+Sans cela, le style dérive en chaîne : la tuile 20 est dessinée d'après des
+voisines elles-mêmes dessinées d'après des voisines, à quatre générations de la
+référence d'origine.
+
+**Repérer les tuiles périmées** — `make status`
+
+Refaire une tuile change l'image de continuité de ses voisines droite et basse :
+elles ont été dessinées d'après une version qui n'existe plus. `manual.py`
+enregistre l'empreinte des entrées de chaque tuile à l'export et la recompare à
+l'import ; `status` marque `!!` celles qui ont divergé. Sans ce contrôle,
+l'incohérence ne se voit qu'à l'assemblage final, quand il est trop tard.
+
+```
+   ## ## !! .. .. .. ..
+   ## .. .. .. .. .. ..
+```
+
 ### Relire les données avant de générer — `scripts/contact_sheet.py`
 
 ```bash
@@ -305,7 +333,7 @@ test 1×2 et ~3,4 € pour la grille complète 6×4.
 ## Tests
 
 ```bash
-make test     # 58 tests
+make test     # 61 tests
 make check    # pyflakes
 ```
 

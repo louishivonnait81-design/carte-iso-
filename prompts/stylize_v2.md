@@ -1,7 +1,8 @@
 <!--
 Gabarit du prompt d'habillage. Chaque section commence par un marqueur HTML
 "@section" suivi de son nom, sur sa propre ligne (voir plus bas). stylize.py
-assemble : base + architecture [+ notes] [+ water] [+ ref02] [+ left] [+ top].
+assemble : base + architecture [+ notes] [+ water] [+ anchor | ref02]
+[+ left] [+ top].
 
 Les references aux images sont des variables ({Ref01}, {lines}, {sem}, {left},
 {top}) et non des numeros ecrits en dur : l'ordre reel des images envoyees
@@ -37,6 +38,14 @@ Add only surface detail: façade windows with shutters and doors, small shopfron
 with awnings on ground floors, tiled roofs with chimneys, curbs, crosswalks and lane
 markings on streets, a few parked cars, plane trees and benches on green and white
 areas, lampposts, a café terrace with tables.
+
+<!-- @section anchor -->
+{Anchor} is a FINISHED TILE OF THIS SAME MAP, already approved. It is the style
+reference for everything except geometry: same ink, same line weight, same amount
+of detail, same way of drawing roofs, trees, shutters, shopfronts, cars and paving.
+Match it exactly — a reader must not be able to tell which tile was drawn first.
+Take nothing else from it: its buildings and streets belong to another part of the
+town, and yours come from {lines}.
 
 <!-- @section architecture -->
 Every BUILDING in this drawing was built between 1400 and 1800; there is no

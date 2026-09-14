@@ -48,7 +48,8 @@ def test_export_then_import_then_next(tmp_path, monkeypatch):
         assert "tile_0_0" in out and "3 images" in out
         folder = paths["manual"] / "tile_0_0"
         assert sorted(p.name for p in folder.iterdir()) == [
-            "1_ref01.png", "2_lines.png", "3_sem.png", "LISEZMOI.txt", "prompt.txt"]
+            "1_ref01.png", "2_lines.png", "3_sem.png", "LISEZMOI.txt", "job.json",
+            "prompt.txt"]
         prompt = (folder / "prompt.txt").read_text(encoding="utf-8")
         assert prompt.startswith("Image 1 is the style reference.")
         assert "image 4" not in prompt
@@ -88,3 +89,34 @@ def test_nonsquare_import_is_refused(tmp_path):
     forced = subprocess.run(cmd + ["--allow-nonsquare"], capture_output=True, text=True, env=env)
     assert forced.returncode == 0
     assert (paths["styled"] / "tile_0_0.png").exists()
+
+
+def test_status_flags_tiles_whose_neighbour_was_redone(tmp_path):
+    """Refaire une tuile perime ses voisines droite et basse : elles ont ete
+    dessinees d'apres une version qui n'existe plus."""
+    paths = _setup(tmp_path)
+    ref01 = ROOT / "assets" / "REF_01_style.png"
+    created = not ref01.exists()
+    if created:
+        Image.new("L", (64, 64), 255).save(ref01)
+    try:
+        square = tmp_path / "rendu.png"
+        Image.new("RGB", (512, 512), "white").save(square)
+
+        _run(paths, "next")                                   # exporte tile_0_0
+        _run(paths, "import", "tile_0_0", str(square))
+        _run(paths, "next")                                   # tile_0_1, voit tile_0_0
+        _run(paths, "import", "tile_0_1", str(square))
+        assert "perimees" not in _run(paths, "status")
+
+        # on refait tile_0_0 avec une image differente
+        autre = tmp_path / "autre.png"
+        Image.new("RGB", (512, 512), (250, 250, 250)).save(autre)
+        _run(paths, "import", "tile_0_0", str(autre), "--force")
+
+        out = _run(paths, "status")
+        assert "1 perimees" in out
+        assert "a refaire : tile_0_1" in out
+    finally:
+        if created:
+            ref01.unlink()

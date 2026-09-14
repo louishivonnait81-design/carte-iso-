@@ -147,7 +147,8 @@ def test_cache_key_changes_with_inputs(tmp_path, monkeypatch):
 
 def test_section_set_is_exactly_the_expected_one():
     """Le commentaire d'en-tete du gabarit ne doit pas etre pris pour une section."""
-    assert sorted(SECTIONS) == ["architecture", "base", "left", "notes", "ref02", "top", "water"]
+    assert sorted(SECTIONS) == ["anchor", "architecture", "base", "left", "notes",
+                                "ref02", "top", "water"]
 
 
 def test_architecture_section_is_always_included(tmp_path, monkeypatch):
@@ -215,3 +216,31 @@ def test_ref01_can_be_dropped_and_ref02_carries_the_style(tmp_path, monkeypatch)
     assert "Image 2 is a line drawing" in job.prompt
     assert "second reference showing the ARCHITECTURE" not in job.prompt
     assert "{" not in job.prompt
+
+
+def test_validated_tile_becomes_the_style_reference(tmp_path, monkeypatch):
+    """Une tuile deja validee est une meilleure reference que les planches : vraie
+    Castres, bonne echelle, bonne projection. Elle remplace REF_01 et REF_02."""
+    tiles_dir, index = _fake_tiles(tmp_path, 1, 2)
+    monkeypatch.setattr(stylize, "REF01", tmp_path / "ref01.png")
+    monkeypatch.setattr(stylize, "REF02", tmp_path / "ref02.png")
+    stylize.REF01.write_bytes(b"ref1")
+    stylize.REF02.write_bytes(b"ref2")
+    anchor = tmp_path / "anchor.png"
+    anchor.write_bytes(b"tuile validee")
+
+    job = stylize.build_job(index["tiles"][0], tiles_dir, tmp_path / "out", SECTIONS,
+                            use_ref02=True, water_mode="off", anchor=anchor)
+    assert job.roles == ["anchor", "lines", "sem"]
+    assert job.images[0] == anchor
+    assert job.prompt.startswith("Image 1 is the style reference.")
+    assert "Image 1 is a FINISHED TILE OF THIS SAME MAP" in job.prompt
+    assert "your buildings and streets" not in job.prompt   # phrase exacte du gabarit
+    assert "yours come from image 2" in job.prompt
+    assert "second reference showing the ARCHITECTURE" not in job.prompt
+    assert "{" not in job.prompt
+
+
+def test_anchor_missing_is_a_clear_error(tmp_path):
+    with pytest.raises(SystemExit, match="ancrage introuvable"):
+        stylize.resolve_anchor("tile_9_9", tmp_path)

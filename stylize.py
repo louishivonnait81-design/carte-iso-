@@ -143,6 +143,15 @@ class Job:
         return h.hexdigest()
 
 
+def resolve_anchor(name: str | None, styled_dir: Path) -> Path | None:
+    if not name:
+        return None
+    path = styled_dir / f"{name}.png"
+    if not path.exists():
+        raise SystemExit(f"Tuile d'ancrage introuvable : {path}")
+    return path
+
+
 def load_notes(tiles_dir: Path) -> dict[str, list[dict]]:
     """tiles/notes.json, produit par scripts/tile_notes.py (facultatif)."""
     path = tiles_dir / "notes.json"
@@ -153,7 +162,7 @@ def load_notes(tiles_dir: Path) -> dict[str, list[dict]]:
 
 def build_job(tile: dict, tiles_dir: Path, out_dir: Path, sections: dict[str, str],
               use_ref02: bool, water_mode: str, notes: dict[str, list[dict]] | None = None,
-              use_ref01: bool = True) -> Job:
+              use_ref01: bool = True, anchor: Path | None = None) -> Job:
     line = tiles_dir / tile["line"]
     sem = tiles_dir / tile["semantic"]
     for path in (line, sem):
@@ -161,6 +170,14 @@ def build_job(tile: dict, tiles_dir: Path, out_dir: Path, sections: dict[str, st
             raise SystemExit(f"Tuile de squelette manquante : {path}")
 
     roles, images = [], []
+    if anchor is not None:
+        # Une tuile deja validee est la meilleure reference possible : vraie
+        # Castres, bonne echelle, bonne projection, bonne epaisseur de trait.
+        # Elle remplace les planches de reference, qui n'ont ni l'echelle ni la
+        # projection de la carte.
+        roles.append("anchor")
+        images.append(anchor)
+        use_ref01 = use_ref02 = False
     if use_ref01:
         roles.append("ref01")
         images.append(squared(REF01))
@@ -168,7 +185,8 @@ def build_job(tile: dict, tiles_dir: Path, out_dir: Path, sections: dict[str, st
         roles.append("ref02")
         images.append(squared(REF02))
     if not roles:
-        raise SystemExit("Au moins une reference de style est necessaire (--ref01 / --ref02).")
+        raise SystemExit("Au moins une reference de style est necessaire "
+                         "(--ref01, --ref02 ou --anchor).")
     roles += ["lines", "sem"]
     images += [line, sem]
 
@@ -183,6 +201,8 @@ def build_job(tile: dict, tiles_dir: Path, out_dir: Path, sections: dict[str, st
 
     water = water_mode == "on" or (water_mode == "auto" and has_water(sem))
     parts = ["base", "architecture"]
+    if anchor is not None:
+        parts.append("anchor")
     entries = (notes or {}).get(tile["name"], [])
     if entries and "notes" in sections:
         parts.append("notes")
@@ -193,7 +213,10 @@ def build_job(tile: dict, tiles_dir: Path, out_dir: Path, sections: dict[str, st
     parts += [r for r in ("left", "top") if r in roles]
 
     filled = dict(sections)
-    if not use_ref01:
+    if anchor is not None:
+        filled = {k: v.replace("{Ref01}", "{Anchor}").replace("{ref01}", "{anchor}")
+                  for k, v in filled.items()}
+    elif not use_ref01:
         # la section base parle du "style reference" : c'est REF_02 qui le porte
         filled = {k: v.replace("{Ref01}", "{Ref02}").replace("{ref01}", "{ref02}")
                   for k, v in filled.items()}
@@ -227,6 +250,9 @@ def main() -> int:
                    help="ajouter la legende 'bleu = eau' au prompt")
     p.add_argument("--ref02", choices=["auto", "on", "off"], default="auto",
                    help="joindre assets/REF_02_castres.png")
+    p.add_argument("--anchor", default=None, metavar="TUILE",
+                   help="nom d'une tuile deja validee (ex. tile_1_4) : elle sert de "
+                        "reference de style a la place de REF_01 et REF_02")
     p.add_argument("--ref01", choices=["on", "off"], default="on",
                    help="joindre assets/REF_01_style.png ; 'off' laisse REF_02 porter "
                         "le style de trait et supprime une image parisienne du lot")
@@ -251,6 +277,7 @@ def main() -> int:
         sys.exit(f"--ref02 on mais {REF02} est absent.")
 
     sections = load_sections(PROMPT)
+    anchor = resolve_anchor(args.anchor, args.out)
     notes = load_notes(args.tiles)
     if not notes:
         print("[notes] tiles/notes.json absent : lancer scripts/tile_notes.py pour "
@@ -277,7 +304,7 @@ def main() -> int:
         out_png = args.out / f"{name}.png"
         meta_path = args.out / f"{name}.json"
         job = build_job(tiles[name], args.tiles, args.out, sections, use_ref02, args.water,
-                        notes, use_ref01=args.ref01 == "on")
+                        notes, use_ref01=args.ref01 == "on", anchor=anchor)
         key = job.cache_key(args.model, args.aspect_ratio, args.image_size)
 
         if out_png.exists() and not args.force:
