@@ -13,8 +13,9 @@ STYLED  ?= styled
 QA      ?= qa_out
 OUT     ?= out
 BUDGET  ?= 5
+TILE_NAME ?= tile_1_4
 
-.PHONY: help install test check density blend notes planche reperage render render-test next status ref02 stylize stylize-dry qa seam assemble all clean
+.PHONY: help install test check density blend notes planche reperage render render-test units unit-next unit-status compose compose-check next status ref02 stylize stylize-dry qa seam assemble all clean
 
 help:
 	@echo "make install       installe les dependances Python"
@@ -25,6 +26,9 @@ help:
 	@echo "make reperage     grille A-H / 1-8 sur les tuiles, pour annoter a la main"
 	@echo "make planche      planche-contact des tuiles, pour relire les donnees"
 	@echo "make notes         extrait les lieux de chaque tuile depuis l'OSM"
+	@echo "make units         rend chaque rangee seule, avec sa boite de collage"
+	@echo "make compose-check controle le chainage du collage, sans le modele"
+	@echo "make unit-status   avancement des unites dessinees"
 	@echo "make next          MODE MANUEL : prepare la prochaine tuile a coller dans Gemini"
 	@echo "make status        MODE MANUEL : avancement de la grille"
 	@echo "make ref02         genere les propositions de REF_02_castres.png (API)"
@@ -60,6 +64,20 @@ blend:
 render:
 	$(PY) render.py --rows $(ROWS) --cols $(COLS) --tile $(TILE) --px $(PX) \
 		--center-latlon $(CENTER) --elevation $(ELEV) --out $(TILES)/
+
+units:
+	LIBGL_ALWAYS_SOFTWARE=1 $(PY) scripts/render_units.py -- --only $(TILE_NAME) \
+		--rows $(ROWS) --cols $(COLS) --tile $(TILE) --px $(PX) \
+		--center-latlon $(CENTER) --elevation $(ELEV)
+
+compose-check:
+	$(PY) compose.py --check $(TILE_NAME)
+
+compose:
+	$(PY) compose.py --tile $(TILE_NAME)
+
+unit-status:
+	$(PY) unit_manual.py status
 
 render-test:
 	$(PY) render.py --rows 1 --cols 2 --tile $(TILE) --px $(PX) \

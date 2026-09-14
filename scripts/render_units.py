@@ -235,10 +235,18 @@ def main() -> int:
     cam = iso_tiles.setup_camera(scene, grid, args.camera_distance)
     iso_tiles.setup_output(scene, args.px)
 
+    # Les noms OSM voyagent avec l'index : c'est par eux que le prompt d'une
+    # unite retrouve la fiche du lieu qu'elle porte.
+    named = {}
+    for wid, tags in ob.Osm.parse(args.osm).way_tags.items():
+        if tags.get("name") and ob.category_of(tags) == "building":
+            named[str(wid)] = tags["name"]
+
     index = {"grid": {"rows": args.rows, "cols": args.cols, "tile_m": args.tile,
                       "tile_px": args.px, "elevation": args.elevation,
                       "azimuth": args.azimuth,
                       "mosaic_px": list(grid.mosaic_px)},
+             "names": named,
              "units": []}
 
     records = []
