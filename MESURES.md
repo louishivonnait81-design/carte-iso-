@@ -35,11 +35,16 @@ Le compositeur pose chaque dessin a une boite calculee. Controle de chainage,
 rendus bruts contre rendu d'ensemble : **decalage dx=0 dy=0**, concordance
 81,5 %. Les 18 % d'ecart sont des aretes cachees, verifiees a l'oeil.
 
-| unite      | IoU silhouette | couverture masque | encre rognee | dont tiers bas | gris a 15 % |
-|------------|----------------|-------------------|--------------|----------------|-------------|
-| u83180702  | 0,888          | 0,957             | 12,2 %       | 47 %           | 21,7 %      |
-| u83181573  | 0,833          | 0,992             | 26,2 %       | 79 %           | 20,6 %      |
-| u83180512  | 0,897          | 0,998             | 17,6 %       | 46 %           | 20,8 %      |
+| unite      | IoU brut | IoU cale | encre rognee | gris a 15 % |
+|------------|----------|----------|--------------|-------------|
+| u83180702  | 0,888    | 0,889    | 12,2 %       | 21,7 %      |
+| u83181573  | 0,857    | **0,914** | 8,3 %       | 18,0 %      |
+| u83180512  | 0,897    | **0,924** | 10,1 %      | 20,8 %      |
+| u83184162  | 0,817    | **0,861** | 13,9 %      | 22,4 %      |
+
+u83181573 a ete refaite : premiere version 0,833, avec 26,2 % d'encre rognee
+dont 79 % dans le tiers bas — son arcade, la seule chose que sa fiche demandait,
+disparaissait au collage.
 
 Reference de style REF_01 : 51,1 % de gris a la reduction. Les trois dessins
 sont donc deux fois plus clairs que leur propre reference, la ou le meilleur
@@ -58,6 +63,13 @@ sont arrives sans etiquette, et l'ecart avec la candidate suivante etait de
 * **Variation de hauteur** (hachage de l'identifiant OSM, +/- 1,5 m par pas de
   0,5 m) : unites a hauteur uniforme 95 % -> 43 %. Moyenne 8,02 m contre 8,00 m
   pour le defaut nu, donc l'echelle ne bouge pas.
+* **Recalage du dessin sur la silhouette**, a l'import. Les quatre dessins
+  sortent du modele 3 a 21 % PLUS GRANDS que le volume donne, et le debord part
+  vers le bas : le masque leur coupe le rez-de-chaussee, donc l'arcade. Une
+  recherche d'echelle et de decalage, bornee a +/- 14 % et appliquee seulement
+  si elle gagne plus de 0,01 d'IoU, ramene le rognage de 16,8 / 17,6 / 27,2 % a
+  8,3 / 10,1 / 13,9 %. Le placement de l'unite sur la carte, lui, vient toujours
+  de Blender : on ne corrige que l'erreur du modele dans sa propre fenetre.
 * **Emprises de moins de 4 m2 ignorees** : 136 polygones — cages d'escalier,
   courettes, epaisseurs de mur — qui sortaient en pics de 12 m.
 

@@ -98,6 +98,107 @@ def squared(image: Image.Image) -> tuple[Image.Image, tuple[int, int, int]]:
     return canvas, (ox, oy, side)
 
 
+
+# --------------------------------------------------------------------------
+# Recalage du dessin sur la silhouette
+# --------------------------------------------------------------------------
+
+# Bornes du recalage. Elles sont etroites A DESSEIN : le placement de l'unite
+# sur la carte vient de Blender et ne doit jamais dependre du dessin. Ce qu'on
+# corrige ici est l'erreur d'echelle du modele A L'INTERIEUR de sa propre
+# fenetre, mesuree sur les quatre premieres unites : il dessine le volume 3 a
+# 21 % plus grand que celui qu'on lui donne, et le debord part vers le bas, donc
+# le masque lui coupe le rez-de-chaussee — c'est-a-dire l'arcade.
+FIT_SCALES = (0.86, 0.88, 0.90, 0.92, 0.94, 0.96, 0.98, 1.00, 1.02)
+FIT_SHIFT = 0.12          # decalage maximal, en fraction du cote
+FIT_MIN_GAIN = 0.01       # en deca, on ne touche a rien
+
+
+def filled_silhouette(gray: "Image.Image"):
+    """Surface pleine du dessin : tout ce qui ne communique pas avec le bord."""
+    import numpy as np
+    from collections import deque
+
+    white = np.asarray(gray) > 200
+    h, w = white.shape
+    seen = np.zeros_like(white)
+    queue = deque()
+    for x in range(w):
+        for y in (0, h - 1):
+            if white[y, x] and not seen[y, x]:
+                seen[y, x] = True
+                queue.append((y, x))
+    for y in range(h):
+        for x in (0, w - 1):
+            if white[y, x] and not seen[y, x]:
+                seen[y, x] = True
+                queue.append((y, x))
+    while queue:
+        y, x = queue.popleft()
+        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            ny, nx = y + dy, x + dx
+            if 0 <= ny < h and 0 <= nx < w and white[ny, nx] and not seen[ny, nx]:
+                seen[ny, nx] = True
+                queue.append((ny, nx))
+    return ~seen
+
+
+def _iou(a, b) -> float:
+    return float((a & b).sum() / max(1, (a | b).sum()))
+
+
+def fit_to_mask(art: "Image.Image", mask: "Image.Image", step: int = 4):
+    """Cale le dessin sur la silhouette Blender. Renvoie (dessin, rapport).
+
+    Cherche l'echelle et le decalage qui maximisent le recouvrement entre la
+    surface pleine du dessin et le masque. La recherche se fait sur une version
+    reduite — au pixel pres, elle ne changerait rien et couterait cent fois plus.
+
+    Le recalage n'est applique que s'il gagne vraiment : sous FIT_MIN_GAIN, le
+    dessin est rendu tel quel. Un recalage qui n'apporte rien introduirait un
+    reechantillonnage pour rien.
+    """
+    import numpy as np
+
+    w, h = art.size
+    sw, sh = max(8, w // step), max(8, h // step)
+    ref = np.asarray(mask.resize((sw, sh), Image.NEAREST)) > 128
+    base = filled_silhouette(art.resize((sw, sh), Image.LANCZOS))
+    before = _iou(base, ref)
+
+    best = (before, 1.0, 0, 0)
+    span_x, span_y = int(sw * FIT_SHIFT), int(sh * FIT_SHIFT)
+    for scale in FIT_SCALES:
+        nw, nh = max(4, int(sw * scale)), max(4, int(sh * scale))
+        shrunk = np.asarray(Image.fromarray((base * 255).astype(np.uint8))
+                            .resize((nw, nh), Image.NEAREST)) > 128
+        for dy in range(-span_y, span_y + 1, 2):
+            for dx in range(-span_x, span_x + 1, 2):
+                y0, x0 = (sh - nh) // 2 + dy, (sw - nw) // 2 + dx
+                ys, xs = max(0, y0), max(0, x0)
+                ye, xe = min(sh, y0 + nh), min(sw, x0 + nw)
+                if ye <= ys or xe <= xs:
+                    continue
+                canvas = np.zeros((sh, sw), bool)
+                canvas[ys:ye, xs:xe] = shrunk[ys - y0:ye - y0, xs - x0:xe - x0]
+                score = _iou(canvas, ref)
+                if score > best[0]:
+                    best = (score, scale, dx * step, dy * step)
+
+    after, scale, dx, dy = best
+    report = {"iou_before": round(before, 3), "iou_after": round(after, 3),
+              "scale": scale, "dx": dx, "dy": dy, "applied": False}
+    if after - before < FIT_MIN_GAIN:
+        return art, report
+
+    nw, nh = max(1, int(round(w * scale))), max(1, int(round(h * scale)))
+    canvas = Image.new("L", (w, h), 255)
+    canvas.paste(art.resize((nw, nh), Image.LANCZOS),
+                 ((w - nw) // 2 + dx, (h - nh) // 2 + dy))
+    report["applied"] = True
+    return canvas, report
+
+
 def build_prompt(entry: dict, note: str) -> str:
     text = TEMPLATE.read_text(encoding="utf-8")
     text = text[text.index("-->") + 3:].lstrip("\n")
@@ -143,7 +244,8 @@ def export(name: str, index: dict, extra_note: str, force: bool) -> Path:
     return folder
 
 
-def import_drawing(name: str, source: Path, allow_nonsquare: bool) -> Path:
+def import_drawing(name: str, source: Path, allow_nonsquare: bool,
+                   fit: bool = True) -> Path:
     meta_path = OUT / name / "meta.json"
     if not meta_path.exists():
         raise SystemExit(f"{meta_path} introuvable : exporter l'unite d'abord.")
@@ -161,6 +263,17 @@ def import_drawing(name: str, source: Path, allow_nonsquare: bool) -> Path:
     ox, oy = meta["pad"]
     w, h = meta["size"]
     cropped = art.crop((ox, oy, ox + w, oy + h))
+
+    if fit:
+        mask = Image.open(UNITS / f"{name}_mask.png").convert("L")
+        if mask.size != (w, h):
+            mask = mask.resize((w, h), Image.NEAREST)
+        cropped, report = fit_to_mask(cropped, mask)
+        verdict = (f"echelle {report['scale']:.2f}, decalage "
+                   f"({report['dx']:+d}, {report['dy']:+d})" if report["applied"]
+                   else "laisse tel quel")
+        print(f"[unite] recalage : IoU {report['iou_before']:.3f} -> "
+              f"{report['iou_after']:.3f}  ({verdict})")
 
     DRAWN.mkdir(exist_ok=True)
     out = DRAWN / f"{name}.png"
@@ -193,6 +306,8 @@ def main() -> int:
     i.add_argument("unit")
     i.add_argument("image", type=Path)
     i.add_argument("--allow-nonsquare", action="store_true")
+    i.add_argument("--no-fit", action="store_true",
+                   help="ne pas recaler le dessin sur la silhouette")
 
     sub.add_parser("status")
     args = p.parse_args()
@@ -201,7 +316,8 @@ def main() -> int:
     if args.cmd == "export":
         export(args.unit, index, args.note, args.force)
     elif args.cmd == "import":
-        import_drawing(args.unit, args.image, args.allow_nonsquare)
+        import_drawing(args.unit, args.image, args.allow_nonsquare,
+                       fit=not args.no_fit)
     else:
         status(index)
     return 0

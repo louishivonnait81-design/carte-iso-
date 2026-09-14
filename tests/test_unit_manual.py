@@ -78,7 +78,7 @@ def test_import_refuses_a_drawing_the_model_has_cropped(tmp_path, monkeypatch):
 
     good = tmp_path / "good.png"
     Image.new("L", (100, 100), 255).save(good)
-    out = um.import_drawing("u1", good, allow_nonsquare=False)
+    out = um.import_drawing("u1", good, allow_nonsquare=False, fit=False)
     assert Image.open(out).size == (80, 100)
 
 
@@ -169,3 +169,41 @@ def test_the_prompt_says_the_bottom_edge_is_the_ground():
     assert "THE BOTTOM EDGE IS THE GROUND" in body
     assert "no arcade hanging underneath" in body
     assert "cut INTO the ground floor" in body
+
+
+def test_registration_only_applies_when_it_really_gains(tmp_path):
+    """Le recalage corrige l'erreur d'echelle du modele DANS SA PROPRE FENETRE :
+    mesure sur les quatre premieres unites, il dessine le volume 3 a 21 % plus
+    grand que celui qu'on lui donne, et le debord part vers le bas — donc le
+    masque lui coupe le rez-de-chaussee, c'est-a-dire l'arcade. Le placement de
+    l'unite sur la carte, lui, vient de Blender et ne bouge pas.
+
+    Un recalage qui n'apporte rien introduirait un reechantillonnage pour rien :
+    sous le seuil, le dessin est rendu intact."""
+    from PIL import ImageDraw
+
+    mask = Image.new("L", (200, 200), 0)
+    ImageDraw.Draw(mask).rectangle([50, 50, 150, 150], fill=255)
+
+    # un dessin deja cale : on n'y touche pas
+    aligned = Image.new("L", (200, 200), 255)
+    ImageDraw.Draw(aligned).rectangle([50, 50, 150, 150], outline=0, width=3)
+    out, report = um.fit_to_mask(aligned, mask)
+    assert report["applied"] is False
+    assert list(out.getdata()) == list(aligned.getdata())
+
+    # un dessin trop grand : on le ramene, et l'IoU monte
+    big = Image.new("L", (200, 200), 255)
+    ImageDraw.Draw(big).rectangle([30, 30, 170, 170], outline=0, width=3)
+    out, report = um.fit_to_mask(big, mask)
+    assert report["applied"] is True
+    assert report["iou_after"] > report["iou_before"]
+    assert out.size == big.size          # la fenetre, elle, ne change jamais
+
+
+def test_registration_stays_inside_narrow_bounds():
+    """Si ces bornes s'elargissaient, le dessin recommencerait a decider de sa
+    propre position — exactement ce que le decoupage en unites a retire."""
+    assert min(um.FIT_SCALES) >= 0.8
+    assert max(um.FIT_SCALES) <= 1.05
+    assert um.FIT_SHIFT <= 0.15
