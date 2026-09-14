@@ -15,6 +15,8 @@ doit donc suivre. Elles sont remplacees par "Image N" / "image N".
 strict isometric projection. {Sem} is the same view with flat colors telling you
 what each surface is: light gray = building, dark gray = street or sidewalk,
 green = planted strip or vegetation, white = open ground, square or courtyard.
+Green marks the TREES and planted beds, and they are deliberately absent from
+{lines}: draw a tree for each green disc, in your own hand.
 
 In {lines} the line weight carries meaning: THICK lines are the outlines of
 buildings and other solid masses, THIN lines are secondary detail such as roof
@@ -113,8 +115,10 @@ to you so you know WHAT each shop sells — do not write any of them on the draw
 This list tells you WHAT stands here. It never tells you WHERE, HOW BIG or HOW MANY:
 those come from {lines} and from {lines} alone. Do not compose a square, a street or
 a row of buildings of your own — trace the shapes that are in {lines}, at their size
-and their angle, and put the listed things on them. If the list mentions trees, a
-statue or stalls, draw them only where {lines} shows something to draw them on.
+and their angle, and put the listed things on them. A statue, a kiosk or market
+stalls go only where {lines} shows something to draw them on. TREES are the one
+exception: they are not drawn in {lines} at all, and you place them wherever {sem}
+is green — one tree per green disc, a row of trees along a green strip.
 
 <!-- @section water -->
 In {sem}, blue marks water: the river Agout and its mill races. Draw water as calm
@@ -147,6 +151,7 @@ LAST AND ABOVE EVERYTHING ELSE. {Lines} is the ground truth. Every other image i
 this message — the style reference, the neighbouring tiles — shows you HOW to draw,
 never WHAT stands here or WHERE. Before you finish, check your drawing against
 {lines}: every building of {lines} must be present, at its place, at its size, at
-its angle; and no building may stand where {lines} shows none. An empty area in
-{lines} stays empty. If your drawing is prettier than {lines} but does not match
+its angle; and no BUILDING may stand where {lines} shows none. An area left blank
+in {lines} carries no building — only the paving, the greenery and the street life
+that {sem} calls for. If your drawing is prettier than {lines} but does not match
 it, it is wrong and must be redone.
