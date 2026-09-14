@@ -159,7 +159,7 @@ def test_architecture_section_is_always_included(tmp_path, monkeypatch):
     stylize.REF01.write_bytes(b"ref")
     job = stylize.build_job(index["tiles"][0], tiles_dir, tmp_path / "out",
                             SECTIONS, use_ref02=False, water_mode="off")
-    assert "There is no third type" in job.prompt   # tuile seche : deux types
+    assert "TYPE B — stone mansion" in job.prompt   # tuile seche : deux types
     assert "NO PEOPLE, NO ANIMALS" in job.prompt
     assert "NO INVENTED LANDMARKS" in job.prompt
     assert "NOTHING IN THIS DRAWING IS MODERN" in job.prompt
@@ -402,3 +402,36 @@ def test_texture_rule_keeps_the_paper_empty():
     assert "no hatching" in ink
     rules = SECTIONS["architecture_rules"]
     assert "SUGGESTED, never drawn one by one" in rules
+
+
+def test_a_verified_fiche_overrides_the_period_and_the_closed_list():
+    """La place Jean Jaures est un ensemble du XIXe : toiture mansardee
+    d'ardoise, lucarnes, balcon de fonte continu. Mes regles interdisaient
+    exactement cela — "aucun batiment posterieur a 1800", "pas de toit
+    mansarde, pas de balcon en fer parisien". Elles empechaient donc le modele
+    de dessiner la vraie place. Une fiche ecrite d'apres photo doit primer."""
+    base = SECTIONS["base"]
+    arch = SECTIONS["architecture"]
+    assert "where a fiche below describes a building as" in arch
+    assert "no building later than 1800" not in arch
+    assert "Do not IMPORT Paris" in base
+    assert "where a fiche does" in base
+    for section in ("types_dry", "types_wet"):
+        assert "A fiche always wins over this list" in SECTIONS[section]
+
+    fiche = next(l for l in LIEUX.read_text(encoding="utf-8").splitlines()
+                 if l.startswith("- **Place Jean Jaurès**"))
+    assert "19th-CENTURY" in fiche
+    assert "MANSARD ROOF" in fiche
+    assert "CAST-IRON BALCONY" in fiche
+
+
+def test_the_statue_and_its_fountain_are_one_object():
+    """Deja etabli par les donnees OSM : la "fontaine" de la place est la vasque
+    de la statue. La photo le confirme — Jaures se dresse au milieu d'une nappe
+    d'eau. Et il est en pierre blanche, pas en bronze comme je l'avais ecrit de
+    memoire."""
+    fiche = next(l for l in LIEUX.read_text(encoding="utf-8").splitlines()
+                 if l.startswith("- **Statue de Jean Jaurès**"))
+    assert "PALE WHITE STONE" in fiche and "not bronze" in fiche
+    assert "the fountain and the statue are one and the same object" in fiche

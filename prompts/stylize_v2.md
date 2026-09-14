@@ -29,11 +29,12 @@ pure white, uniform line weight, no shading, hatching, gray or color, no text.
 ARCHITECTURE: this is Castres, a small historic town in south-west France — NOT
 Paris. Even simplified, buildings must look like Castres: plastered façades with
 hinged shutters, low-pitched roofs with curved terracotta tiles, 17th–18th century
-stone mansions. The town's famous half-timbered houses standing in the water, and
-its stone quays and bridges, belong to the riverbank alone: draw them only where
-{sem} shows blue, and nowhere else. Do NOT draw Haussmann
-apartment blocks, mansard zinc roofs or Parisian wrought-iron balconies; use
-{ref01} only for the ink style, never for the architecture.
+stone mansions. The town's famous houses standing in the water, and its stone quays and
+bridges, belong to the riverbank alone: draw them only where {sem} shows blue, and
+nowhere else. Do not IMPORT Paris — no Haussmann block, no mansard roof, no
+cast-iron balcony anywhere a fiche has not asked for one; but where a fiche does
+ask for one, it is because the building really looks like that, and you draw it.
+Use {ref01} only for the ink style, never for the architecture.
 
 NON-NEGOTIABLE RULES: (1) Every structure stays exactly where it is — same
 footprint, same height, same angle. (2) EVERY light gray shape in {sem} must
@@ -72,9 +73,13 @@ Take nothing else from it: its buildings and streets belong to another part of t
 town, and yours come from {lines}.
 
 <!-- @section architecture -->
-Every BUILDING in this drawing was built between 1400 and 1800; there is no
-building later than 1800. The STREET LIFE, however, is today's: parked cars, café
-terraces, modern lampposts, road markings. No horse carts, no period costumes.
+MOST of Castres is 15th–18th century, and that is your default when nothing tells
+you otherwise. But the town is not a museum: the main square and the boulevards
+were rebuilt in the 19th century, and where a fiche below describes a building as
+19th century you draw it as the fiche says — mansard roof, dormers, continuous
+cast-iron balcony and all. The fiches are photographs; this paragraph is only a
+default. The STREET LIFE is today's: parked cars, café terraces, modern lampposts,
+road markings. No horse carts, no period costumes.
 
 NO PEOPLE, NO ANIMALS, NO FIGURES OF ANY KIND — the characters are added later
 on a separate layer. Streets and squares are empty of people.
@@ -85,8 +90,9 @@ outline, the river and its bridges only where {sem} shows blue. Never draw water
 a church, a tower or a spire where {lines} and {sem} show ordinary houses.
 
 <!-- @section types_dry -->
-CLOSED LIST OF BUILDING TYPES. Every single building belongs to one of these two
-types and to no other. There is no third type:
+CLOSED LIST OF BUILDING TYPES. Unless a fiche below describes a particular
+building, every single building belongs to one of these two types and to no other.
+A fiche always wins over this list: it was written from a photograph.
   TYPE A — plastered town house: plain rendered façade, no visible frame or
     coursing, a simple moulded string course between floors at most.
   TYPE B — stone mansion (hôtel particulier): ashlar façade with quoins at the
@@ -98,8 +104,9 @@ no boat, no half-timbered house standing in water. The famous houses of the Agou
 belong to another tile.
 
 <!-- @section types_wet -->
-CLOSED LIST OF BUILDING TYPES. Every single building belongs to one of these three
-types and to no other. There is no fourth type:
+CLOSED LIST OF BUILDING TYPES. Unless a fiche below describes a particular
+building, every single building belongs to one of these three types and to no
+other. A fiche always wins over this list: it was written from a photograph.
   TYPE A — half-timbered house on the river: exposed timber frame, corner posts,
     one sill beam and one or two diagonal braces per façade, upper floor clearly
     overhanging on visible corbels, ground floor rising straight out of the water
