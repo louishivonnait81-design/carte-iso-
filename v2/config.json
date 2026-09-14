@@ -37,8 +37,8 @@
     ]
   },
   "camera": {
-    "_rotation_x_deg": "60 = visee a 30 deg au-dessus de l'horizon. Une isometrie 2:1 exacte demanderait 63,43 deg (arctan 0,5) ; 60 donne un rapport 1,73:1. Voir la note de l'etape 3.",
-    "rotation_x_deg": 60.0,
+    "_rotation_x_deg": "30 = visee a 60 deg au-dessus de l horizon. Mesure de jouabilite : a 30 deg d elevation (rotation_x 60) le sol visible ne faisait que 40,4 % de l image contre 56,4 % de toits ; a 60 deg d elevation il passe a 48,5 %, soit 23 496 m2 de surface jouable contre 19 574. La facade, elle, tombe de 3,1 a 2,0 % — c est le prix, et il est faible : les deux tiers du travail de facade etaient deja invisibles.",
+    "rotation_x_deg": 30.0,
     "rotation_z_deg": 315.0,
     "type": "ORTHO",
     "marge_cadrage": 1.02
