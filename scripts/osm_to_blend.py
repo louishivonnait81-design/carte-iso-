@@ -17,6 +17,7 @@ Les tags OSM sont recopies en proprietes personnalisees. L'origine de la scene
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import sys
@@ -168,8 +169,44 @@ HEIGHT_CONFIDENCE = {
 }
 
 
+# Variation de hauteur appliquee aux SEULES hauteurs par defaut.
+#
+# 89,6 % des batiments de la grille n'ont aucune donnee de hauteur et recoivent
+# la meme valeur : 1258 sur 1397 mesurent exactement 8,00 m. Une rangee sort
+# alors en dalle, et 95 % des unites ont tous leurs batiments a la meme hauteur.
+# Or c'est la variation d'une maison a l'autre qui fait lire une rangee plutot
+# qu'un hangar.
+#
+# Cette variation est une INVENTION, et elle est assumee comme telle : la
+# confiance reste celle du defaut, 0,35, et la provenance enregistre le decalage
+# applique. Mais c'est une invention NOTRE, deterministe et reproductible — elle
+# derive du seul identifiant OSM — la ou laisser le modele inventer le relief le
+# ferait deborder du masque de decoupe, qui est calcule sur la geometrie.
+# Le jour ou de vraies hauteurs arrivent (--heights), elles passent par la
+# branche "measured" et aucune variation ne s'applique.
+#
+# Les etages ne varient pas continument : le decalage est quantifie par demi-
+# metre dans +/- 1,5 m, soit sept valeurs possibles, toutes plausibles pour une
+# maison de ville.
+HEIGHT_JITTER_M = 1.5
+HEIGHT_JITTER_STEP = 0.5
+
+
+def height_jitter(osm_id: int | None,
+                  amplitude: float = HEIGHT_JITTER_M,
+                  step: float = HEIGHT_JITTER_STEP) -> float:
+    """Decalage de hauteur deterministe, tire du seul identifiant OSM."""
+    if osm_id is None or amplitude <= 0:
+        return 0.0
+    digest = hashlib.blake2b(str(osm_id).encode(), digest_size=8).digest()
+    unit = int.from_bytes(digest, "big") / 2 ** 64        # [0, 1)
+    steps = int(amplitude / step)                          # 3 pour 1,5 m / 0,5 m
+    return (round(unit * (2 * steps)) - steps) * step
+
+
 def building_height(tags: dict, measured: dict | None = None,
-                    osm_id: int | None = None) -> tuple[float, str, float]:
+                    osm_id: int | None = None,
+                    jitter: float = HEIGHT_JITTER_M) -> tuple[float, str, float]:
     """Renvoie (hauteur, source, confiance).
 
     `measured` permet d'injecter des hauteurs relevees — LiDAR HD de l'IGN, BD
@@ -202,7 +239,10 @@ def building_height(tags: dict, measured: dict | None = None,
         value = tags.get(key)
         if value and (key, value) in HEIGHT_BY_FUNCTION:
             return HEIGHT_BY_FUNCTION[(key, value)], "kind", HEIGHT_CONFIDENCE["kind"]
-    return DEFAULT_LEVELS * LEVEL_HEIGHT, "default", HEIGHT_CONFIDENCE["default"]
+    base = DEFAULT_LEVELS * LEVEL_HEIGHT
+    # seule branche ou la variation s'applique : celle ou l'on ne sait rien
+    height = max(3.0, base + height_jitter(osm_id, jitter))
+    return height, "default", HEIGHT_CONFIDENCE["default"]
 
 
 # --------------------------------------------------------------------------
@@ -360,10 +400,14 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int,
         if obj is not None:
             obj["height_source"] = source
             obj["height_confidence"] = conf
-        provenance[str(key)] = {
+        record = {
             "height_m": round(height, 2), "source": source, "confidence": conf,
             "name": tags.get("name"), "building": tags.get("building"),
         }
+        if source == "default":
+            # la variation est une invention : elle est tracee, pas cachee
+            record["jitter_m"] = round(height - DEFAULT_LEVELS * LEVEL_HEIGHT, 2)
+        provenance[str(key)] = record
 
     def add_polygon(name: str, col, rings: list[list[tuple[float, float]]], z: float,
                     height: float, tags: dict, surface: str | None = None) -> None:
