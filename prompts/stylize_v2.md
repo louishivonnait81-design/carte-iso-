@@ -12,7 +12,8 @@ doit donc suivre. Elles sont remplacees par "Image N" / "image N".
 
 <!-- @section base -->
 {Ref01} is the style reference. {Lines} is a line drawing of a real city block in
-strict isometric projection. {Sem} is the same view with flat colors telling you
+strict isometric projection. {Sem} is a COLOUR-CODED KEY, not a picture to copy. Never
+reproduce its colours or its flat shapes; read it, then forget it. It tells you
 what each surface is: light gray = building, dark gray = street or sidewalk,
 green = planted strip or vegetation, white = open ground, square or courtyard.
 Green marks the TREES and planted beds, and they are deliberately absent from
@@ -153,5 +154,11 @@ never WHAT stands here or WHERE. Before you finish, check your drawing against
 {lines}: every building of {lines} must be present, at its place, at its size, at
 its angle; and no BUILDING may stand where {lines} shows none. An area left blank
 in {lines} carries no building — only the paving, the greenery and the street life
-that {sem} calls for. If your drawing is prettier than {lines} but does not match
+that {sem} calls for.
+
+Finally, the ink. Your output is BLACK LINES ON PURE WHITE PAPER and nothing else:
+no green trees, no blue water, no grey roads, no fill of any kind, not one coloured
+pixel anywhere. Trees are drawn with black outlines on white, water with black
+ripple lines on white, roads with black kerbs and markings on white. If any colour
+from {sem} has found its way into your drawing, it is wrong. If your drawing is prettier than {lines} but does not match
 it, it is wrong and must be redone.
