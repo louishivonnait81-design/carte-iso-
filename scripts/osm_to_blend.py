@@ -206,7 +206,7 @@ def height_jitter(osm_id: int | None,
 
 def building_height(tags: dict, measured: dict | None = None,
                     osm_id: int | None = None,
-                    jitter: float = HEIGHT_JITTER_M) -> tuple[float, str, float]:
+                    jitter: float | None = None) -> tuple[float, str, float]:
     """Renvoie (hauteur, source, confiance).
 
     `measured` permet d'injecter des hauteurs relevees — LiDAR HD de l'IGN, BD
@@ -241,7 +241,8 @@ def building_height(tags: dict, measured: dict | None = None,
             return HEIGHT_BY_FUNCTION[(key, value)], "kind", HEIGHT_CONFIDENCE["kind"]
     base = DEFAULT_LEVELS * LEVEL_HEIGHT
     # seule branche ou la variation s'applique : celle ou l'on ne sait rien
-    height = max(3.0, base + height_jitter(osm_id, jitter))
+    amplitude = HEIGHT_JITTER_M if jitter is None else jitter
+    height = max(3.0, base + height_jitter(osm_id, amplitude))
     return height, "default", HEIGHT_CONFIDENCE["default"]
 
 
@@ -353,7 +354,15 @@ def ring_area(pts: list[tuple[float, float]]) -> float:
 
 
 def build_scene(osm: Osm, out: Path, roof: str, max_trees: int,
-                measured: dict | None = None) -> dict:
+                measured: dict | None = None,
+                bbox: tuple[float, float, float, float] | None = None) -> dict:
+    """`bbox` = (lat_min, lon_min, lat_max, lon_max). Hors d'elle, rien n'entre.
+
+    Sans ce filtre, la scene contient tout le fichier OSM, pas la zone demandee :
+    mesure faite, le cadrage automatique donnait 1820 m de large la ou la bbox en
+    demandait 1100. Un objet est garde des qu'un seul de ses points tombe dans la
+    boite, pour ne pas trancher une rangee en deux.
+    """
     import bpy            # doit preceder bmesh : le module pip l'initialise
     import bmesh
     from mathutils import Vector
@@ -376,6 +385,22 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int,
     def xy(nid: int) -> tuple[float, float] | None:
         p = osm.nodes.get(nid)
         return latlon_to_xy(p[0], p[1], lat0, lon0) if p else None
+
+    if bbox is not None:
+        bx0, by0 = latlon_to_xy(bbox[0], bbox[1], lat0, lon0)
+        bx1, by1 = latlon_to_xy(bbox[2], bbox[3], lat0, lon0)
+        clip = (min(bx0, bx1), min(by0, by1), max(bx0, bx1), max(by0, by1))
+    else:
+        clip = None
+
+    def dans_bbox(refs: list[int]) -> bool:
+        if clip is None:
+            return True
+        for nid in refs:
+            q = xy(nid)
+            if q and clip[0] <= q[0] <= clip[2] and clip[1] <= q[1] <= clip[3]:
+                return True
+        return False
 
     def ring_xy(refs: list[int]) -> list[tuple[float, float]]:
         pts = [q for q in (xy(n) for n in refs) if q is not None]
@@ -512,6 +537,9 @@ def build_scene(osm: Osm, out: Path, roof: str, max_trees: int,
         tags = osm.way_tags.get(wid, {})
         cat = category_of(tags)
         if cat is None or wid in used_in_relation and cat != "street":
+            continue
+        if not dans_bbox(refs):
+            counts["hors_bbox"] += 1
             continue
         closed = len(refs) >= 4 and refs[0] == refs[-1]
         if cat == "street":
@@ -668,6 +696,14 @@ def main() -> int:
     p.add_argument("--roof", choices=["hip", "flat"], default="hip",
                    help="toiture suggeree sur les batiments")
     p.add_argument("--max-trees", type=int, default=400)
+    p.add_argument("--bbox", type=float, nargs=4, default=None,
+                   metavar=("LAT0", "LON0", "LAT1", "LON1"),
+                   help="ne garder que ce qui touche cette boite")
+    p.add_argument("--default-height", type=float, default=None,
+                   help="hauteur en metres quand rien n'est connu (defaut : "
+                        "DEFAULT_LEVELS x LEVEL_HEIGHT)")
+    p.add_argument("--jitter", type=float, default=HEIGHT_JITTER_M,
+                   help="amplitude de la variation de hauteur ; 0 pour aucune")
     p.add_argument("--heights", type=Path, default=None,
                    help="JSON {osm_id: hauteur_m} de hauteurs relevees (LiDAR HD, "
                         "BD TOPO, ou corrections a la main) : elles priment sur tout")
@@ -687,7 +723,14 @@ def main() -> int:
         measured = {int(k): float(v) for k, v in
                     json.loads(args.heights.read_text(encoding="utf-8")).items()}
         print(f"[osm] {len(measured)} hauteurs relevees chargees depuis {args.heights}")
-    counts = build_scene(osm, args.out, args.roof, args.max_trees, measured)
+    if args.default_height is not None:
+        # DEFAULT_LEVELS x LEVEL_HEIGHT est la seule voie par laquelle passe la
+        # hauteur par defaut : on l'ajuste plutot que d'ajouter un chemin
+        # parallele qui pourrait diverger.
+        globals()["DEFAULT_LEVELS"] = args.default_height / LEVEL_HEIGHT
+    globals()["HEIGHT_JITTER_M"] = args.jitter
+    counts = build_scene(osm, args.out, args.roof, args.max_trees, measured,
+                         bbox=tuple(args.bbox) if args.bbox else None)
     provenance_path = counts.pop("_provenance_path", None)
     for k, v in sorted(counts.items()):
         print(f"[osm] {k:<11}: {v}")

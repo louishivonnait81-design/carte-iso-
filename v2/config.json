@@ -1,6 +1,5 @@
 {
   "_lisezmoi": "Tout parametre modifiable vit ici. Les scripts ne contiennent aucune valeur en dur.",
-
   "zone": {
     "nom": "Vieux Castres",
     "limites": [
@@ -9,18 +8,30 @@
       "Boulevard Miredames",
       "Boulevard Henri Sizaire"
     ],
-    "reperes_centraux": ["Place Jean Jaurès", "Jardin de l'Évêché"],
+    "reperes_centraux": [
+      "Place Jean Jaurès",
+      "Jardin de l'Évêché"
+    ],
     "_bbox": "rempli par 01_bbox.py — surtout pas a la main",
-    "bbox": null,
+    "bbox": [
+      43.600184,
+      2.232236,
+      43.609406,
+      2.245883
+    ],
     "marge_m": 60
   },
-
   "import": {
-    "source_osm": null,
+    "source_osm": "assets/castres.osm",
     "hauteur_defaut_m": 9.0,
-    "calques": ["buildings", "highways", "water", "forests", "vegetation"]
+    "calques": [
+      "buildings",
+      "highways",
+      "water",
+      "forests",
+      "vegetation"
+    ]
   },
-
   "camera": {
     "_rotation_x_deg": "60 = visee a 30 deg au-dessus de l'horizon. Une isometrie 2:1 exacte demanderait 63,43 deg (arctan 0,5) ; 60 donne un rapport 1,73:1. Voir la note de l'etape 3.",
     "rotation_x_deg": 60.0,
@@ -28,15 +39,25 @@
     "type": "ORTHO",
     "marge_cadrage": 1.02
   },
-
   "rendu": {
-    "moteur": "BLENDER_WORKBENCH",
+    "moteur": "BLENDER_EEVEE",
     "largeur_test_px": 2000,
     "largeur_finale_px": 8000,
     "largeur_apercu_px": 1500,
     "epaisseur_trait_px": 1.5,
-    "fond": [1.0, 1.0, 1.0, 1.0]
+    "fond": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "_moteur": "Freestyle ne fonctionne pas avec Workbench : Workbench est un moteur d apercu de fenetre et ne passe pas par le post-traitement ou vit Freestyle. Le brief demandant Freestyle et interdisant Cycles, il ne reste qu EEVEE.",
+    "moteur_note": "BLENDER_EEVEE est le choix pour le Mac (GPU). En rendu logiciel, dans le conteneur, EEVEE met 86 s pour 600 px : les apercus y sont produits avec --moteur CYCLES, qui sur cette scene plate et emissive est environ vingt fois plus rapide. Le moteur est donc un parametre, pas une constante."
   },
-
-  "orientations_a_tester": [45, 135, 225, 315]
+  "orientations_a_tester": [
+    45,
+    135,
+    225,
+    315
+  ]
 }
