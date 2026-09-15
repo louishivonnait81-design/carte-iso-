@@ -309,3 +309,39 @@ L'ecart n'est pas dans l'epaisseur mais dans le CONTENU — la planche porte des
 dizaines de personnages, de vehicules et d'objets par bloc, ma carte en compte
 57 pour toute la zone. C'est le prochain ecart a combler, et le seul qui reste
 visible a l'oeil nu sur le rendu.
+
+## Peupler : ce que 502 objets changent, et ce qu'ils ne changent pas
+
+L'ecart de densite avec la reference — 5,5 % d'encre contre 15,7 % a echelle
+egale — ne pouvait pas se regler au trait. Etape 12 : vehicules le long des
+voies carrossables, terrasses devant les cafes, etals devant les commerces,
+velos aux arceaux. Tout depuis OSM, rien de pose au hasard : un emplacement est
+refuse si ses quatre coins ne tombent pas sur du sol libre, teste sur la grille
+de 25 cm des emprises reelles.
+
+| etat | objets de rue | encre, quartier dense | encre, la place |
+|---|---|---|---|
+| avant | 57 | 5,54 % | 3,72 % |
+| + 511 objets de vie | 568 | 6,28 % | 4,85 % |
+| + trame de facade corrigee | 568 | 6,55 % | — |
+| final, sans les empilements | 559 | **6,50 %** | **4,77 %** |
+| reference MicroMacro | — | **15,71 %** | — |
+
+**Peupler la rue n'a comble qu'un cinquieme de l'ecart.** C'est une mesure utile
+parce qu'elle contredit l'intuition : on croyait le vide dans les rues, il est
+sur les TOITS. A 41 degres et 4,6 m de mur, la toiture occupe la plus grande
+part de la page, et elle est nue.
+
+### Un defaut trouve en chemin
+
+L'ecrasement des hauteurs de l'etape 5b ne s'appliquait pas a la trame de
+facade : une maison ramenee a 4,6 m ne recevait plus qu'UNE rangee de fenetres,
+`(4,6 - 0,6) // 3,2 = 1`. Tout ce qui est vertical dans la facade suit desormais
+`echelle_hauteur`, l'entraxe des travees restant horizontal. Ouvertures posees :
+4 375 -> 9 136.
+
+### Deux voies OSM, un seul carrefour
+
+Chaque voie deposait son vehicule au meme carrefour : le premier rendu montrait
+des voitures empilees. Une distance minimale de 4,5 m entre deux vehicules en
+retire 9 sur 127.

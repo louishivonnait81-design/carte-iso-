@@ -19,7 +19,8 @@ blender -b -P v2/08_mobilier.py     # arbres, bancs, fontaines
 blender -b -P v2/09_cheminees.py    #                 -> castres_final.blend
 blender -b -P v2/10_pavage.py       # joints, nappes  -> castres_pave.blend
 blender -b -P v2/11_ouvertures.py   # dix toits ouverts -> castres_ouvert.blend
-blender -b -P v2/03_camera.py -- --blend v2/castres_ouvert.blend --largeur 8000 \
+blender -b -P v2/12_vie.py          # vehicules, terrasses, etals -> castres_vie.blend
+blender -b -P v2/03_camera.py -- --blend v2/castres_vie.blend --largeur 8000 \
         --moteur CYCLES --sortie v2/carte_8000.png
 ```
 

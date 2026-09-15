@@ -42,7 +42,8 @@ from geo import latlon_to_xy  # noqa: E402
 
 DECOLLEMENT = 0.03      # m, pour que le quad ne z-fighte pas avec le mur
 ETAGE_M = 3.2           # hauteur d'un niveau
-TRAVEE_M = 3.0          # entraxe vise entre deux travees
+TRAVEE_M = 2.6          # entraxe vise entre deux travees
+SEUIL_M = 0.6           # hauteur du soubassement, sous la premiere rangee
 FENETRE = (0.95, 1.55)  # largeur, hauteur
 PORTE = (1.10, 2.20)
 MUR_MIN_LARGEUR = 2.6   # m, en deca aucune travee ne tient
@@ -51,6 +52,27 @@ CORNICHE = 0.25         # m, hauteur du bandeau sous l'egout
 ARCADE_H = 3.4          # m, hauteur totale d'une arche
 ARCADE_L = 2.6          # m, largeur d'une arche
 BORD_PLACE = 3.0        # m, distance au polygone de la place
+
+
+def suivre_l_ecrasement(k: float) -> None:
+    """Met la trame de facade a l'echelle verticale du bati.
+
+    L'etape 5b ecrase les hauteurs pour que les ruelles restent visibles. Sans
+    cette correction, une maison ramenee a 4,6 m ne recevait plus qu'UNE rangee
+    de fenetres — (4,6 - 0,6) // 3,2 = 1 — et sa facade sortait nue, ce qui se
+    voyait immediatement au rendu : la carte encrait 5,5 % contre 15,7 % a la
+    reference, et l'essentiel du blanc etait sur les murs.
+
+    Ce qui est vertical suit l'ecrasement ; l'entraxe des travees, lui, est
+    horizontal et ne bouge pas.
+    """
+    global ETAGE_M, SEUIL_M, CORNICHE, ARCADE_H, FENETRE, PORTE
+    ETAGE_M *= k
+    SEUIL_M *= k
+    CORNICHE *= k
+    ARCADE_H *= k
+    FENETRE = (FENETRE[0], FENETRE[1] * k)
+    PORTE = (PORTE[0], PORTE[1] * k)
 
 
 def polygone_place(cfg: dict, scene, nom: str):
@@ -172,12 +194,12 @@ def habiller(obj, bm_out, contour_place) -> int:
 
         travees = max(1, int(largeur // TRAVEE_M))
         pas = largeur / travees
-        niveaux = max(1, int((hauteur - 0.6) // ETAGE_M))
+        niveaux = max(1, int((hauteur - SEUIL_M) // ETAGE_M))
 
         for t in range(travees):
             u0 = (t + 0.5) * pas
             for n in range(niveaux):
-                z0 = bas + 0.6 + n * ETAGE_M
+                z0 = bas + SEUIL_M + n * ETAGE_M
                 if n == 0 and sur_la_place:
                     if pas < ARCADE_L + 0.4 or hauteur < ARCADE_H + 1.0:
                         continue
@@ -239,6 +261,7 @@ def main() -> int:
     args = p.parse_args(argv)
 
     cfg = json.loads(CONFIG.read_text(encoding="utf-8"))
+    suivre_l_ecrasement(cfg["zone"].get("echelle_hauteur", 1.0))
     bpy.ops.wm.open_mainfile(filepath=str(args.blend))
     scene = bpy.context.scene
 
