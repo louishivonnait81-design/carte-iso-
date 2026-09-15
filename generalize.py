@@ -1,433 +1,439 @@
-"""Squelette de la carte : d'un extrait OSM a une poignee de VOLUMES.
-
-    python3 generalize.py castres.osm blocks.geojson \\
-      --bbox 43.603,2.235,43.610,2.246 \\
-      --landmarks "Saint-Benoit,Eveche,Hotel de Ville,Goya"
-
-Ni Blender ni reseau : shapely et numpy suffisent, et tout est testable seul.
-
-CE QUE FAIT LA GENERALISATION, ET POURQUOI. Le vieux Castres compte plus de
-deux mille emprises OSM. Dessinees une par une, elles donnent une dentelle :
-la mesure faite sur la planche MicroMacro dit que la reference encre 15,7 % d'un
-quartier dense avec des volumes LARGES et peu nombreux, la ou une carte fidele
-encre 6,5 % en multipliant les petits contours. On ne gagne donc pas en ajoutant
-du detail, mais en simplifiant la masse.
-
-    emprises OSM -> ILOTS (ce que les rues delimitent) -> VOLUMES (ce qu'on dessine)
-
-Objectif vise : entre 60 et 150 volumes sur toute la carte. Le script l'affiche
-a chaque execution, c'est le seul chiffre a surveiller.
-
-CE QUI N'EST PAS GENERALISE. Les reperes — eglises, batiments historiques, et
-tout ce que --landmarks nomme — gardent leur emprise propre et ne sont jamais
-fondus dans un ilot. Un joueur se repere sur eux ; les diluer reviendrait a
-effacer la carte pour la simplifier.
-
-TOUS LES REGLAGES se changent en ligne de commande, sans toucher au code :
-`--set SHRINK=3.5 --set ROAD_EXTRA=3`.
+#!/usr/bin/env python3
 """
-from __future__ import annotations
+generalize.py — Étape 1 du pipeline MicroMacro-Castres.
+
+Lit un fichier .osm (export OpenStreetMap / Blosm), généralise la ville
+« façon MicroMacro » et écrit un GeoJSON en mètres (repère local) que
+build_blender.py transforme en scène 3D.
+
+Ce que fait le script, dans l'ordre :
+  1. parse les bâtiments, routes, eau, parcs, arbres du .osm
+  2. projette en mètres autour du centre de la zone
+  3. repère les monuments (église, mairie, tags historic, ou noms donnés)
+  4. fusionne les bâtiments contigus en îlots
+  5. découpe chaque îlot en 1 à 4 volumes simples
+  6. simplifie / redresse les contours
+  7. rétrécit chaque volume (= élargit toutes les rues d'un coup)
+  8. attribue hauteur plafonnée, type de toit, motif de façade
+  9. construit les rubans de rues (trottoirs), eau, parcs, arbres
+
+Usage :
+  python3 generalize.py castres.osm blocks.geojson
+  python3 generalize.py castres.osm blocks.geojson --bbox 43.603,2.235,43.610,2.246
+  python3 generalize.py castres.osm blocks.geojson --landmarks "Saint-Benoît,Évêché,Hôtel de Ville"
+
+Dépendances : pip install shapely numpy
+"""
 
 import argparse
-import hashlib
 import json
 import math
+import random
 import sys
-import unicodedata
 import xml.etree.ElementTree as ET
-from pathlib import Path
 
-from shapely.affinity import rotate, translate
-from shapely.geometry import LineString, MultiPolygon, Polygon, mapping
+from shapely.geometry import (
+    Polygon, MultiPolygon, LineString, Point, box, mapping
+)
+from shapely.geometry.polygon import orient
 from shapely.ops import unary_union
 
-ROOT = Path(__file__).resolve().parent
+# ---------------------------------------------------------------------------
+# Paramètres de généralisation — c'est ici qu'on règle le « look » MicroMacro
+# ---------------------------------------------------------------------------
+P = dict(
+    SEED=42,
+    MERGE_GAP=0.6,        # m : deux bâtiments à moins de ça sont fusionnés
+    M2_PER_VOLUME=450.0,  # m² d'îlot par volume (→ 1 à 4 volumes par îlot)
+    MAX_VOLUMES=4,
+    SIMPLIFY=2.5,         # m : tolérance de simplification des contours
+    RECT_MAX_VERTS=7,     # en dessous de ce nb de sommets → rectangle englobant
+    SHRINK=2.5,           # m : recul de chaque volume (élargit les rues)
+    MIN_AREA=40.0,        # m² : on jette les volumes plus petits
+    LEVEL_H=3.2,          # m par niveau
+    MAX_LEVELS=3,
+    GABLE_MAX_AREA=220.0, # m² : petits volumes rectangulaires → toit à 2 pans
+    GABLE_PROB=0.6,
+    LANDMARK_DEFAULT_H=15.0,
+    LANDMARK_MAX_H=22.0,
+    LANDMARK_SIMPLIFY=1.2,
+    LANDMARK_SHRINK=0.8,
+    SIDEWALK=1.8,         # m : largeur du trottoir (2e trait de la rue)
+    ROAD_EXTRA=1.5,       # m ajoutés à toutes les largeurs de rue
+    TREE_SPACING=9.0,     # m : grille d'arbres dans les parcs
+    TREE_JITTER=2.0,
+)
 
-REGLAGES = {
-    # -- ce que le README documente ------------------------------------------
-    "SHRINK": 2.5,           # m retires au pourtour d'un ilot = gagnes par la rue
-    "ROAD_EXTRA": 1.5,       # m ajoutes a la largeur de toutes les voies
-    "M2_PER_VOLUME": 450.0,  # m2 d'ilot par volume ; plus grand = moins de volumes
-    "MAX_LEVELS": 3,         # plafond d'etages
-    "SIMPLIFY": 2.5,         # m, tolerance de simplification des contours
-    "GABLE_PROB": 0.6,       # part des petits volumes a toit a deux pans
-    # -- le reste, reglable aussi --------------------------------------------
-    "LEVEL_HEIGHT": 3.0,     # m par etage
-    "DEFAULT_LEVELS": 2,     # quand OSM ne dit rien
-    "GABLE_MAX_M2": 200.0,   # au-dela, un volume prend une croupe
-    "GLUE": 1.5,             # m de dilatation pour souder les mitoyens en ilot
-    "MIN_BUILDING_M2": 8.0,  # sous cette emprise, OSM decrit un mur ou un escalier
-    "MIN_VOLUME_M2": 60.0,   # un volume plus petit ne se dessine pas a cette echelle
-    "LEVEL_JITTER": 0.35,    # etages, +/- ; une ligne de toits plate se voit
-    "RUE_MIN_LARGEUR": 5.0,  # m ; en dessous, la voie ne decoupe pas un ilot
-    "COUR_MIN_M2": 400.0,    # une cour plus petite est comblee : l'ilot est une masse
-    "LARGEUR_MIN": 6.0,      # m ; un ilot plus etroit que cela n'est pas un volume
+ROAD_WIDTH = {          # largeurs de base par type OSM (m)
+    "primary": 12, "primary_link": 10,
+    "secondary": 10, "secondary_link": 8,
+    "tertiary": 8, "tertiary_link": 7,
+    "residential": 6, "unclassified": 6, "living_street": 5,
+    "pedestrian": 6, "service": 4, "footway": 3, "path": 2.5, "steps": 2.5,
 }
+SKIP_ROADS = {"motorway", "trunk", "cycleway", "bridleway", "track", "corridor", "proposed", "construction"}
 
-# Largeur de chaussee par type de voie, en metres, AVANT ROAD_EXTRA. Ces valeurs
-# ne sont pas dans OSM : elles viennent de l'usage francais courant.
-LARGEUR_VOIE = {
-    "motorway": 14.0, "trunk": 13.0, "primary": 12.0, "secondary": 10.0,
-    "tertiary": 9.0, "unclassified": 7.0, "residential": 7.0,
-    "living_street": 6.0, "service": 4.5, "pedestrian": 6.0,
-    "footway": 3.0, "path": 2.5, "steps": 2.0, "cycleway": 2.5,
-}
+LANDMARK_BUILDING = {"church", "cathedral", "chapel", "basilica", "synagogue", "mosque",
+                     "townhall", "castle", "palace", "museum", "temple"}
+LANDMARK_AMENITY = {"place_of_worship", "townhall", "courthouse", "theatre", "library"}
+
+MOTIFS = ["carre", "carre", "haute", "haute", "vitrine", "arcade"]
 
 
-def sans_accent(s: str) -> str:
-    return "".join(c for c in unicodedata.normalize("NFD", s or "")
-                   if unicodedata.category(c) != "Mn").lower()
+# ---------------------------------------------------------------------------
+# 1. Lecture du .osm
+# ---------------------------------------------------------------------------
+def parse_osm(path):
+    tree = ET.parse(path)
+    root = tree.getroot()
+    nodes, ways, rels = {}, {}, []
+    for el in root:
+        if el.tag == "node":
+            tags = {t.get("k"): t.get("v") for t in el.findall("tag")}
+            nodes[el.get("id")] = (float(el.get("lon")), float(el.get("lat")), tags)
+        elif el.tag == "way":
+            refs = [nd.get("ref") for nd in el.findall("nd")]
+            tags = {t.get("k"): t.get("v") for t in el.findall("tag")}
+            ways[el.get("id")] = (refs, tags)
+        elif el.tag == "relation":
+            members = [(m.get("type"), m.get("ref"), m.get("role")) for m in el.findall("member")]
+            tags = {t.get("k"): t.get("v") for t in el.findall("tag")}
+            rels.append((members, tags))
+    return nodes, ways, rels
 
 
-def alea(*cle) -> float:
-    """Tirage reproductible dans [0,1) : deux executions donnent la meme carte."""
-    h = hashlib.blake2b(repr(cle).encode(), digest_size=8).digest()
-    return int.from_bytes(h, "big") / 2 ** 64
+class Proj:
+    """Projection équirectangulaire locale : suffisant à l'échelle d'un centre-ville."""
+    def __init__(self, lon0, lat0):
+        self.lon0, self.lat0 = lon0, lat0
+        self.kx = 111320.0 * math.cos(math.radians(lat0))
+        self.ky = 110540.0
+
+    def __call__(self, lon, lat):
+        return ((lon - self.lon0) * self.kx, (lat - self.lat0) * self.ky)
 
 
-def latlon_vers_xy(lat, lon, lat0, lon0):
-    """Projection equirectangulaire locale, la meme que tout le depot."""
-    return ((lon - lon0) * 111320.0 * math.cos(math.radians(lat0)),
-            (lat - lat0) * 110540.0)
+def way_coords(refs, nodes, proj):
+    pts = []
+    for r in refs:
+        if r in nodes:
+            lon, lat, _ = nodes[r]
+            pts.append(proj(lon, lat))
+    return pts
 
 
-# ------------------------------------------------------------------ lecture OSM
-def lire_osm(chemin: Path, bbox):
-    """Renvoie (batiments, voies, surfaces) en coordonnees metriques locales.
-
-    Un element est garde des qu'UN de ses points touche la bbox : couper un
-    batiment en deux au bord de la zone se voit plus qu'un batiment qui deborde.
-    """
-    lat0, lon0, lat1, lon1 = bbox
-    olat, olon = (lat0 + lat1) / 2, (lon0 + lon1) / 2
-    racine = ET.parse(chemin).getroot()
-    noeuds = {n.get("id"): (float(n.get("lat")), float(n.get("lon")))
-              for n in racine.iter("node")}
-
-    def etiquettes(el):
-        return {t.get("k"): t.get("v") for t in el.findall("tag")}
-
-    def points(el):
-        return [noeuds[nd.get("ref")] for nd in el.findall("nd")
-                if nd.get("ref") in noeuds]
-
-    def touche(pts):
-        return any(lat0 <= la <= lat1 and lon0 <= lo <= lon1 for la, lo in pts)
-
-    def en_metres(pts):
-        return [latlon_vers_xy(la, lo, olat, olon) for la, lo in pts]
-
-    batiments, voies, surfaces = [], [], []
-    for w in racine.iter("way"):
-        t = etiquettes(w)
-        pts = points(w)
-        if len(pts) < 2 or not touche(pts):
-            continue
-        xy = en_metres(pts)
-        ferme = len(xy) >= 4 and xy[0] == xy[-1]
-
-        if "building" in t or "building:part" in t:
-            if not ferme:
-                continue
-            poly = Polygon(xy).buffer(0)
-            if poly.is_empty or poly.area < REGLAGES["MIN_BUILDING_M2"]:
-                continue
-            batiments.append((poly, t, int(w.get("id"))))
-        elif "highway" in t:
-            voies.append((LineString(xy), t))
-        elif ferme and ("natural" in t or "landuse" in t or "leisure" in t
-                        or t.get("place") == "square" or "waterway" in t):
-            poly = Polygon(xy).buffer(0)
-            if not poly.is_empty:
-                surfaces.append((poly, t))
-    return batiments, voies, surfaces, (olat, olon)
+def is_closed(refs):
+    return len(refs) >= 4 and refs[0] == refs[-1]
 
 
-# --------------------------------------------------------------- generalisation
-def est_repere(tags: dict, noms) -> bool:
-    """Un repere ne se fond jamais dans un ilot."""
-    if tags.get("amenity") == "place_of_worship" or "historic" in tags:
+def poly_from_rings(outer, inners=()):
+    try:
+        p = Polygon(outer, [i for i in inners if len(i) >= 4])
+        if not p.is_valid:
+            p = p.buffer(0)
+        return p if not p.is_empty else None
+    except Exception:
+        return None
+
+
+def parse_height(tags):
+    h = tags.get("height")
+    if h:
+        try:
+            return float(str(h).lower().replace("m", "").strip())
+        except ValueError:
+            pass
+    lv = tags.get("building:levels")
+    if lv:
+        try:
+            return float(lv) * P["LEVEL_H"]
+        except ValueError:
+            pass
+    return None
+
+
+def is_landmark(tags, names):
+    if tags.get("building") in LANDMARK_BUILDING:
         return True
-    if tags.get("building") in ("church", "chapel", "cathedral", "civic"):
+    if tags.get("amenity") in LANDMARK_AMENITY:
         return True
-    nom = sans_accent(tags.get("name", ""))
-    return bool(nom) and any(n and n in nom for n in noms)
+    if "historic" in tags or "heritage" in tags:
+        return True
+    name = (tags.get("name") or "").lower()
+    return any(n and n.lower() in name for n in names)
 
 
-def corridors(voies, min_largeur: float = 0.0) -> MultiPolygon:
-    """Emprise reservee aux rues : chaque axe dilate de sa demi-largeur.
+def collect(nodes, ways, rels, proj, names):
+    buildings, roads, water, parks, trees = [], [], [], [], []
+    used_in_rel = set()
 
-    `min_largeur` ecarte les voies trop etroites pour separer deux ilots. Un
-    ilot MicroMacro est borde par des RUES, pas par des passages : en laissant
-    les sentiers et les venelles de service decouper la masse, le vieux Castres
-    sortait a 196 ilots pour une cible de 60 a 150, et aucun reglage d'aire ne
-    pouvait rattraper cela — on ne fait pas moins de volumes que d'ilots.
-    """
-    bandes = []
-    for ligne, t in voies:
-        base = LARGEUR_VOIE.get(t.get("highway"), 6.0)
-        if base < min_largeur:
+    # Relations multipolygones (églises, grands bâtiments, plans d'eau)
+    for members, tags in rels:
+        if tags.get("type") != "multipolygon":
             continue
-        bandes.append(ligne.buffer((base + REGLAGES["ROAD_EXTRA"]) / 2.0,
-                                   cap_style=2, join_style=2))
-    return unary_union(bandes) if bandes else Polygon()
+        outers, inners = [], []
+        for mtype, ref, role in members:
+            if mtype != "way" or ref not in ways:
+                continue
+            refs, _ = ways[ref]
+            if not is_closed(refs):
+                continue
+            pts = way_coords(refs, nodes, proj)
+            (outers if role != "inner" else inners).append(pts)
+            used_in_rel.add(ref)
+        for o in outers:
+            p = poly_from_rings(o, inners)
+            if p is None:
+                continue
+            if "building" in tags:
+                buildings.append((p, tags))
+            elif tags.get("natural") == "water" or tags.get("waterway") == "riverbank":
+                water.append(p)
+            elif tags.get("leisure") in ("park", "garden") or tags.get("landuse") in ("grass", "village_green"):
+                parks.append(p)
+
+    for wid, (refs, tags) in ways.items():
+        if wid in used_in_rel:
+            continue
+        pts = way_coords(refs, nodes, proj)
+        if len(pts) < 2:
+            continue
+        if "building" in tags and is_closed(refs):
+            p = poly_from_rings(pts)
+            if p is not None:
+                buildings.append((p, tags))
+        elif "highway" in tags and tags["highway"] not in SKIP_ROADS:
+            if tags.get("area") == "yes" and is_closed(refs):
+                continue  # les places piétonnes : traitées comme espace libre
+            roads.append((LineString(pts), tags["highway"]))
+        elif (tags.get("natural") == "water" or tags.get("waterway") == "riverbank") and is_closed(refs):
+            p = poly_from_rings(pts)
+            if p is not None:
+                water.append(p)
+        elif (tags.get("leisure") in ("park", "garden") or tags.get("landuse") in ("grass", "village_green")) and is_closed(refs):
+            p = poly_from_rings(pts)
+            if p is not None:
+                parks.append(p)
+
+    for nid, (lon, lat, tags) in nodes.items():
+        if tags.get("natural") == "tree":
+            trees.append(Point(proj(lon, lat)))
+
+    return buildings, roads, water, parks, trees
 
 
-def combler(poly: Polygon, seuil: float) -> Polygon:
-    """Bouche les cours d'un ilot en dessous d'un seuil.
-
-    Les emprises OSM d'un centre ancien forment des ANNEAUX autour de courettes.
-    Soudees puis reculees, elles donnaient des rubans creux en U et en L au lieu
-    de pates de maisons : le premier rendu du squelette ne montrait presque que
-    cela. Un ilot se lit en masse pleine ; seules les vraies cours — cloitres,
-    jardins, cours d'honneur — meritent d'etre gardees.
-    """
-    trous = [ring for ring in poly.interiors
-             if Polygon(ring).area >= seuil]
-    return Polygon(poly.exterior, trous)
-
-
-def polygones(geom):
-    if geom.is_empty:
+# ---------------------------------------------------------------------------
+# 2. Généralisation
+# ---------------------------------------------------------------------------
+def explode(geom):
+    if geom is None or geom.is_empty:
         return []
-    if geom.geom_type == "Polygon":
+    if isinstance(geom, Polygon):
         return [geom]
-    return [g for g in geom.geoms if g.geom_type == "Polygon" and not g.is_empty]
+    if isinstance(geom, MultiPolygon):
+        return list(geom.geoms)
+    if hasattr(geom, "geoms"):
+        return [g for g in geom.geoms if isinstance(g, Polygon)]
+    return []
 
 
-def ilots(batiments, rues) -> list[Polygon]:
-    """Souder les mitoyens, degager les rues, reculer le pourtour.
+def orthogonalize(poly):
+    """Contours simples et droits : petits polygones → rectangle englobant."""
+    s = poly.simplify(P["SIMPLIFY"], preserve_topology=True)
+    if s.is_empty or not isinstance(s, Polygon):
+        return None
+    nverts = len(s.exterior.coords) - 1
+    if nverts <= P["RECT_MAX_VERTS"]:
+        r = s.minimum_rotated_rectangle
+        # on ne remplace par le rectangle que s'il ne gonfle pas trop
+        if r.area <= s.area * 1.45:
+            return r
+    return s
 
-    L'ordre compte. Souder d'abord, sinon chaque maison reste seule ; degager
-    les rues ensuite, sinon la soudure enjambe la chaussee et colle les deux
-    cotes d'une ruelle ; reculer en dernier, pour que le retrait porte sur le
-    contour reel de l'ilot et pas sur celui de chaque maison.
-    """
-    colle = REGLAGES["GLUE"]
-    masse = unary_union([p.buffer(colle, join_style=2) for p in batiments])
-    masse = masse.buffer(-colle, join_style=2)
-    # COMBLER AVANT DE CREUSER. Une cour est un TROU ; une fois la chaussee
-    # soustraite, la meme cour n'est plus qu'une encoche ouverte sur la rue, et
-    # boucher les trous ne l'attrape plus. Dans cet ordre, la moitie des ilots
-    # restaient des rubans en U.
-    masse = unary_union([combler(p, REGLAGES["COUR_MIN_M2"])
-                         for p in polygones(masse)])
-    if not rues.is_empty:
-        masse = masse.difference(rues)
-    sortie = []
-    for p in polygones(masse):
-        recule = p.buffer(-REGLAGES["SHRINK"], join_style=2)
-        for q in polygones(recule):
-            q = q.simplify(REGLAGES["SIMPLIFY"], preserve_topology=True)
-            if q.area < REGLAGES["MIN_VOLUME_M2"]:
+
+def shrink(poly, d):
+    """Recul vers l'intérieur ; si le volume disparaît, on le réduit par homothétie."""
+    e = poly.buffer(-d, join_style="mitre", mitre_limit=2.0)
+    parts = [p for p in explode(e) if p.area >= P["MIN_AREA"]]
+    if parts:
+        return max(parts, key=lambda p: p.area)
+    from shapely import affinity
+    s = affinity.scale(poly, 0.65, 0.65, origin="centroid")
+    return s if s.area >= P["MIN_AREA"] else None
+
+
+def split_block(block, members):
+    """Découpe un îlot en 1..MAX_VOLUMES volumes autour des plus gros bâtiments."""
+    k = max(1, min(P["MAX_VOLUMES"], int(round(block.area / P["M2_PER_VOLUME"]))))
+    members = sorted(members, key=lambda b: b.area, reverse=True)
+    if k == 1 or len(members) <= 1:
+        return [block]
+    seeds = members[:k]
+    groups = [[s] for s in seeds]
+    for b in members[k:]:
+        c = b.centroid
+        i = min(range(k), key=lambda j: seeds[j].distance(c))
+        groups[i].append(b)
+    out = []
+    g_ = P["MERGE_GAP"]
+    for g in groups:
+        u = unary_union([b.buffer(g_, join_style="mitre") for b in g]).buffer(-g_, join_style="mitre")
+        out.extend(explode(u))
+    return out
+
+
+def generalize_buildings(buildings, names, rng):
+    landmarks, ordinary = [], []
+    for p, tags in buildings:
+        (landmarks if is_landmark(tags, names) else ordinary).append((p, tags))
+
+    features = []
+
+    # --- monuments : contour fidèle, hauteur réelle plafonnée, pas de fenêtres
+    for p, tags in landmarks:
+        s = p.simplify(P["LANDMARK_SIMPLIFY"], preserve_topology=True).buffer(-P["LANDMARK_SHRINK"], join_style="mitre")
+        for part in explode(s):
+            h = parse_height(tags) or P["LANDMARK_DEFAULT_H"]
+            h = min(h, P["LANDMARK_MAX_H"])
+            features.append(feature(part, kind="landmark", height=round(h, 1), roof="plat",
+                                    motif="none", name=tags.get("name", "")))
+
+    # --- bâtiments ordinaires : îlots → volumes
+    g_ = P["MERGE_GAP"]
+    polys = [p for p, _ in ordinary]
+    blocks = explode(unary_union([p.buffer(g_, join_style="mitre") for p in polys]).buffer(-g_, join_style="mitre"))
+    print(f"  {len(polys)} bâtiments ordinaires → {len(blocks)} îlots", file=sys.stderr)
+
+    n_vol = 0
+    for block in blocks:
+        members = [p for p in polys if p.intersects(block)]
+        for vol in split_block(block, members):
+            o = orthogonalize(vol)
+            if o is None:
                 continue
-            # une lame de 3 m de large et 90 m de long passe le test d'aire et
-            # ne se dessine pas : on exige aussi une largeur
-            if q.buffer(-REGLAGES["LARGEUR_MIN"] / 2, join_style=2).is_empty:
+            s = shrink(o, P["SHRINK"])
+            if s is None:
                 continue
-            sortie.append(q)
-    return sortie
+            s = orient(s, sign=1.0)  # anti-horaire
+            # hauteur : niveaux des bâtiments d'origine si connus, sinon 2-3
+            src_levels = [parse_height(t) for p, t in ordinary if p.intersects(s)]
+            src_levels = [int(round(h / P["LEVEL_H"])) for h in src_levels if h]
+            levels = max(src_levels) if src_levels else rng.choice([2, 2, 3, 3, 3])
+            levels = max(1, min(P["MAX_LEVELS"], levels))
+            nverts = len(s.exterior.coords) - 1
+            gable = (nverts == 4 and s.area <= P["GABLE_MAX_AREA"] and rng.random() < P["GABLE_PROB"])
+            features.append(feature(s, kind="volume", levels=levels,
+                                    height=round(levels * P["LEVEL_H"], 2),
+                                    roof="pignon" if gable else "plat",
+                                    motif=rng.choice(MOTIFS)))
+            n_vol += 1
+    print(f"  → {n_vol} volumes, {len(landmarks)} monuments", file=sys.stderr)
+    return features
 
 
-def couper_en_parts(poly: Polygon, n: int) -> list[Polygon]:
-    """Decoupe un ilot en n volumes d'aires egales, en travers de son axe long.
-
-    La coupe se fait a aire egale et non a pas egal : un ilot en L coupe a pas
-    egal donne un volume minuscule et un volume enorme.
-    """
-    if n <= 1:
-        return [poly]
-    rect = poly.minimum_rotated_rectangle
-    if rect.geom_type != "Polygon":
-        return [poly]
-    bord = list(rect.exterior.coords)[:4]
-    cotes = [(math.dist(bord[i], bord[(i + 1) % 4]),
-              math.atan2(bord[(i + 1) % 4][1] - bord[i][1],
-                         bord[(i + 1) % 4][0] - bord[i][0])) for i in range(4)]
-    _, angle = max(cotes)
-    centre = poly.centroid
-    droit = rotate(poly, -angle, origin=centre, use_radians=True)
-    x0, y0, x1, y1 = droit.bounds
-    total = droit.area
-    parts, reste, gauche = [], droit, x0
-    for k in range(1, n):
-        cible = total * k / n
-        a, b = gauche, x1
-        for _ in range(40):                    # dichotomie sur la position
-            m = (a + b) / 2
-            aire = droit.intersection(
-                Polygon([(x0 - 1, y0 - 1), (m, y0 - 1), (m, y1 + 1),
-                         (x0 - 1, y1 + 1)])).area
-            if aire < cible:
-                a = m
-            else:
-                b = m
-        coupe = (a + b) / 2
-        bande = Polygon([(gauche - 1, y0 - 1), (coupe, y0 - 1),
-                         (coupe, y1 + 1), (gauche - 1, y1 + 1)])
-        for q in polygones(reste.intersection(bande)):
-            parts.append(q)
-        reste = reste.difference(bande)
-        gauche = coupe
-    parts += polygones(reste)
-    return [rotate(p, angle, origin=centre, use_radians=True) for p in parts]
+def generalize_roads(roads, clip):
+    ribbons = []
+    for line, kind in roads:
+        w = ROAD_WIDTH.get(kind, 5) + P["ROAD_EXTRA"]
+        ribbons.append(line.buffer(w / 2.0, cap_style="flat", join_style="round"))
+    if not ribbons:
+        return [], []
+    outer = unary_union(ribbons)
+    if clip is not None:
+        outer = outer.intersection(clip)
+    inner = outer.buffer(-P["SIDEWALK"], join_style="round")
+    return explode(outer), explode(inner)
 
 
-def niveaux_de(poly: Polygon, batiments) -> int:
-    """Etages lus dans OSM sur les emprises couvertes, sinon le defaut."""
-    lus = []
-    for p, t, _ in batiments:
-        if not p.intersects(poly):
+def trees_from_parks(parks, existing, rng):
+    pts = list(existing)
+    sp, jit = P["TREE_SPACING"], P["TREE_JITTER"]
+    for park in parks:
+        minx, miny, maxx, maxy = park.bounds
+        inset = park.buffer(-3.0)
+        if inset.is_empty:
             continue
-        for cle in ("building:levels", "levels"):
-            if cle in t:
-                try:
-                    lus.append(float(t[cle]))
-                except ValueError:
-                    pass
-                break
-    if not lus:
-        return REGLAGES["DEFAULT_LEVELS"]
-    lus.sort()
-    return int(round(lus[len(lus) // 2]))
+        y = miny + sp / 2
+        while y < maxy:
+            x = minx + sp / 2
+            while x < maxx:
+                pt = Point(x + rng.uniform(-jit, jit), y + rng.uniform(-jit, jit))
+                if inset.contains(pt) and all(pt.distance(q) > 4.0 for q in pts[-50:]):
+                    pts.append(pt)
+                x += sp
+            y += sp
+    return pts
 
 
-def volumes(blocs, batiments) -> list[dict]:
-    sortie = []
-    for i, bloc in enumerate(blocs):
-        n = max(1, int(round(bloc.area / REGLAGES["M2_PER_VOLUME"])))
-        for j, part in enumerate(couper_en_parts(bloc, n)):
-            part = part.simplify(REGLAGES["SIMPLIFY"], preserve_topology=True)
-            if part.is_empty or part.area < REGLAGES["MIN_VOLUME_M2"]:
-                continue
-            niv = min(REGLAGES["MAX_LEVELS"], max(1, niveaux_de(part, batiments)))
-            # une ligne de toits parfaitement plate se voit : on la casse d'un
-            # tiers d'etage, toujours le meme pour un volume donne
-            secousse = (alea("niv", i, j) - 0.5) * 2 * REGLAGES["LEVEL_JITTER"]
-            hauteur = (niv + secousse) * REGLAGES["LEVEL_HEIGHT"]
-            petit = part.area < REGLAGES["GABLE_MAX_M2"]
-            toit = ("gable" if petit and alea("toit", i, j) < REGLAGES["GABLE_PROB"]
-                    else "hip")
-            sortie.append({"geom": part, "kind": "volume", "levels": niv,
-                           "height": round(hauteur, 2), "roof": toit,
-                           "area": round(part.area, 1)})
-    return sortie
+# ---------------------------------------------------------------------------
+# 3. Sortie
+# ---------------------------------------------------------------------------
+def feature(geom, **props):
+    return {"type": "Feature", "properties": props, "geometry": mapping(geom)}
 
 
-def reperes(batiments, noms) -> list[dict]:
-    sortie = []
-    for poly, t, wid in batiments:
-        if not est_repere(t, noms):
-            continue
-        p = poly.simplify(REGLAGES["SIMPLIFY"] / 2, preserve_topology=True)
-        niv = max(2, niveaux_de(poly, batiments))
-        sortie.append({"geom": p, "kind": "landmark", "levels": niv,
-                       "height": round(niv * REGLAGES["LEVEL_HEIGHT"] * 1.4, 2),
-                       "roof": "hip", "name": t.get("name", ""),
-                       "osm": wid, "area": round(p.area, 1)})
-    return sortie
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("osm")
+    ap.add_argument("out")
+    ap.add_argument("--bbox", help="minlat,minlon,maxlat,maxlon (WGS84)")
+    ap.add_argument("--landmarks", default="", help="noms de monuments séparés par des virgules")
+    ap.add_argument("--set", action="append", default=[], help="surcharge un paramètre, ex. --set SHRINK=3.5")
+    a = ap.parse_args()
 
+    for s in a.set:
+        k, v = s.split("=", 1)
+        P[k] = type(P[k])(v)
+    rng = random.Random(P["SEED"])
+    names = [n.strip() for n in a.landmarks.split(",") if n.strip()]
 
-def surfaces_utiles(surfaces) -> list[dict]:
-    genres = []
-    for poly, t in surfaces:
-        if "waterway" in t or t.get("natural") == "water":
-            genre = "water"
-        elif t.get("leisure") in ("park", "garden") or t.get("landuse") in ("grass", "forest"):
-            genre = "green"
-        elif t.get("place") == "square" or t.get("highway") == "pedestrian":
-            genre = "square"
-        else:
-            continue
-        p = poly.simplify(REGLAGES["SIMPLIFY"], preserve_topology=True)
-        if not p.is_empty and p.area > 20:
-            genres.append({"geom": p, "kind": genre, "area": round(p.area, 1)})
-    return genres
+    print("Lecture du .osm…", file=sys.stderr)
+    nodes, ways, rels = parse_osm(a.osm)
+    lons = [n[0] for n in nodes.values()]
+    lats = [n[1] for n in nodes.values()]
+    if a.bbox:
+        minlat, minlon, maxlat, maxlon = map(float, a.bbox.split(","))
+    else:
+        minlon, maxlon, minlat, maxlat = min(lons), max(lons), min(lats), max(lats)
+    proj = Proj((minlon + maxlon) / 2, (minlat + maxlat) / 2)
+    x0, y0 = proj(minlon, minlat)
+    x1, y1 = proj(maxlon, maxlat)
+    clip = box(x0, y0, x1, y1)
 
+    buildings, roads, water, parks, trees = collect(nodes, ways, rels, proj, names)
+    buildings = [(p, t) for p, t in buildings if p.intersects(clip)]
+    roads = [(l.intersection(clip), k) for l, k in roads if l.intersects(clip)]
+    roads = [(l, k) for l, k in roads if isinstance(l, LineString) and not l.is_empty]
+    water = [w.intersection(clip) for w in water if w.intersects(clip)]
+    parks = [p.intersection(clip) for p in parks if p.intersects(clip)]
+    trees = [t for t in trees if clip.contains(t)]
+    print(f"  périmètre {x1 - x0:.0f} × {y1 - y0:.0f} m ; {len(buildings)} bâtiments, "
+          f"{len(roads)} tronçons, {len(water)} eau, {len(parks)} parcs, {len(trees)} arbres", file=sys.stderr)
 
-def ecrire(chemin: Path, morceaux, origine, compte):
-    fc = {"type": "FeatureCollection",
-          "metadata": {"origin_latlon": list(origine), "units": "m",
-                       "reglages": REGLAGES, "counts": compte},
-          "features": []}
-    for m in morceaux:
-        props = {k: v for k, v in m.items() if k != "geom"}
-        fc["features"].append({"type": "Feature", "properties": props,
-                               "geometry": mapping(m["geom"])})
-    chemin.write_text(json.dumps(fc), encoding="utf-8")
+    print("Généralisation…", file=sys.stderr)
+    feats = generalize_buildings(buildings, names, rng)
 
+    outer, inner = generalize_roads(roads, clip)
+    feats += [feature(g, kind="road") for g in outer]
+    feats += [feature(g, kind="sidewalk_inner") for g in inner]
+    for w in water:
+        feats += [feature(g, kind="water") for g in explode(w)]
+    for p in parks:
+        feats += [feature(g, kind="park") for g in explode(p)]
+    all_trees = trees_from_parks([g for p in parks for g in explode(p)], trees, rng)
+    feats += [feature(t, kind="tree", radius=round(rng.uniform(2.4, 3.4), 2)) for t in all_trees]
 
-def main() -> int:
-    p = argparse.ArgumentParser(description=__doc__,
-                                formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("osm", type=Path)
-    p.add_argument("sortie", type=Path)
-    p.add_argument("--bbox", required=True,
-                   help="minlat,minlon,maxlat,maxlon")
-    p.add_argument("--landmarks", default="",
-                   help="noms cherches dans le tag name, separes par des virgules")
-    p.add_argument("--set", action="append", default=[], metavar="CLE=VALEUR")
-    args = p.parse_args()
-
-    for reglage in args.set:
-        cle, _, valeur = reglage.partition("=")
-        if cle not in REGLAGES:
-            sys.exit(f"reglage inconnu : {cle}. Connus : {', '.join(sorted(REGLAGES))}")
-        REGLAGES[cle] = type(REGLAGES[cle])(float(valeur))
-
-    bbox = tuple(float(v) for v in args.bbox.split(","))
-    if len(bbox) != 4:
-        sys.exit("--bbox attend minlat,minlon,maxlat,maxlon")
-    noms = [sans_accent(n.strip()) for n in args.landmarks.split(",") if n.strip()]
-
-    batiments, voies, surfaces, origine = lire_osm(args.osm, bbox)
-    # CLIPPAGE. Un element est garde des qu'un seul de ses points touche la
-    # zone, pour ne pas trancher une rangee mitoyenne ; mais une rue qui
-    # traverse file alors a des centaines de metres. Sans cette coupe, le
-    # cadrage passait de 780 a 1464 m et la carte se noyait dans du blanc.
-    cadre = Polygon([latlon_vers_xy(la, lo, *origine) for la, lo in
-                     ((bbox[0], bbox[1]), (bbox[0], bbox[3]),
-                      (bbox[2], bbox[3]), (bbox[2], bbox[1]))])
-    marques = reperes(batiments, noms)
-    a_part = unary_union([m["geom"] for m in marques]) if marques else Polygon()
-    ordinaires = [b for b in batiments
-                  if a_part.is_empty or not b[0].intersects(a_part)]
-
-    rues = corridors(voies, REGLAGES["RUE_MIN_LARGEUR"])
-    blocs = ilots([b[0] for b in ordinaires], rues)
-    vols = volumes(blocs, ordinaires)
-    decor = surfaces_utiles(surfaces)
-
-    garde = []
-    for m in vols + marques + decor:
-        g = m["geom"].intersection(cadre)
-        for part in polygones(g):
-            if part.area >= REGLAGES["MIN_VOLUME_M2"] / 3:
-                garde.append(dict(m, geom=part, area=round(part.area, 1)))
-    vols = [m for m in garde if m["kind"] == "volume"]
-    marques = [m for m in garde if m["kind"] == "landmark"]
-    decor = [m for m in garde if m["kind"] not in ("volume", "landmark")]
-
-    compte = {"batiments": len(batiments), "ilots": len(blocs),
-              "volumes": len(vols), "reperes": len(marques),
-              "surfaces": len(decor)}
-    ecrire(args.sortie, vols + marques + decor, origine, compte)
-
-    print(f"{compte['batiments']} batiments -> {compte['ilots']} ilots "
-          f"-> {compte['volumes']} volumes  (+ {compte['reperes']} reperes, "
-          f"{compte['surfaces']} surfaces)")
-    total = compte["volumes"] + compte["reperes"]
-    juge = ("dans la cible" if 60 <= total <= 150 else
-            "TROP : monter M2_PER_VOLUME" if total > 150 else
-            "TROP PEU : baisser M2_PER_VOLUME")
-    print(f"objectif MicroMacro 60-150 volumes : {total} -> {juge}")
-    if vols:
-        aires = sorted(v["area"] for v in vols)
-        print(f"aire d'un volume : mediane {aires[len(aires) // 2]:.0f} m2, "
-              f"min {aires[0]:.0f}, max {aires[-1]:.0f}")
-    print(f"-> {args.sortie}")
-    return 0
+    out = {
+        "type": "FeatureCollection",
+        "crs_note": "coordonnées locales en mètres, origine = centre du périmètre",
+        "bounds": [x0, y0, x1, y1],
+        "params": P,
+        "features": feats,
+    }
+    with open(a.out, "w") as f:
+        json.dump(out, f)
+    print(f"Écrit {a.out} : {len(feats)} entités", file=sys.stderr)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
