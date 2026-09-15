@@ -47,8 +47,17 @@ CONFIG = V2 / "config.json"
 
 # Un versant de toiture : ni plat (le plancher, les acroteres), ni vertical
 # (les murs). La croupe de l'etape 6 monte a 0,88 en z, le faitage un peu plus.
-PENTE_MIN, PENTE_MAX = 0.20, 0.985
-FACE_CAMERA_MIN = 0.15   # produit scalaire minimal pour dire "ce pan nous fait face"
+# Un versant de toiture : ni le plancher ni les murs. La borne haute est large
+# parce que les toits sont devenus TRES plats : la toiture est bornee a 45 % de
+# la hauteur du mur, et sur les trois plus grands batiments la pente tombait a
+# 0,155, soit une normale a 0,988 — au-dessus de l'ancienne borne de 0,985. Les
+# trois seuls lieux qui meritaient vraiment d'etre ouverts ne l'etaient plus.
+PENTE_MIN, PENTE_MAX = 0.20, 0.997
+# Seuil sur la direction HORIZONTALE de la normale, une fois normalisee. Avant
+# normalisation, un pan tres plat avait une composante horizontale de 0,077 et
+# echouait au seuil quelle que soit son orientation : la pente decidait a la
+# place de l'orientation.
+FACE_CAMERA_MIN = 0.15
 JEU_PLANCHER = 0.04      # m, pour ne pas coincider avec l'egout
 EPAISSEUR_MUR = 0.35     # m, l'epaisseur de mur que montre la coupe
 PAS_CLOISON = 4.5        # m, distance entre deux refends
@@ -63,6 +72,11 @@ def direction_camera(rotation_z_deg: float) -> Vector:
     """
     a = math.radians(rotation_z_deg)
     return Vector((math.sin(a), -math.cos(a))).normalized()
+
+
+def _vers(n) -> Vector:
+    h = Vector((n.x, n.y))
+    return h.normalized() if h.length > 1e-6 else h
 
 
 def faces_du_bas(bm, zmin: float):
@@ -231,7 +245,7 @@ def ouvrir(obj, vers_camera: Vector) -> tuple[int, float]:
     pans = [f for f in bm.faces
             if PENTE_MIN < f.normal.z < PENTE_MAX
             and f.calc_center_median().z > seuil
-            and Vector((f.normal.x, f.normal.y)).dot(vers_camera) > FACE_CAMERA_MIN]
+            and _vers(f.normal).dot(vers_camera) > FACE_CAMERA_MIN]
     if not pans:
         bm.free()
         return 0, 0.0

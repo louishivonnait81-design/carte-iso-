@@ -28,8 +28,8 @@
     "_retrait_ilot_m": "Metres retires de chaque cote d un ilot, AXE PAR AXE, pour elargir les rues. Invention assumee, bornee, annulable en remettant 0. A 2,0 m les rues entre ilots sont jouables a 100 % (sol degage >= 2,5 m) ; au-dela le gain plafonne et la surface batie tombe sous 30 %.",
     "soudure_ilot_m": 2.5,
     "_soudure_ilot_m": "Fente INTERIEURE a un ilot en dessous de laquelle les deux murs sont recolles. 85 % des traversees invisibles etaient de cette nature, 93 % sur l axe nord-sud : 40 cm entre deux maisons mitoyennes saisies separement, un jour de souffrance, une courette. Sous 2,5 m personne ne passe : ce n est pas un chemin. 686 murs recolles, traversees invisibles 13,7 -> 6,8 % (nord-sud) et 14,5 -> 2,9 % (est-ouest).",
-    "echelle_hauteur": 0.7,
-    "_echelle_hauteur": "Facteur applique a la hauteur de tout le bati a l etape 5b. Un mur de hauteur h avale 0,408 h de largeur apparente a 60 deg : a 10 m de moyenne, 4,1 m — une ruelle de 4 m n a plus un pixel de sol. x0,7 rend 1,2 m a chaque ruelle. Un FACTEUR et non un plafond : un plafond aligne toutes les maisons a la meme hauteur et aplatit la ligne de toits.",
+    "echelle_hauteur": 0.45,
+    "_echelle_hauteur": "Facteur applique a la hauteur de tout le bati a l etape 5b. Un mur de hauteur h avale 0,814 h de largeur apparente a 41 deg. Mesure a cet angle : x0,70 donne 75,8 / 63,8 % de traversees jouables, x0,45 en donne 80,5 / 82,6 %, soit le niveau obtenu a 60 deg. Moyenne 4,6 m au mur, plus la toiture. Un FACTEUR et non un plafond : un plafond aplatit la ligne de toits.",
     "toits_ouverts": {
       "nombre": 10,
       "ecart_min_m": 35.0,
@@ -100,8 +100,8 @@
     ]
   },
   "camera": {
-    "_rotation_x_deg": "30 = visee a 60 deg au-dessus de l horizon. Mesure de jouabilite : a 30 deg d elevation (rotation_x 60) le sol visible ne faisait que 40,4 % de l image contre 56,4 % de toits ; a 60 deg d elevation il passe a 48,5 %, soit 23 496 m2 de surface jouable contre 19 574. La facade, elle, tombe de 3,1 a 2,0 % — c est le prix, et il est faible : les deux tiers du travail de facade etaient deja invisibles.",
-    "rotation_x_deg": 30.0,
+    "_rotation_x_deg": "49 = visee a 41 deg au-dessus de l horizon, mesuree sur la planche MicroMacro elle-meme (v2/mesure_reference.py) : les deux bords d une meme toiture y tombent a +14 et -61 degres, et |tan a1 x tan a2| = sin^2(elevation). A hauteurs egales cet angle couterait 20 points de jouabilite, l ombre d un mur passant de 0,408 h a 0,814 h ; c est la hauteur du bati qui compense, pas l angle.",
+    "rotation_x_deg": 49.0,
     "rotation_z_deg": 315.0,
     "type": "ORTHO",
     "marge_cadrage": 1.02
@@ -121,12 +121,14 @@
     "_moteur": "Freestyle ne fonctionne pas avec Workbench : Workbench est un moteur d apercu de fenetre et ne passe pas par le post-traitement ou vit Freestyle. Le brief demandant Freestyle et interdisant Cycles, il ne reste qu EEVEE.",
     "moteur_note": "BLENDER_EEVEE est le choix pour le Mac (GPU). En rendu logiciel, dans le conteneur, EEVEE met 86 s pour 600 px : les apercus y sont produits avec --moteur CYCLES, qui sur cette scene plate et emissive est environ vingt fois plus rapide. Le moteur est donc un parametre, pas une constante.",
     "epaisseurs": {
-      "masses": 2.2,
+      "masses": 1.5,
       "plis": 1.0,
       "facades": 0.8,
-      "sol": 0.55
+      "sol": 0.6
     },
-    "_epaisseurs": "Hierarchie du trait, en pixels. Un dessin au trait se lit par le poids relatif des lignes, pas par leur nombre : masse du batiment, pli de toiture, ouverture, joint de sol."
+    "_epaisseurs": "Hierarchie du trait, en pixels pour largeur_reference_px. Reglee sur la planche MicroMacro, a echelle egale (7000 px de rendu = 50 px par etage, comme la photo) : la reference donne p25=2 p50=2 p75=3 p90=4 et un rapport p90/p50 de 2,00. L ancien jeu (masses 2,2) donnait p90=7 et un rapport de 3,50 — les lignes de masse ecrasaient tout. Le nouveau retrouve exactement le profil de la reference. Ce qui reste different, c est la DENSITE : 5,6 % d encre contre 15,0 %, et cela ne se regle pas au trait mais au contenu — la planche porte des dizaines de personnages et de vehicules par bloc.",
+    "largeur_reference_px": 8000,
+    "_largeur_reference_px": "Taille pour laquelle les epaisseurs ci-dessous sont ecrites. Freestyle compte en pixels absolus : sans cette mise a l echelle, un apercu a 2000 px ne montre pas le trait du rendu final."
   },
   "orientations_a_tester": [
     45,

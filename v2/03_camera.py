@@ -272,6 +272,28 @@ def preparer(cfg: dict, moteur: str | None = None):
     return scene, n
 
 
+def epaissir_a_la_taille(scene, cfg: dict, largeur: int) -> float:
+    """Met les epaisseurs de trait a l'echelle de l'image demandee.
+
+    Freestyle compte en PIXELS ABSOLUS : a epaisseur egale, un rendu de 8000 px
+    a des traits deux fois plus fins, par rapport au bati, qu'un rendu de 4000.
+    Le dessin changeait donc de style selon la taille de sortie, ce qui rendait
+    tout apercu menteur. Les epaisseurs de config.json valent desormais pour
+    `largeur_reference_px`, et suivent la resolution.
+    """
+    ref = cfg["rendu"].get("largeur_reference_px") or largeur
+    k = largeur / float(ref)
+    e = cfg["rendu"]["epaisseurs"]
+    scene.render.line_thickness = e["masses"] * k
+    for jeu in scene.view_layers[0].freestyle_settings.linesets:
+        nom = jeu.name.replace("V2_", "").lower()
+        base = {"masses": e["masses"], "plis": e["plis"], "facades": e["facades"],
+                "cheminees": e["plis"], "sol": e["sol"]}.get(nom)
+        if base is not None:
+            jeu.linestyle.thickness = base * k
+    return k
+
+
 def rendre(scene, cfg: dict, z_deg: float, largeur: int, sortie: Path):
     cam, taille = poser_camera(scene, cfg, z_deg)
     # L'IMAGE PREND LE FORMAT DE LA ZONE, pas un carre. Vue a 60 deg, un carre au
@@ -282,6 +304,7 @@ def rendre(scene, cfg: dict, z_deg: float, largeur: int, sortie: Path):
     hauteur = max(1, int(round(largeur * h_m / l_m))) if l_m else largeur
     r = scene.render
     r.resolution_x, r.resolution_y = largeur, hauteur
+    epaissir_a_la_taille(scene, cfg, largeur)
     r.resolution_percentage = 100
     r.film_transparent = False
     r.image_settings.file_format = "PNG"

@@ -35,6 +35,7 @@ V2 = Path(__file__).resolve().parent
 # elevation de 0,53 fois la demi-largeur.
 PENTE = 0.53
 MONTEE_MAX = 3.0        # m, au-dela le toit ecrase la facade
+PART_MONTEE_MAX = 0.45  # la toiture ne depasse jamais cette part de la hauteur du mur
 COTE_MIN_CROUPE = 4.0   # m ; sous cette largeur l'inset degenere
 COTE_MIN_FAITAGE = 3.0  # m ; sous cette largeur un faitage ne se lit plus
 CARRE_MAX = 1.6         # au-dela de ce rapport long/court, on fait un faitage
@@ -150,7 +151,7 @@ def debordement(bm, points) -> float:
                for v in bm.verts)
 
 
-def poser_deux_versants(bm, dessus, centre, angle, petit) -> bool:
+def poser_deux_versants(bm, dessus, centre, angle, petit, hauteur_mur) -> bool:
     """Un faitage sur l'axe long, deux versants qui tombent sur les cotes longs.
 
     Marche sur n'IMPORTE QUELLE emprise, y compris en L : on ne construit pas de
@@ -179,7 +180,7 @@ def poser_deux_versants(bm, dessus, centre, angle, petit) -> bool:
     if not hauts:
         return False
     demi = petit / 2.0
-    montee = min(MONTEE_MAX, PENTE * demi)
+    montee = min(MONTEE_MAX, PENTE * demi, PART_MONTEE_MAX * hauteur_mur)
     for v in hauts:
         d = abs((v.co - Vector((centre.x, centre.y, zmax))).dot(normale))
         v.co.z += montee * max(0.0, 1.0 - d / demi)
@@ -201,6 +202,9 @@ def poser_toit(obj) -> str:
         return "aucune"
 
     points = [(v.co.x, v.co.y) for v in boucle]
+    # a 4,6 m de mur moyen, un comble de 3 m ferait une tente : la toiture est
+    # bornee par la hauteur du mur autant que par la largeur de l'emprise
+    hauteur_mur = max(v.co.z for v in bm.verts) - min(v.co.z for v in bm.verts)
     aire, largeur, profondeur, angle_bb = rectangle_oriente(points)
     petit = min(largeur, profondeur)
     remplissage = aire_polygone(points) / aire if aire else 0.0
@@ -214,7 +218,7 @@ def poser_toit(obj) -> str:
             and est_convexe(points)):
         # emprise ramassee : une croupe, quatre pans qui se rejoignent
         inset = 0.48 * petit
-        montee = min(MONTEE_MAX, PENTE * inset)
+        montee = min(MONTEE_MAX, PENTE * inset, PART_MONTEE_MAX * hauteur_mur)
         bmesh.ops.inset_region(bm, faces=dessus, thickness=inset, depth=montee,
                                use_even_offset=True, use_boundary=True)
         if debordement(bm, points) <= TOLERANCE_DEBORD:
@@ -235,7 +239,8 @@ def poser_toit(obj) -> str:
         # rectangle_oriente rend l'angle qui remet le cote sur X : l'axe long
         # est donc X ou Y selon lequel des deux cotes est le plus grand
         axe = -angle_bb if largeur >= profondeur else -angle_bb + math.pi / 2
-        cas = "faitage" if poser_deux_versants(bm, dessus, centre, axe, petit) \
+        cas = "faitage" if poser_deux_versants(bm, dessus, centre, axe, petit,
+                                               hauteur_mur) \
             else "acrotere"
         if cas == "acrotere":
             dessus = faces_du_dessus(bm)

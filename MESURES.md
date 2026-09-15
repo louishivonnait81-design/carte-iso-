@@ -278,3 +278,34 @@ uniforme, contrairement a ce que l'oeil croit d'abord.
 * **La densite de vie est d'un autre ordre** : chaque bloc porte des dizaines de
   personnages, de vehicules et d'objets. Ma carte en compte 57 pour toute la
   zone.
+
+## Ce que la reference a change dans la config
+
+| parametre | avant | apres | ce qui l'a decide |
+|---|---|---|---|
+| elevation | 60 deg | **41 deg** | mesure sur la planche (+14 / -61 sur une meme toiture) |
+| echelle_hauteur | 0,70 | **0,45** | a 41 deg l'ombre d'un mur double ; 4,6 m de mur moyen rend les 80 % de traversees jouables |
+| epaisseurs | 2,2 / 1,0 / 0,8 / 0,55 | **1,5 / 1,0 / 0,8 / 0,6** | profil de la reference retrouve exactement |
+| largeur_reference_px | — | **8000** | Freestyle compte en pixels absolus : sans cela un apercu ment sur le trait |
+
+### Le trait, mesure a echelle egale
+
+Le rendu a 7000 px donne 50 px par etage, exactement comme la photo : la
+comparaison a enfin un sens.
+
+| | encre | p25 | p50 | p75 | p90 | p90/p50 |
+|---|---|---|---|---|---|---|
+| reference, photo 1 | 15,7 % | 2 | 2 | 3 | 4 | 2,00 |
+| reference, photo 2 | 15,0 % | 2 | 2 | 3 | 4 | 2,00 |
+| ma carte, masses 2,2 | 8,5 % | 2 | 2 | 5 | 7 | 3,50 |
+| **ma carte, masses 1,5** | 5,6 % | **2** | **2** | **3** | **4** | **2,00** |
+
+Trois jeux d'epaisseurs (1,5 / 1,2 / 1,0 en masse) donnent le meme profil : la
+mesure ne les distingue pas. On garde le plus contraste, 1,5, parce que c'est la
+ligne de masse qui fait lire un pate de maisons.
+
+**Ce que le trait ne reglera pas** : la densite. 5,6 % d'encre contre 15,0 %.
+L'ecart n'est pas dans l'epaisseur mais dans le CONTENU — la planche porte des
+dizaines de personnages, de vehicules et d'objets par bloc, ma carte en compte
+57 pour toute la zone. C'est le prochain ecart a combler, et le seul qui reste
+visible a l'oeil nu sur le rendu.
