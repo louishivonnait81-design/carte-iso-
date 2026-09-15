@@ -345,3 +345,50 @@ facade : une maison ramenee a 4,6 m ne recevait plus qu'UNE rangee de fenetres,
 Chaque voie deposait son vehicule au meme carrefour : le premier rendu montrait
 des voitures empilees. Une distance minimale de 4,5 m entre deux vehicules en
 retire 9 sur 127.
+
+## Le squelette : generaliser au lieu de detailler
+
+Deux scripts a cote du pipeline v2, pour repondre a une question que v2 ne peut
+pas poser : et si la carte couvrait TOUT le vieux Castres, en quelques dizaines
+de volumes, au lieu de 220 m en 265 batiments ?
+
+| | zone couverte | mm par metre a 110 cm | un personnage de 1,7 m |
+|---|---|---|---|
+| squelette | 1198 m | 0,92 | **1,6 mm** |
+| v2 | 311 m | 3,54 | 6,0 mm |
+
+C'est le squelette qui est a l'echelle de la reference : sur la planche
+MicroMacro les personnages sont des figures de l'ordre du millimetre, pas des
+vignettes de six.
+
+### Trois choses que le premier rendu a apprises
+
+**On ne fait jamais moins de volumes que d'ilots.** Avec les reglages par
+defaut, le vieux Castres sort a 196 ilots pour une cible de 60 a 150 : monter
+`M2_PER_VOLUME` ne peut rien y faire. Ce qui commande le compte, c'est
+`RUE_MIN_LARGEUR` — laisser les sentiers et les venelles de service decouper la
+masse la pulverise.
+
+| reglage | ilots | volumes + reperes |
+|---|---|---|
+| defauts du README | 196 | 343 |
+| `M2_PER_VOLUME=900` | 196 | 247 |
+| `+ RUE_MIN_LARGEUR=6.5, GLUE=3, MIN_VOLUME_M2=250, M2_PER_VOLUME=2000` | **101** | **133** |
+
+**Un ilot est une masse, pas un anneau.** Les emprises OSM d'un centre ancien
+font des anneaux autour de courettes : soudees puis reculees, elles donnaient
+des rubans creux. Il faut combler les cours sous 400 m2, et le faire AVANT de
+soustraire les chaussees — apres, la cour n'est plus un trou mais une encoche
+ouverte sur la rue, et boucher les trous ne l'attrape plus.
+
+**La croupe degenere, le faitage non.** Meme constat qu'a l'etape 6 de v2 :
+l'offset "even" divise par sin(angle/2) et envoie un sommet a l'autre bout de la
+carte. Le constructeur le CONSTATE apres coup et refait un faitage. Sans ce
+repli, 106 volumes sur 133 finissaient en toit-terrasse ; avec, il en reste
+zero (100 faitages, 33 croupes).
+
+### Ce que le squelette coute
+
+Regle pour la cible, il ne laisse que **13 volumes** sur les 220 m du coeur, et
+la place Jean-Jaures disparait. Les deux cartes ne sont pas deux qualites d'une
+meme chose : ce sont deux jeux differents.
