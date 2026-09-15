@@ -207,3 +207,74 @@ Deux pieges en chemin, tous deux visibles seulement au rendu :
 
 Part de l'emprise laissee a ciel ouvert : de 23 % (la poissonnerie, dont un seul
 pan sur quatre regarde la camera) a 73 % (la boite de nuit), mediane 55 %.
+
+## La reference, enfin mesuree
+
+Trois photos de la planche MicroMacro. Jusque-la, tout ce qui touchait au STYLE
+etait deduit par raisonnement : l'angle de camera, les epaisseurs de trait,
+l'echelle du personnage. Rien n'etait mesure sur la reference.
+
+### L'angle de vue
+
+Dans une projection orthographique, deux directions du sol perpendiculaires
+tombent sur la page a des angles a1 et a2 tels que
+`|tan(a1) x tan(a2)| = sin^2(elevation)`, **independamment de l'orientation du
+batiment mesure**. Il suffit donc des deux bords d'une meme toiture.
+
+Sur la grille de toiture du grand batiment ouvert (photo 1), les deux familles
+tombent a **+14** et **-61 degres** — verifie a l'oeil en tracant les deux
+familles par-dessus, `--verifier`, parce qu'aucune statistique ne sait laquelle
+des paires proposees appartient au meme toit. D'ou :
+
+| | valeur |
+|---|---|
+| elevation de MicroMacro | **41 degres** (40,1 a 42,1 selon qu'on lit -59 ou -61) |
+| ma carte | 60 degres |
+| azimut du batiment mesure | 21 degres — la planche n'est donc PAS une isometrie symetrique a 45 |
+
+Deux estimateurs ont ete ecrits et jetes avant celui-la, et c'est le controle
+sur planche de synthese qui les a demasques : un histogramme d'orientation de
+gradient annoncait des familles a +-53 degres sur un dessin trace a +-30 (les
+croisements de traits l'abusent), et un spectre de Fourier se laissait ecraser
+par le pli du papier. La version retenue (rotation + nettete du profil, un
+Radon du pauvre) retrouve 40,1 / 35,3 / 55,6 sur des planches tracees a 40 / 35
+/ 55. `v2/mesure_reference.py --test` rejoue ce controle.
+
+### Ce que l'angle de la reference couterait a ma carte
+
+| elevation | NS jouable | NS noire | EO jouable | EO noire | sol visible |
+|---|---|---|---|---|---|
+| 60 deg (ma carte) | 84,1 % | 6,8 % | 88,3 % | 2,9 % | 88,9 % |
+| 50 deg | 79,3 % | 8,4 % | 81,5 % | 9,0 % | 84,3 % |
+| **41 deg (reference)** | 75,8 % | 16,8 % | 63,8 % | 18,7 % | 78,8 % |
+
+L'ombre d'un mur passe de 0,408 h a 0,814 h : exactement le double. A hauteur
+egale, adopter l'angle de la reference annule le gain de jouabilite de
+l'etape 5b.
+
+### Le trait et l'encre
+
+| | reference (photos 1 et 2) | ma carte a 4000 px |
+|---|---|---|
+| densite d'encre, quartier dense | 15,0 - 15,7 % | 15,3 % |
+| epaisseur mediane | 2 px | 4 px |
+| rapport p90 / mediane | 2,00 | 2,00 |
+
+La hierarchie du trait est donc du bon ordre — la reference n'est pas d'epaisseur
+uniforme, contrairement a ce que l'oeil croit d'abord.
+
+### Ce que les photos disent sans qu'on ait a mesurer
+
+* **L'interieur d'un batiment ouvert est un PLAN d'un seul niveau**, cloisonne
+  par des refends bas, meuble, et peuple. C'est exactement ce que fait
+  l'etape 11 — les refends tous les 4,5 m ne sont pas une invention gratuite.
+* **Le toit n'est pas retire en entier** : sur le grand batiment de la photo 1,
+  la partie eloignee de la camera est conservee avec sa grille de panneaux, la
+  partie proche est ouverte. Le choix "seul le versant qui regarde la camera"
+  est celui de la reference.
+* **Le personnage fait environ 28 px pour un entre-rang de fenetres de 50 px**,
+  soit 0,55 niveau : le dessin est a l'echelle humaine reelle, 1,7 m pour 3 m
+  d'etage.
+* **La densite de vie est d'un autre ordre** : chaque bloc porte des dizaines de
+  personnages, de vehicules et d'objets. Ma carte en compte 57 pour toute la
+  zone.
