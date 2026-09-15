@@ -18,7 +18,8 @@ blender -b -P v2/07_facades.py      # baies, portes, arcades -> castres_facades.
 blender -b -P v2/08_mobilier.py     # arbres, bancs, fontaines
 blender -b -P v2/09_cheminees.py    #                 -> castres_final.blend
 blender -b -P v2/10_pavage.py       # joints, nappes  -> castres_pave.blend
-blender -b -P v2/03_camera.py -- --blend v2/castres_pave.blend --largeur 8000 \
+blender -b -P v2/11_ouvertures.py   # dix toits ouverts -> castres_ouvert.blend
+blender -b -P v2/03_camera.py -- --blend v2/castres_ouvert.blend --largeur 8000 \
         --moteur CYCLES --sortie v2/carte_8000.png
 ```
 
@@ -37,6 +38,12 @@ dans `config.json`, tous annulables en remettant `0` :
 | `soudure_ilot_m` | 2,5 | les fentes de 40 cm entre deux maisons mitoyennes saisies séparément |
 | `retrait_ilot_m` | 2,0 | les rues trop étroites pour qu'on y fasse marcher quelqu'un |
 | `echelle_hauteur` | 0,7 | l'ombre des murs, qui avale 0,408 h de largeur apparente |
+| `toits_ouverts.liste` | 10 lieux | on ne voit pas l'intérieur d'une maison fermée |
+
+La liste des toits ouverts est un choix éditorial, pas une mesure : elle s'édite
+à la main dans `config.json`. `11_ouvertures.py --choisir` la refabrique depuis
+OSM (poids du commerce × racine de l'emprise, 35 m minimum entre deux) si on
+veut repartir d'une base neutre.
 
 Ce que chacun a changé est mesuré dans [`../MESURES.md`](../MESURES.md) et se
 revérifie à tout moment :

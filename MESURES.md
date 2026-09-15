@@ -136,3 +136,74 @@ ou fermees est autre chose.
   rues sont deja jouables a 100 % : l'angle reste a 60 degres, ou la facade se
   voit encore.
 * Surface batie 34,4 -> 30,9 % du sol. C'est le prix, et il est assume.
+
+## v2 — les toitures
+
+Tout en toits-terrasses. 187 batiments sur 264 recevaient un acrotere, dans un
+coeur de ville ancienne. En comptant les causes d'echec du test de croupe :
+
+| cause de l'echec | batiments |
+|---|---|
+| angle rentrant, seul | 42 |
+| trop etroit, seul | 24 |
+| angle rentrant + remplissage (+ autre) | 79 |
+| plus de 10 sommets, toujours avec un angle rentrant | 29 |
+
+L'angle rentrant domine, et c'est logique : la croupe se fabrique par inset, et
+un inset se replie dans un L. Un faitage, lui, ne construit rien — on coupe la
+face du dessus le long de l'axe long et chaque sommet remonte selon sa distance
+a cet axe. Acroteres 70,6 -> 25,7 %, faitages 0 -> 58,5 %, croupes 28,7 -> 15,5 %.
+
+### Huit objets a 250 m de la zone
+
+Freestyle tirait de longues diagonales en travers de la carte. Tous nes du meme
+endroit : l'inset "even" de l'acrotere, qui divise le decalage par sin(angle/2).
+Sur une emprise en lame de couteau — une epaisseur de mur saisie comme un
+batiment — il envoie les sommets a l'autre bout du monde.
+
+| correction | objets hors zone | pire ecart |
+|---|---|---|
+| avant | 8 | 253,8 m |
+| offset simple, epaisseur bornee a 0,25 x la petite cote | 1 | 5,5 m |
+| + controle du debordement apres inset, repli sur le faitage | **0** | — |
+
+Le neuvieme resistait a tous les criteres de forme : le batiment 83182684 est
+convexe, remplit 0,86 de son rectangle englobant, n'a aucun angle sous
+78 degres — et son sommet partait a 141 m. On ne le prevoit donc pas, on le
+constate. Un garde-fou d'angle minimal, ajoute en chemin, s'est ensuite revele
+sans effet : il a ete retire plutot que garde par prudence.
+
+## v2 — quels toits ouvrir
+
+137 POI dans la zone, dont 100 d'interieur une fois retires les bancs, les
+corbeilles, les arceaux a velos et les cameras. Rapportes aux emprises par
+test point-dans-polygone : **48 batiments sur 237 en contiennent au moins un**,
+soit un sur cinq ; 46 en ont un seul, un en a deux, un en a trois.
+
+Un sur cinq, c'etait trop pour "il y en a que certains". Dix lieux sont ouverts,
+choisis par poids du commerce multiplie par la racine de l'emprise, avec 35 m
+minimum entre deux pour qu'ils ne se regroupent pas dans un coin.
+
+### Ce qu'il a fallu pour qu'une ouverture SE VOIE
+
+Retirer le versant ne suffit pas. Trois rendus ont ete necessaires.
+
+| etat | ce que l'oeil lit |
+|---|---|
+| versant retire, plancher a l'egout | un toit-terrasse : un plan blanc borde d'un trait |
+| + epaisseur de mur de 0,35 m | un toit-terrasse a acrotere. Toujours pas un interieur |
+| + refends tous les 4,5 m | une piece cloisonnee, lisible |
+
+Deux pieges en chemin, tous deux visibles seulement au rendu :
+
+* des refends poses sur les axes du monde donnent un DAMIER sur une maison de
+  biais — cela se lit comme un entrepot. Ils suivent l'axe propre du batiment,
+  obtenu par analyse en composantes principales du plancher ;
+* un refend monte sous le versant CONSERVE le traverse et seme des traits en
+  travers de la toiture. On coupe donc d'abord le plancher a la limite du
+  decouvert : sans cette coupe, chaque refend traversait la piece de part en
+  part, son milieu tombait pile sur le faitage, et six refends sur sept
+  disparaissaient au test.
+
+Part de l'emprise laissee a ciel ouvert : de 23 % (la poissonnerie, dont un seul
+pan sur quatre regarde la camera) a 73 % (la boite de nuit), mediane 55 %.

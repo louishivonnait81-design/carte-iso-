@@ -29,7 +29,64 @@
     "soudure_ilot_m": 2.5,
     "_soudure_ilot_m": "Fente INTERIEURE a un ilot en dessous de laquelle les deux murs sont recolles. 85 % des traversees invisibles etaient de cette nature, 93 % sur l axe nord-sud : 40 cm entre deux maisons mitoyennes saisies separement, un jour de souffrance, une courette. Sous 2,5 m personne ne passe : ce n est pas un chemin. 686 murs recolles, traversees invisibles 13,7 -> 6,8 % (nord-sud) et 14,5 -> 2,9 % (est-ouest).",
     "echelle_hauteur": 0.7,
-    "_echelle_hauteur": "Facteur applique a la hauteur de tout le bati a l etape 5b. Un mur de hauteur h avale 0,408 h de largeur apparente a 60 deg : a 10 m de moyenne, 4,1 m — une ruelle de 4 m n a plus un pixel de sol. x0,7 rend 1,2 m a chaque ruelle. Un FACTEUR et non un plafond : un plafond aligne toutes les maisons a la meme hauteur et aplatit la ligne de toits."
+    "_echelle_hauteur": "Facteur applique a la hauteur de tout le bati a l etape 5b. Un mur de hauteur h avale 0,408 h de largeur apparente a 60 deg : a 10 m de moyenne, 4,1 m — une ruelle de 4 m n a plus un pixel de sol. x0,7 rend 1,2 m a chaque ruelle. Un FACTEUR et non un plafond : un plafond aligne toutes les maisons a la meme hauteur et aplatit la ligne de toits.",
+    "toits_ouverts": {
+      "nombre": 10,
+      "ecart_min_m": 35.0,
+      "_liste": "Choix editorial, refabricable avec 11_ouvertures.py --choisir. Edite a la main sans crainte : rien d autre n en depend.",
+      "liste": [
+        {
+          "osm": "83183461",
+          "usage": "nightclub",
+          "nom": "la boite de nuit"
+        },
+        {
+          "osm": "83181573",
+          "usage": "restaurant",
+          "nom": "le grand immeuble de la place"
+        },
+        {
+          "osm": "83181551",
+          "usage": "restaurant",
+          "nom": "le restaurant du nord"
+        },
+        {
+          "osm": "83183509",
+          "usage": "bar",
+          "nom": "le bar"
+        },
+        {
+          "osm": "83184650",
+          "usage": "cafe",
+          "nom": "le cafe du sud"
+        },
+        {
+          "osm": "83183833",
+          "usage": "seafood",
+          "nom": "la poissonnerie"
+        },
+        {
+          "osm": "83183774",
+          "usage": "cafe",
+          "nom": "le cafe du centre"
+        },
+        {
+          "osm": "83183361",
+          "usage": "butcher",
+          "nom": "la boucherie"
+        },
+        {
+          "osm": "1422105353",
+          "usage": "bar",
+          "nom": "le bar de l est"
+        },
+        {
+          "osm": "83180570",
+          "usage": "bank",
+          "nom": "la banque"
+        }
+      ]
+    }
   },
   "import": {
     "source_osm": "assets/castres.osm",
