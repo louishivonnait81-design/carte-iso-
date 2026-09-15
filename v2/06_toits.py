@@ -2,7 +2,7 @@
 
     blender -b -P v2/06_toits.py
 
-Lit castres_sol.blend, ecrit castres_toits.blend.
+Lit castres_rues.blend, ecrit castres_toits.blend.
 
 POURQUOI UNE ETAPE A PART. L'importateur sait poser des croupes, mais sur une
 emprise irreguliere l'inset des versants degenere : la face du dessus se replie,

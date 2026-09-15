@@ -85,3 +85,54 @@ sont arrives sans etiquette, et l'ecart avec la candidate suivante etait de
 10 valeurs distinctes pour 1397 batiments. Le LiDAR HD de l'IGN corrigerait
 cela ; il est inaccessible depuis cet environnement, dont la politique reseau
 refuse les serveurs de l'IGN (403 a la passerelle).
+
+## v2 — pourquoi une ruelle n'est pas visible
+
+Mesure sur la zone du coeur (220 m), grille de 25 cm, `v2/jouabilite.py`. Une
+traversee de ruelle est **jouable** si le sol qui y reste DEGAGE atteint 2,5 m.
+
+La largeur au sol ne suffit pas a repondre. La camera regarde du sud-ouest a
+60 degres : un mur de hauteur h avale 0,408 h de largeur apparente. Avec les
+10,0 m de hauteur moyenne de l'import, ce sont **4,1 m avales** — une ruelle de
+4 m n'a plus un pixel de sol, a n'importe quelle resolution. C'est pourquoi le
+rendu a 8000 px ne reglait rien.
+
+Une premiere mesure comptait aussi les courettes fermees au milieu des ilots
+parmi les ruelles noires : elles faisaient un tiers du defaut, et personne ne
+peut y entrer. Le sol libre est donc d'abord rempli depuis le bord de la zone.
+
+| etat | NS jouable | NS noire | EO jouable | EO noire | sol libre visible |
+|------|-----------|----------|-----------|----------|-------------------|
+| retrait 1,2 m uniforme | 73,1 % | 13,7 % | 64,8 % | 14,5 % | 82,4 % |
+| soudure 2,5 + retrait 2,0 par axe + hauteurs x0,7 | **84,1 %** | **6,8 %** | **88,3 %** | **2,9 %** | **88,9 %** |
+
+Le chiffre qui compte est ailleurs dans le tableau. En separant les traversees
+selon qu'elles longent une RUE (entre deux ilots) ou une fente INTERIEURE a un
+ilot :
+
+| | avant : traversees / noires | apres : traversees / noires |
+|---|---|---|
+| entre deux ilots (les rues) | 2804 / 161 | 2521 / **0** |
+| a l'interieur d'un ilot | 1860 / 923 | 1657 / 696 |
+
+**85 % des traversees invisibles n'etaient pas des rues** — 93 % sur le seul axe
+nord-sud, celui dont vous disiez qu'il devait se voir partout. Le retrait d'ilot ne
+pouvait rien pour elles : l'ilot se contracte d'un bloc. Ce qui les a ouvertes
+ou fermees est autre chose.
+
+### Ce que chaque levier a change
+
+* **Soudure des fentes interieures** (2,5 m) : 686 murs recolles. Deux maisons
+  mitoyennes saisies dans OSM avec 40 cm d'ecart ne sont pas une ruelle.
+* **Retrait AXE PAR AXE** : la mise a l'echelle uniforme reculait un ilot
+  allonge de 1,2 m dans sa longueur mais de **0,24 m** dans sa largeur. Les
+  ruelles qui longent un ilot ne gagnaient presque rien — exactement celles que
+  l'oeil ne voyait plus.
+* **Hauteurs x0,7** (10,0 -> 7,1 m de moyenne) : seul levier qui ouvre
+  l'interieur des ilots, la ou le plan ne peut rien. Un facteur et non un
+  plafond : a plafond 7 m, toutes les maisons se retrouvent a la meme hauteur et
+  la ligne de toits s'aplatit, pour un gain de jouabilite identique.
+* **Monter la camera** a 65 ou 70 degres gagnerait encore 2 a 6 points, mais les
+  rues sont deja jouables a 100 % : l'angle reste a 60 degres, ou la facade se
+  voit encore.
+* Surface batie 34,4 -> 30,9 % du sol. C'est le prix, et il est assume.

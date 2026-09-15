@@ -24,8 +24,12 @@
       "centre": "Place Jean Jaurès",
       "cote_m": 220.0
     },
-    "retrait_ilot_m": 1.2,
-    "_retrait_ilot_m": "Metres retires de chaque cote d un ilot pour elargir les rues. Invention assumee, bornee, annulable en remettant 0. Mesure qui la motive : 13,9 % de l espace libre fait moins de 3 m de large et 20,5 % moins de 4 m ; a 60 deg d elevation une ruelle de 3 m est un trait, et un personnage de 4 mm n y tient pas."
+    "retrait_ilot_m": 2.0,
+    "_retrait_ilot_m": "Metres retires de chaque cote d un ilot, AXE PAR AXE, pour elargir les rues. Invention assumee, bornee, annulable en remettant 0. A 2,0 m les rues entre ilots sont jouables a 100 % (sol degage >= 2,5 m) ; au-dela le gain plafonne et la surface batie tombe sous 30 %.",
+    "soudure_ilot_m": 2.5,
+    "_soudure_ilot_m": "Fente INTERIEURE a un ilot en dessous de laquelle les deux murs sont recolles. 85 % des traversees invisibles etaient de cette nature, 93 % sur l axe nord-sud : 40 cm entre deux maisons mitoyennes saisies separement, un jour de souffrance, une courette. Sous 2,5 m personne ne passe : ce n est pas un chemin. 686 murs recolles, traversees invisibles 13,7 -> 6,8 % (nord-sud) et 14,5 -> 2,9 % (est-ouest).",
+    "echelle_hauteur": 0.7,
+    "_echelle_hauteur": "Facteur applique a la hauteur de tout le bati a l etape 5b. Un mur de hauteur h avale 0,408 h de largeur apparente a 60 deg : a 10 m de moyenne, 4,1 m — une ruelle de 4 m n a plus un pixel de sol. x0,7 rend 1,2 m a chaque ruelle. Un FACTEUR et non un plafond : un plafond aligne toutes les maisons a la meme hauteur et aplatit la ligne de toits."
   },
   "import": {
     "source_osm": "assets/castres.osm",
