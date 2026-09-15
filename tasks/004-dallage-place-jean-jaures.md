@@ -1,4 +1,4 @@
-# 001 — Dallage de la place Jean-Jaurès
+# 004 — Dallage de la place Jean-Jaurès
 
 **Ce qu'on voit.** La place sort en polygone `square` nu : une surface blanche
 de 112 × 42 m, la plus grande tache vide de la carte.
