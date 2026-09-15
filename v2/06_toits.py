@@ -36,6 +36,9 @@ V2 = Path(__file__).resolve().parent
 PENTE = 0.53
 MONTEE_MAX = 3.0        # m, au-dela le toit ecrase la facade
 COTE_MIN_CROUPE = 4.0   # m ; sous cette largeur l'inset degenere
+COTE_MIN_FAITAGE = 3.0  # m ; sous cette largeur un faitage ne se lit plus
+CARRE_MAX = 1.6         # au-dela de ce rapport long/court, on fait un faitage
+TOLERANCE_DEBORD = 0.5   # m ; au-dela, l'inset s'est replie : on refait autrement
 REMPLISSAGE_MIN = 0.72  # part de son rectangle englobant qu'une emprise doit remplir
 ACROTERE = 0.35         # m, hauteur du muret de rive d'un toit plat
 RETRAIT_ACROTERE = 0.30  # m
@@ -131,6 +134,58 @@ def aire_polygone(points) -> float:
                          in zip(points, points[1:] + points[:1])))
 
 
+def debordement(bm, points) -> float:
+    """De combien de metres le maillage deborde-t-il de son emprise de depart ?
+
+    Un inset "even" qui se replie envoie un sommet tres loin, et rien dans la
+    forme ne l'annonce a coup sur : le batiment 83182684 est convexe, remplit
+    0,86 de son rectangle, n'a pas d'angle sous 78 degres — et son sommet
+    partait a 141 m. On mesure donc le resultat au lieu de le prevoir.
+    """
+    x0 = min(x for x, _ in points)
+    x1 = max(x for x, _ in points)
+    y0 = min(y for _, y in points)
+    y1 = max(y for _, y in points)
+    return max(max(x0 - v.co.x, v.co.x - x1, y0 - v.co.y, v.co.y - y1)
+               for v in bm.verts)
+
+
+def poser_deux_versants(bm, dessus, centre, angle, petit) -> bool:
+    """Un faitage sur l'axe long, deux versants qui tombent sur les cotes longs.
+
+    Marche sur n'IMPORTE QUELLE emprise, y compris en L : on ne construit pas de
+    geometrie nouvelle, on COUPE la face du dessus le long de l'axe et on remonte
+    chaque sommet selon sa distance a cet axe. Un angle rentrant ne peut donc pas
+    faire se replier l'inset, puisqu'il n'y a pas d'inset.
+
+    C'est ce qui manquait : 42 batiments echouaient sur le seul critere d'angle
+    rentrant, et 187 sur 264 finissaient en toit plat a acrotere — un coeur de
+    ville ancienne entierement en terrasses.
+    """
+    axe = Vector((math.cos(angle), math.sin(angle), 0.0))
+    normale = Vector((-axe.y, axe.x, 0.0))
+    zmax = max(v.co.z for f in dessus for v in f.verts)
+
+    geom = set()
+    for f in dessus:
+        geom.add(f)
+        geom.update(f.verts)
+        geom.update(f.edges)
+    bmesh.ops.bisect_plane(bm, geom=list(geom), dist=1e-4,
+                           plane_co=(centre.x, centre.y, zmax),
+                           plane_no=tuple(normale))
+
+    hauts = [v for v in bm.verts if abs(v.co.z - zmax) < 1e-3]
+    if not hauts:
+        return False
+    demi = petit / 2.0
+    montee = min(MONTEE_MAX, PENTE * demi)
+    for v in hauts:
+        d = abs((v.co - Vector((centre.x, centre.y, zmax))).dot(normale))
+        v.co.z += montee * max(0.0, 1.0 - d / demi)
+    return True
+
+
 def poser_toit(obj) -> str:
     """Pose une toiture sur un prisme. Renvoie le cas choisi."""
     bm = bmesh.new()
@@ -146,23 +201,57 @@ def poser_toit(obj) -> str:
         return "aucune"
 
     points = [(v.co.x, v.co.y) for v in boucle]
-    aire, largeur, profondeur, _ = rectangle_oriente(points)
+    aire, largeur, profondeur, angle_bb = rectangle_oriente(points)
     petit = min(largeur, profondeur)
     remplissage = aire_polygone(points) / aire if aire else 0.0
 
-    if (remplissage >= REMPLISSAGE_MIN and petit >= COTE_MIN_CROUPE
-            and len(points) <= 10 and est_convexe(points)):
+    grand = max(largeur, profondeur)
+    carre = grand / petit if petit > 1e-6 else 99.0
+
+    cas = None
+    if (carre <= CARRE_MAX and remplissage >= REMPLISSAGE_MIN
+            and petit >= COTE_MIN_CROUPE and len(points) <= 10
+            and est_convexe(points)):
+        # emprise ramassee : une croupe, quatre pans qui se rejoignent
         inset = 0.48 * petit
         montee = min(MONTEE_MAX, PENTE * inset)
         bmesh.ops.inset_region(bm, faces=dessus, thickness=inset, depth=montee,
                                use_even_offset=True, use_boundary=True)
-        cas = "croupe"
-    else:
+        if debordement(bm, points) <= TOLERANCE_DEBORD:
+            cas = "croupe"
+        else:
+            # l'offset s'est replie sur lui-meme. Aucun critere de forme ne
+            # l'annonce a coup sur : on le CONSTATE et on refait un faitage, qui
+            # ne deplace aucun sommet dans le plan.
+            bm.free()
+            bm = bmesh.new()
+            bm.from_mesh(obj.data)
+            bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+            dessus = faces_du_dessus(bm)
+
+    if cas is None and petit >= COTE_MIN_FAITAGE:
+        centre = Vector((sum(x for x, _ in points) / len(points),
+                         sum(y for _, y in points) / len(points), 0.0))
+        # rectangle_oriente rend l'angle qui remet le cote sur X : l'axe long
+        # est donc X ou Y selon lequel des deux cotes est le plus grand
+        axe = -angle_bb if largeur >= profondeur else -angle_bb + math.pi / 2
+        cas = "faitage" if poser_deux_versants(bm, dessus, centre, axe, petit) \
+            else "acrotere"
+        if cas == "acrotere":
+            dessus = faces_du_dessus(bm)
+    elif cas is None:
         # acrotere : un muret de rive. Une ligne franche au lieu d'une croupe
         # inventee sur une emprise que l'on ne sait pas lire.
+        # PAS d'offset "even" ici, et une epaisseur bornee par l'emprise. Le
+        # decalage even divise par sin(angle/2) : sur une emprise en lame de
+        # couteau — il en reste, ce sont des epaisseurs de mur saisies comme des
+        # batiments — il envoyait des sommets a 250 m de la zone, et Freestyle
+        # tirait de longues diagonales en travers de la carte. Mesure : 8 objets
+        # hors zone, jusqu'a 253,8 m, tous nes ici.
+        retrait = min(RETRAIT_ACROTERE, 0.25 * petit)
         resultat = bmesh.ops.inset_region(bm, faces=dessus,
-                                          thickness=RETRAIT_ACROTERE, depth=0.0,
-                                          use_even_offset=True, use_boundary=True)
+                                          thickness=retrait, depth=0.0,
+                                          use_even_offset=False, use_boundary=True)
         # inset_region rend les faces du POURTOUR ; l'interieur est ce qui reste
         pourtour = set(resultat["faces"])
         interieur = [f for f in dessus if f.is_valid and f not in pourtour]
