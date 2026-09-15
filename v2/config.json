@@ -23,7 +23,9 @@
     "coeur": {
       "centre": "Place Jean Jaurès",
       "cote_m": 220.0
-    }
+    },
+    "retrait_ilot_m": 1.2,
+    "_retrait_ilot_m": "Metres retires de chaque cote d un ilot pour elargir les rues. Invention assumee, bornee, annulable en remettant 0. Mesure qui la motive : 13,9 % de l espace libre fait moins de 3 m de large et 20,5 % moins de 4 m ; a 60 deg d elevation une ruelle de 3 m est un trait, et un personnage de 4 mm n y tient pas."
   },
   "import": {
     "source_osm": "assets/castres.osm",

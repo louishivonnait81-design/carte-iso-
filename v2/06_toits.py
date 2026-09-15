@@ -181,7 +181,7 @@ def main() -> int:
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--blend", type=Path, default=V2 / "castres_sol.blend")
+    p.add_argument("--blend", type=Path, default=V2 / "castres_rues.blend")
     p.add_argument("--out", type=Path, default=V2 / "castres_toits.blend")
     args = p.parse_args(argv)
 
